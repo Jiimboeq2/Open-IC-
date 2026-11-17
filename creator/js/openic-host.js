@@ -127,7 +127,7 @@
     var L = H.handlers[channel] || [];
     for (var i = 0; i < L.length; i++) { try { L[i](payload); } catch (e) { H.toast('Could not read what the game sent (' + channel + '): ' + e.message, 'err'); } }
   }
-  H.CHANNELS = ['ext', 'me', 'file', 'say', 'route', 'check', 'list', 'map'];
+  H.CHANNELS = ['ext', 'me', 'file', 'say', 'route', 'check', 'list', 'map', 'verify', 'test'];
   H.bind = function () {
     for (var i = 0; i < H.CHANNELS.length; i++) (function (ch) {
       var el = $('openic-msg-' + ch);

@@ -17,12 +17,16 @@ files in Ogre and run them. ISXJQB and ISXADD are optional extras.
 - **The right side**: **Add a step** (every action Ogre has, by what it is for, or found by a word), **This step**
   (what it does, who runs it, its problems, and its settings as a form with a line on each; an op list says what
   each op does), **File settings**.
-- **Who does it, with a backup**: pick everyone, one box, an archetype, a class or a raid group; for an archetype, a
-  class or a role, "if the group has no bard, a mage does it" is one click: the step runs only when the group has one,
-  and a copy for the other box only when it has none (a roster count, as Ogre's own files write it).
+- **When and who**, at the top of a step: who does it, with a backup ("if the group has no bard, a mage does it" is
+  one click: a roster count, as Ogre's own files write it); **Only if** (the step's conditions in words, the common ones
+  first, all or any, each one turned round with "not"); **Repeat** a number of times, until or while something is true.
+- **Validate**: the checks as you edit, and **Ask Ogre** for Ogre's own word on the saved file (its Validate, or with an
+  Ogre that has none, a reload and the lines Ogre wrote about this file, each on its step).
+- **Test in game**: this step, through the next named, or from the start to here, while you stand in the zone (the
+  steps run as a small zone file of their own that stays in the zone, then is switched off); a fight file's setup.
 - **Chart**: every step a box, a zone file broken into its nameds, a fight file into its rules; click to pick,
-  drag a box onto a + to move it, click a + to add a step there; the wheel scrolls, Ctrl+wheel zooms; Overview, One
-  part and Side by side views.
+  drag a box onto a + to move it, click a + to add a step there; the wheel scrolls (in Ogre's window too), - and +
+  zoom; Overview, One part and Side by side views.
 - **Game pictures**: EverQuest II's own spell, class and item icons on the steps and boxes. **Pictures** turns them
   on or off and picks whose ability pictures show: every class's, or one class's (another class's ability then shows
   that class's icon, with "Who: Fury", for example, as its tooltip). In game the class you play counts.

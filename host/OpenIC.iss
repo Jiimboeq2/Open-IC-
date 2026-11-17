@@ -46,6 +46,21 @@ variable int OpenIC_Piece=6000
 ; the icon parts: OpenIC-assets-<k>.js, sent one at a time; 0 = none on the way
 variable int OpenIC_AssetSent=0
 variable int OpenIC_AssetTicks=0
+; Ask Ogre (OpenIC_OnVerify): Ogre's log, where it stood before the reload, the file asked about, and the ticks left
+; before its lines are read
+variable string OpenIC_VerifyLog=""
+variable int OpenIC_VerifyFrom=0
+variable string OpenIC_VerifyRel=""
+variable int OpenIC_VerifyWait=0
+; Test in game (OpenIC_OnTest, OpenIC_OnFightTest): ticks left before Ogre's first lines are read, whether a run is
+; watched, how long, whether it was seen running; the named of a fight test
+variable int OpenIC_TestWait=0
+variable bool OpenIC_TestWatch=FALSE
+variable int OpenIC_TestTicks=0
+variable bool OpenIC_TestSeen=FALSE
+variable string OpenIC_FightNamed=""
+variable int OpenIC_FightWait=0
+variable int OpenIC_FightTicks=0
 
 objectdef openic_bridge
 {
@@ -558,6 +573,238 @@ atom(script) OpenIC_OnMap()
 	OpenIC:Say[map,"${Kind}|${Name}|1"]
 }
 
+; The Validate panel's Ask Ogre, for a zone file saved in one of IC's folders, with an Ogre that has no IC:Validate:
+; Ogre reloads its zone files (the same as Reload) and this reads what it said about this one file. Reload prints only
+; its count line on the console; each problem goes to Ogre's log as "<tier>/<path>: <message>", so the log is read from
+; where it stood before the reload. IC:List then prints the loaded files that claim the zone: this file among them
+; means it loaded, and another one there for the same difficulty is the one a queue by name may pick. The window's
+; fields: path (inside the tier's folder), tier (custom or default), zone (the zone's name, no difficulty).
+; Not used: IC:Check, which also starts Ogre's zone-reset flow (it opens the game's zone reset window to read timers).
+atom(script) OpenIC_OnVerify()
+{
+	variable string Rel="${OpenIC.Arg[path]}"
+	variable string Tier="${OpenIC.Arg[tier]}"
+	variable string Zone="${OpenIC.Arg[zone]}"
+	variable file L
+	if !${ISXOgreEQ2(exists)}
+	{
+		OpenIC:Say[say,"err:ISXOgreEQ2 is not loaded."]
+		return
+	}
+	if !${Tier.Equal[custom]} && !${Tier.Equal[default]}
+		return
+	OpenIC_VerifyRel:Set["${Tier}/${Rel}"]
+	OpenIC_VerifyLog:Set["${LavishScript.HomeDirectory}/x64/Extensions/ISXDK35/ISXOgreEQ2.${Session}.log"]
+	OpenIC_VerifyFrom:Set[0]
+	L:SetFilename["${OpenIC_VerifyLog}"]
+	L:Open[readonly]
+	if ${L.Open}
+	{
+		OpenIC_VerifyFrom:Set[${L.Size}]
+		L:Close
+	}
+	else
+		OpenIC_VerifyLog:Set[""]
+	; API: isxogreeq2 IC, ISXOgreEQ2.IC:Reload (prints "N zone(s) from M file(s) - X skipped, Y warning(s)") and
+	; ISXOgreEQ2.IC:List[filter] (prints every loaded zone file that matches, and a count).
+	; PROVEN 2026-11-17 (ISXOgreEQ2 of 2026-11-16): redirect caught IC:Reload's count line and IC:List's
+	; "[custom] <path>  ->  <zone> [<difficulty>]" and "1 of 63 zone file(s) matching" lines, each with colour codes.
+	redirect "${OpenIC_Dir}/openic-verify-r.txt" ISXOgreEQ2.IC:Reload
+	redirect "${OpenIC_Dir}/openic-verify-l.txt" ISXOgreEQ2.IC:List["${Zone}"]
+	OpenIC_VerifyWait:Set[2]
+}
+
+; A second after Ask Ogre: the count line, the files that claim the zone, and this file's lines from Ogre's log since
+; the reload, one message each on the window's verify channel ("begin|<tier>/<path>", "s|", "l|", "p|", "end|").
+; PROVEN 2026-11-17: a file's Size, Seek[n] and Read (a line at a time, quotes and brackets kept with .Escape; an empty
+; line first after a seek, NULL at the end) on a test file; Ogre's log held one "<tier>/<path>: <message>" line per
+; problem of the reload, steps counted from 1, and can be read while Ogre writes it.
+function OpenIC_SendVerify()
+{
+	variable file F
+	variable string T
+	variable int G=0
+	OpenIC:Say[verify,"begin|${OpenIC_VerifyRel.Escape}"]
+	F:SetFilename["${OpenIC_Dir}/openic-verify-r.txt"]
+	F:Open[readonly]
+	if ${F.Open}
+	{
+		while !${F.EOF} && ${G:Inc} <= 50
+		{
+			T:Set["${F.Read.Escape}"]
+			if ${T.Find[skipped](exists)}
+				OpenIC:Say[verify,"s|${T.Escape}"]
+		}
+		F:Close
+	}
+	G:Set[0]
+	F:SetFilename["${OpenIC_Dir}/openic-verify-l.txt"]
+	F:Open[readonly]
+	if ${F.Open}
+	{
+		while !${F.EOF} && ${G:Inc} <= 80
+		{
+			T:Set["${F.Read.Escape}"]
+			if ${T.Find[ -> ](exists)} || ${T.Find[matching](exists)}
+				OpenIC:Say[verify,"l|${T.Escape}"]
+		}
+		F:Close
+	}
+	if ${OpenIC_VerifyLog.Length} > 0
+	{
+		G:Set[0]
+		F:SetFilename["${OpenIC_VerifyLog}"]
+		F:Open[readonly]
+		if ${F.Open}
+		{
+			; PROVEN 2026-11-17: Seek[n] moved a read file to byte n; Read went on from there.
+			F:Seek[${OpenIC_VerifyFrom}]
+			while !${F.EOF} && ${G:Inc} <= 4000
+			{
+				T:Set["${F.Read.Escape}"]
+				if ${T.Find["${OpenIC_VerifyRel}:"](exists)}
+					OpenIC:Say[verify,"p|${T.Escape}"]
+			}
+			F:Close
+		}
+	}
+	else
+		OpenIC:Say[verify,"nolog|"]
+	OpenIC:Say[verify,"end|"]
+}
+
+; Test in game, a zone file's steps: the window saves the steps to test as a small zone file of their own in
+; custom/_Open IC test/ (ending in a zoneOut with op none, so it stays in the zone), then asks for this: Ogre reloads
+; its zone files and runs that file. What Ogre printed goes to the window on its test channel, then once a second the
+; run's state, until it ends ("out|", "state|<RunState>|<Verdict>|<Note>", "end|...").
+; API: isxogreeq2 IC, Run[tier,relPath] (it refuses with a console line when you are not in the world, a run is under
+; way, IC is paused, no profile is loaded, or the file will not load; it travels to the file's zone first, so the
+; window only offers a test while you stand in it), Stop, and the members Running, RunState, Verdict and Note.
+; UNVERIFIED for this release: written when no game client was up; the members are read only when they exist.
+atom(script) OpenIC_OnTest()
+{
+	variable string Rel="${OpenIC.Arg[path]}"
+	if !${ISXOgreEQ2(exists)}
+	{
+		OpenIC:Say[say,"err:ISXOgreEQ2 is not loaded."]
+		return
+	}
+	if ${Rel.Length} == 0 || ${Rel.Find[..](exists)}
+		return
+	redirect "${OpenIC_Dir}/openic-test.txt" ISXOgreEQ2.IC:Reload
+	redirect -append "${OpenIC_Dir}/openic-test.txt" ISXOgreEQ2.IC:Run[custom,"${Rel}"]
+	OpenIC_TestTicks:Set[0]
+	OpenIC_TestSeen:Set[FALSE]
+	OpenIC_TestWatch:Set[FALSE]
+	OpenIC_TestWait:Set[2]
+}
+
+atom(script) OpenIC_OnTestStop()
+{
+	if !${ISXOgreEQ2(exists)}
+		return
+	; API: isxogreeq2 IC, Stop: the run stops where it stands (a steps zone at its current step, without its exit).
+	ISXOgreEQ2.IC:Stop
+	OpenIC:Say[say,"ok:Asked Ogre to stop the run."]
+}
+
+; What Ogre printed for the test's reload and run, then the watch starts.
+function OpenIC_SendTestOut()
+{
+	variable file F
+	variable string T
+	variable int G=0
+	F:SetFilename["${OpenIC_Dir}/openic-test.txt"]
+	F:Open[readonly]
+	if ${F.Open}
+	{
+		while !${F.EOF} && ${G:Inc} <= 60
+		{
+			T:Set["${F.Read.Escape}"]
+			if ${T.Find[Ogre](exists)}
+				OpenIC:Say[test,"out|${T.Escape}"]
+		}
+		F:Close
+	}
+	OpenIC_TestWatch:Set[TRUE]
+}
+
+; Once a second while a test runs: the run's state; it ends when the run is over, or after 30 minutes.
+function OpenIC_TestTick()
+{
+	variable string RunNow="unknown"
+	variable string Vd=""
+	variable string Nt=""
+	variable bool Busy=FALSE
+	variable bool Over=FALSE
+	OpenIC_TestTicks:Inc
+	if ${ISXOgreEQ2.IC.RunState(exists)}
+		RunNow:Set["${ISXOgreEQ2.IC.RunState}"]
+	if ${ISXOgreEQ2.IC.Verdict(exists)}
+		Vd:Set["${ISXOgreEQ2.IC.Verdict}"]
+	if ${ISXOgreEQ2.IC.Note(exists)}
+		Nt:Set["${ISXOgreEQ2.IC.Note.Escape}"]
+	if ${RunNow.Equal[running]} || ${RunNow.Equal[launching]} || ${RunNow.Equal[zoning in]}
+		Busy:Set[TRUE]
+	if ${Busy}
+		OpenIC_TestSeen:Set[TRUE]
+	if ${OpenIC_TestTicks} > 3600
+		Over:Set[TRUE]
+	if ${RunNow.Equal[unknown]} && ${OpenIC_TestTicks} > 6
+		Over:Set[TRUE]
+	if ${OpenIC_TestSeen} && !${Busy}
+		Over:Set[TRUE]
+	if !${OpenIC_TestSeen} && ${OpenIC_TestTicks} > 16
+		Over:Set[TRUE]
+	if ${Over}
+	{
+		OpenIC_TestWatch:Set[FALSE]
+		OpenIC:Say[test,"end|${RunNow}|${Vd}|${Nt.Escape}"]
+		return
+	}
+	OpenIC:Say[test,"state|${RunNow}|${Vd}|${Nt.Escape}"]
+}
+
+; Test in game, a fight file (saved where Ogre reads it): Ogre reloads its fight files, and three seconds later sets up
+; for the named, the same as Start the fight setup now; then once a second, for two minutes, whether a fight file for
+; that named is setting up or running ("fight|<TRUE or FALSE>").
+; API: isxogreeq2 Encounter, Reload (in the background: it ends every setup in progress) and the member IsActive[mob];
+; ogrebotapi Bot, SetUpFor (the named must be up in this zone, and Enable Heroic or Raid Setups ticked).
+; UNVERIFIED for this release: written when no game client was up; IsActive is read only when it exists.
+atom(script) OpenIC_OnFightTest()
+{
+	if !${ISXOgreEQ2(exists)}
+	{
+		OpenIC:Say[say,"err:ISXOgreEQ2 is not loaded."]
+		return
+	}
+	OpenIC_FightNamed:Set["${OpenIC.Arg[named]}"]
+	if ${OpenIC_FightNamed.Length} == 0
+		return
+	ISXOgreEQ2.Encounter:Reload
+	OpenIC_FightTicks:Set[0]
+	OpenIC_FightWait:Set[6]
+}
+
+function OpenIC_FightTick()
+{
+	variable string Act="unknown"
+	variable bool Over=FALSE
+	OpenIC_FightTicks:Inc
+	if ${ISXOgreEQ2.Encounter.IsActive["${OpenIC_FightNamed}"](exists)}
+		Act:Set["${ISXOgreEQ2.Encounter.IsActive["${OpenIC_FightNamed}"]}"]
+	OpenIC:Say[test,"fight|${Act}"]
+	if ${OpenIC_FightTicks} > 120
+		Over:Set[TRUE]
+	if ${Act.Equal[unknown]} && ${OpenIC_FightTicks} > 4
+		Over:Set[TRUE]
+	if ${Over}
+	{
+		OpenIC_FightNamed:Set[""]
+		OpenIC:Say[test,"fightend|${Act}"]
+	}
+}
+
 ; The route ISXADD found, as "x,y,z;x,y,z;...": at most 180 points, so the message stays one short command.
 ; UNVERIFIED (ISXADD, not in Ogre's API reference): the members U1Nav.PointCount and U1Nav.PointX / PointY /
 ; PointZ[n] (ISXADD's help), counted from 1.
@@ -666,6 +913,10 @@ function main()
 	LavishScript:RegisterEvent[OpenIC_List]
 	LavishScript:RegisterEvent[OpenIC_MkDir]
 	LavishScript:RegisterEvent[OpenIC_Map]
+	LavishScript:RegisterEvent[OpenIC_Verify]
+	LavishScript:RegisterEvent[OpenIC_Test]
+	LavishScript:RegisterEvent[OpenIC_TestStop]
+	LavishScript:RegisterEvent[OpenIC_FightTest]
 	Event[OpenIC_Hello]:AttachAtom[OpenIC_OnHello]
 	Event[OpenIC_Reload]:AttachAtom[OpenIC_OnReload]
 	Event[OpenIC_Check]:AttachAtom[OpenIC_OnCheck]
@@ -680,6 +931,10 @@ function main()
 	Event[OpenIC_List]:AttachAtom[OpenIC_OnList]
 	Event[OpenIC_MkDir]:AttachAtom[OpenIC_OnMkDir]
 	Event[OpenIC_Map]:AttachAtom[OpenIC_OnMap]
+	Event[OpenIC_Verify]:AttachAtom[OpenIC_OnVerify]
+	Event[OpenIC_Test]:AttachAtom[OpenIC_OnTest]
+	Event[OpenIC_TestStop]:AttachAtom[OpenIC_OnTestStop]
+	Event[OpenIC_FightTest]:AttachAtom[OpenIC_OnFightTest]
 	Event[OgreUI_Opened]:AttachAtom[OpenIC_OnOpened]
 	Event[OgreUI_Closed]:AttachAtom[OpenIC_OnClosed]
 	OpenIC_OpenWindow
@@ -711,6 +966,35 @@ function main()
 					call OpenIC_SendRoute
 			}
 		}
+		; Ask Ogre: Ogre's lines about the file, a second after its reload (OpenIC_OnVerify)
+		if ${OpenIC_VerifyWait} > 0
+		{
+			OpenIC_VerifyWait:Dec
+			if ${OpenIC_VerifyWait} == 0
+				call OpenIC_SendVerify
+		}
+		; Test in game: what Ogre printed, then the run's state once a second (OpenIC_OnTest)
+		if ${OpenIC_TestWait} > 0
+		{
+			OpenIC_TestWait:Dec
+			if ${OpenIC_TestWait} == 0
+				call OpenIC_SendTestOut
+		}
+		if ${OpenIC_TestWatch} && ${MeTick} == 0
+			call OpenIC_TestTick
+		; a fight test: the setup three seconds after the reload, then whether it runs (OpenIC_OnFightTest)
+		if ${OpenIC_FightWait} > 0
+		{
+			OpenIC_FightWait:Dec
+			if ${OpenIC_FightWait} == 0
+			{
+				; API: ogrebotapi Bot, SetUpFor[fw,what,restart] (as OpenIC_OnSetUp).
+				OgreBotAPI.Bot:SetUpFor[igw:${Me.Name},"${OpenIC_FightNamed}",TRUE]
+				OpenIC:Say[test,"fight|asked"]
+			}
+		}
+		elseif ${OpenIC_FightNamed.Length} > 0 && ${MeTick} == 0
+			call OpenIC_FightTick
 		wait 5
 	}
 }
@@ -731,6 +1015,10 @@ atom atexit()
 	Event[OpenIC_List]:DetachAtom[OpenIC_OnList]
 	Event[OpenIC_MkDir]:DetachAtom[OpenIC_OnMkDir]
 	Event[OpenIC_Map]:DetachAtom[OpenIC_OnMap]
+	Event[OpenIC_Verify]:DetachAtom[OpenIC_OnVerify]
+	Event[OpenIC_Test]:DetachAtom[OpenIC_OnTest]
+	Event[OpenIC_TestStop]:DetachAtom[OpenIC_OnTestStop]
+	Event[OpenIC_FightTest]:DetachAtom[OpenIC_OnFightTest]
 	Event[OgreUI_Opened]:DetachAtom[OpenIC_OnOpened]
 	Event[OgreUI_Closed]:DetachAtom[OpenIC_OnClosed]
 	; API: isxogrex, ISXOgreX.UI:Close[name].

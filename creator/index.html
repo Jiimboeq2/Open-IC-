@@ -29,7 +29,7 @@
     <span class="oic-sep"></span>
     <button class="oic-btn" id="openic-undo" data-oic="undo" title="Undo the last change (Ctrl+Z)">Undo</button>
     <button class="oic-btn" id="openic-redo" data-oic="redo" title="Redo (Ctrl+Y)">Redo</button>
-    <button class="oic-btn" id="openic-checkbtn" data-oic="check" title="What would stop Ogre loading this file: click to see the list under the chart">Problems</button>
+    <button class="oic-btn" id="openic-checkbtn" data-oic="check" title="The file checked as you edit: what would stop Ogre loading it, and what to look at. Under the list, Ask Ogre gets Ogre's own word on the saved file">Validate</button>
     <span class="oic-sep"></span>
     <button class="oic-btn" data-oic="game" title="Reload your files in Ogre, run or queue this zone file, start a fight's setup; ISXJQB and ISXADD extras">Use in game &#9662;</button>
     <span style="flex:1;"></span>
@@ -91,7 +91,7 @@
     <input type="hidden" id="openic-arg-root"><input type="hidden" id="openic-arg-name">
     <textarea id="openic-arg-text"></textarea>
     <input type="hidden" id="openic-msg-ext"><input type="hidden" id="openic-msg-me"><input type="hidden" id="openic-msg-say">
-    <input type="hidden" id="openic-msg-route"><input type="hidden" id="openic-msg-map"><textarea id="openic-msg-check"></textarea><textarea id="openic-msg-file"></textarea><textarea id="openic-msg-list"></textarea>
+    <input type="hidden" id="openic-msg-route"><input type="hidden" id="openic-msg-map"><input type="hidden" id="openic-msg-verify"><input type="hidden" id="openic-msg-test"><textarea id="openic-msg-check"></textarea><textarea id="openic-msg-file"></textarea><textarea id="openic-msg-list"></textarea>
     <input type="hidden" id="openic-assets-got">
   </div>
 </div>
@@ -126,6 +126,8 @@
 <script src="js/openic-browse.js"></script>
 <script src="js/openic-edit.js"></script>
 <script src="js/openic-map.js"></script>
+<script src="js/openic-cond.js"></script>
+<script src="js/openic-test.js"></script>
 <script src="data/spell-icons.js"></script>
 <script src="data/item-icons.js"></script>
 <script src="js/openic-selftest.js"></script>

@@ -152,6 +152,19 @@
 #openic-root .oic-pr b { display: inline-block; width: 14px; text-align: center; margin-right: 4px; }
 #openic-root .oic-pr-error b { color: var(--text-bad); }
 #openic-root .oic-pr-warn b { color: var(--text-warn); }
+#openic-root .oic-pr-ok b { color: var(--text-ok); }
+#openic-root .oic-test { padding: 4px 8px; margin: 2px 0 4px; border-left: 3px solid var(--accent-cyan); background: var(--tint-accent); border-radius: 3px; }
+#openic-root .oic-testrow { flex-wrap: wrap; gap: 4px; }
+#openic-root .oic-when { border: 1px solid var(--border-dark); border-radius: 4px; padding: 4px 6px; margin: 4px 0 8px; background: var(--bg-content); }
+#openic-root .oic-cond { border-left: 3px solid var(--accent-purple); padding: 3px 6px; margin: 4px 0; background: var(--tint-hover); border-radius: 3px; }
+#openic-root .oic-cond-w { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+#openic-root .oic-cond-w i { color: var(--text-warn); font-style: normal; }
+#openic-root .oic-cond-w .oic-x { margin-left: auto; cursor: pointer; color: var(--text-secondary); }
+#openic-root .oic-cond-f { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+#openic-root .oic-cond-f span { min-width: 92px; color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); overflow-wrap: anywhere; }
+#openic-root .oic-cond-f input[type=text], #openic-root .oic-cond-f input[type=number], #openic-root .oic-cond-f select { flex: 1; min-width: 0; }
+#openic-root .oic-cond-add { width: 100%; margin-top: 4px; }
+#openic-root .oic-pr-ok { background: rgba(127, 220, 154, 0.10); }
 #openic-root .oic-pr-info b { color: var(--accent-cyan); }
 #openic-root .oic-pr-error { background: var(--tint-bad); }
 #openic-root .oic-line { display: flex; gap: 10px; align-items: baseline; padding: 1px 0; }
@@ -229,7 +242,7 @@
 #openic-root .fv-tools .fv-tmenu span:last-child { margin-bottom: 0; }
 #openic-root .fv-tools .fv-tmenu span.fv-on { color: var(--accent-cyan); }
 #openic-root .fv-tools .fv-tmenu span.fv-on::before { content: "\2713"; position: absolute; left: 7px; }
-#openic-root .fv-parts { margin-right: 250px; }
+#openic-root .fv-parts { margin-right: 250px; max-height: none; overflow: visible; }
 #openic-root .fv-bar span, #openic-root .fv-pc { font-size: calc(12px * var(--oic-txt, 1)); }
 /* the add-a-step strip: docked along the bottom, the width of the chart, never over a box's middle */
 #openic-root .fv-pal { left: 0; right: 0; bottom: 0; max-width: none; border-radius: 0; border-width: 1px 0 0 0; padding: 4px 8px; }
@@ -255,7 +268,9 @@
 #openic-root .oic-wl-acts { margin: 6px 0 2px 22px; }
 /* the right side: three tabs */
 #openic-root .oic-sidewrap { width: 380px; flex: none; display: flex; flex-direction: column; min-height: 0; border-left: 1px solid var(--border-dark); background: var(--bg-panel); }
-#openic-root .oic-side { width: auto; flex: 1 1 auto; border-left: none; }
+#openic-root .oic-side { width: auto; flex: 1 1 auto; border-left: none; overflow-x: hidden; min-width: 0; }
+#openic-root .oic-side select, #openic-root .oic-side input, #openic-root .oic-side textarea { max-width: 100%; }
+#openic-root .oic-side small, #openic-root .oic-side .oic-words, #openic-root .oic-side .oic-runs { overflow-wrap: break-word; word-wrap: break-word; }
 #openic-root .oic-tabs { display: flex; border-bottom: 1px solid var(--border-dark); background: var(--bg-content); }
 #openic-root .oic-tabs span { flex: 1; text-align: center; padding: 7px 4px; cursor: pointer; color: var(--text-secondary); font-size: calc(12.5px * var(--oic-txt, 1)); border-bottom: 2px solid transparent; }
 #openic-root .oic-tabs span:hover { color: var(--text-primary); background: var(--tint-hover); }
@@ -301,7 +316,7 @@
     <span class="oic-sep"></span>
     <button class="oic-btn" id="openic-undo" data-oic="undo" title="Undo the last change (Ctrl+Z)">Undo</button>
     <button class="oic-btn" id="openic-redo" data-oic="redo" title="Redo (Ctrl+Y)">Redo</button>
-    <button class="oic-btn" id="openic-checkbtn" data-oic="check" title="What would stop Ogre loading this file: click to see the list under the chart">Problems</button>
+    <button class="oic-btn" id="openic-checkbtn" data-oic="check" title="The file checked as you edit: what would stop Ogre loading it, and what to look at. Under the list, Ask Ogre gets Ogre's own word on the saved file">Validate</button>
     <span class="oic-sep"></span>
     <button class="oic-btn" data-oic="game" title="Reload your files in Ogre, run or queue this zone file, start a fight's setup; ISXJQB and ISXADD extras">Use in game &#9662;</button>
     <span style="flex:1;"></span>
@@ -363,7 +378,7 @@
     <input type="hidden" id="openic-arg-root"><input type="hidden" id="openic-arg-name">
     <textarea id="openic-arg-text"></textarea>
     <input type="hidden" id="openic-msg-ext"><input type="hidden" id="openic-msg-me"><input type="hidden" id="openic-msg-say">
-    <input type="hidden" id="openic-msg-route"><input type="hidden" id="openic-msg-map"><textarea id="openic-msg-check"></textarea><textarea id="openic-msg-file"></textarea><textarea id="openic-msg-list"></textarea>
+    <input type="hidden" id="openic-msg-route"><input type="hidden" id="openic-msg-map"><input type="hidden" id="openic-msg-verify"><input type="hidden" id="openic-msg-test"><textarea id="openic-msg-check"></textarea><textarea id="openic-msg-file"></textarea><textarea id="openic-msg-list"></textarea>
     <input type="hidden" id="openic-assets-got">
   </div>
 </div>
@@ -523,7 +538,7 @@
     var L = H.handlers[channel] || [];
     for (var i = 0; i < L.length; i++) { try { L[i](payload); } catch (e) { H.toast('Could not read what the game sent (' + channel + '): ' + e.message, 'err'); } }
   }
-  H.CHANNELS = ['ext', 'me', 'file', 'say', 'route', 'check', 'list', 'map'];
+  H.CHANNELS = ['ext', 'me', 'file', 'say', 'route', 'check', 'list', 'map', 'verify', 'test'];
   H.bind = function () {
     for (var i = 0; i < H.CHANNELS.length; i++) (function (ch) {
       var el = $('openic-msg-' + ch);
@@ -5672,6 +5687,8 @@
       '.fv-root{--fv-hover:color-mix(in srgb, var(--accent-cyan,#99ccff) 20%, var(--bg-content,#121a2b));--fv-hot:color-mix(in srgb, var(--accent-cyan,#99ccff) 30%, var(--bg-deep,#0b1120));position:relative;overflow:hidden;background:var(--bg-deep,#0b1120);border:1px solid var(--border-med,rgba(120,140,170,0.25));border-radius:4px;user-select:none;-webkit-user-select:none;cursor:grab;}',
       '.fv-root.fv-panning{cursor:grabbing;}',
       '.fv-canvas{position:absolute;left:0;top:0;transform-origin:0 0;-webkit-transform-origin:0 0;}',
+      '.fv-scroll{position:absolute;left:0;top:0;right:-30px;bottom:-30px;overflow:scroll;}',
+      '.fv-spacer{position:absolute;left:0;top:0;width:' + (2 * SCROLL_HOME) + 'px;height:' + (2 * SCROLL_HOME) + 'px;}',
       '.fv-svg{position:absolute;left:0;top:0;pointer-events:none;}',
       '.fv-node{position:absolute;box-sizing:border-box;background:var(--bg-content,#121a2b);border:1px solid;border-left-width:4px;border-radius:6px;padding:4px 8px 3px 8px;color:var(--text-bright,#dfe7f3);font-family:"Segoe UI",Tahoma,sans-serif;overflow:hidden;cursor:pointer;}',
       '.fv-node:hover{background:var(--bg-hover,#18233a);}',
@@ -5838,7 +5855,7 @@
     V.O.abOff = v.abicons === false;
     if (F.palPrep) F.palPrep(V);
     if (host.className.indexOf('fv-root') < 0) host.className = (host.className ? host.className + ' ' : '') + 'fv-root';
-    var h = '<div class="fv-canvas" style="width:' + Math.ceil(V.O.w) + 'px;height:' + Math.ceil(V.O.h) + 'px;">' + F.html(V.O, g, opts) + '</div>';
+    var h = '<div class="fv-scroll"><div class="fv-spacer"></div><div class="fv-canvas" style="width:' + Math.ceil(V.O.w) + 'px;height:' + Math.ceil(V.O.h) + 'px;">' + F.html(V.O, g, opts) + '</div></div>';
     var empty = !(g.cards && g.cards.length);
     for (i = 0; i < (g.lanes || []).length; i++) if ((g.lanes[i].items || []).length) empty = false;
     if (empty) h += '<div class="fv-empty">' + esc(m === 'part' ? 'Nothing in this part yet.' : (opts.emptyText || 'Nothing here yet.')) + '</div>';
@@ -5871,7 +5888,9 @@
     }
     if (m !== 'parts') h += miniHtml(V);
     host.innerHTML = h;
-    V.canvas = host.firstChild;
+    V.scroller = host.firstChild;
+    V.canvas = V.scroller.lastChild;
+    scrollHome(V);
     var q = function (sel) { return host.querySelector ? host.querySelector(sel) : null; };
     V.els = { mini: q('.fv-mini'), zr: q('.fv-zr'), legend: q('.fv-legend'), pal: q('.fv-pal'),
       regs: V.canvas.querySelectorAll ? V.canvas.querySelectorAll('.fv-reg') : [], chips: host.querySelectorAll ? host.querySelectorAll('.fv-pc') : [] };
@@ -5887,11 +5906,40 @@
     }
     applyView(V);
   }
+  var SCROLL_HOME = 20000;
+  function scrollHome(V) {
+    var s = V.scroller;
+    if (!s) return;
+    s.scrollLeft = SCROLL_HOME;
+    s.scrollTop = SCROLL_HOME;
+    V.sx = s.scrollLeft || 0;
+    V.sy = s.scrollTop || 0;
+  }
+  function scrolled(V) {
+    var s = V.scroller, host = V.host;
+    if (!s) return;
+    var dx = (s.scrollLeft || 0) - (V.sx || 0), dy = (s.scrollTop || 0) - (V.sy || 0);
+    V.sx = s.scrollLeft || 0;
+    V.sy = s.scrollTop || 0;
+    if (!dx && !dy) return;
+    var v = V.view, z = v.z, W = host.clientWidth || 800, H = host.clientHeight || 500, O = V.O || { w: 0, h: 0 };
+    if (dy) {
+      var lo = Math.min(V.top || 34, H - 60 - O.h * z), hi = (V.top || 34) + 40, ny = v.y - dy;
+      v.y = dy > 0 ? Math.min(v.y, Math.max(lo, ny)) : Math.max(v.y, Math.min(hi, ny));
+    }
+    if (dx && O.w * z > W - 20) {
+      var lx = W - 40 - O.w * z, nx = v.x - dx;
+      v.x = dx > 0 ? Math.min(v.x, Math.max(lx, nx)) : Math.max(v.x, Math.min(40, nx));
+    }
+    applyView(V);
+    clearTimeout(V.homeT);
+    V.homeT = setTimeout(function () { scrollHome(V); applyView(V); if (V.opts.onView) V.opts.onView(V.view); }, 300);
+  }
   function applyView(V) {
     if (!V.canvas) return;
     var v = V.view, z = v.z, t = 'scale(' + z.toFixed(3) + ')', E = V.els || {}, host = V.host, W = host.clientWidth || 800, H = host.clientHeight || 500, i;
-    V.canvas.style.left = Math.round(v.x) + 'px';
-    V.canvas.style.top = Math.round(v.y) + 'px';
+    V.canvas.style.left = Math.round(v.x + (V.sx || 0)) + 'px';
+    V.canvas.style.top = Math.round(v.y + (V.sy || 0)) + 'px';
     V.canvas.style.transform = t;
     V.canvas.style.webkitTransform = t;
     if (E.zr) E.zr.textContent = Math.round(z * 100) + '%';
@@ -6187,22 +6235,18 @@
       }
     });
     function wheel(e, dy) {
+      if (!e.ctrlKey) return;
       if (e.preventDefault) e.preventDefault();
       var now = Date.now();
       if (V._lastWheel && now - V._lastWheel < 8) return;
       V._lastWheel = now;
       var m = local(V, e);
-      if (e.ctrlKey) zoomAt(V, dy < 0 ? 1.12 : 1 / 1.12, m[0], m[1]);
-      else {
-        var step = (dy < 0 ? -1 : 1) * 90, hh = V.host.clientHeight || 500, ww = V.host.clientWidth || 800, z = V.view.z;
-        if (e.shiftKey) V.view.x = Math.max(ww - 80 - (V.O ? V.O.w * z : 0), Math.min(ww - 80, V.view.x - step));
-        else V.view.y = Math.max(hh - 80 - (V.O ? V.O.h * z : 0), Math.min(hh - 80, V.view.y - step));
-        applyView(V);
-      }
+      zoomAt(V, dy < 0 ? 1.12 : 1 / 1.12, m[0], m[1]);
       if (V.opts.onView) V.opts.onView(V.view);
     }
     host.addEventListener('wheel', function (e) { wheel(e, e.deltaY || 0); });
     host.addEventListener('mousewheel', function (e) { wheel(e, -(e.wheelDelta || 0)); });
+    host.addEventListener('scroll', function (e) { if (e.target === V.scroller) scrolled(V); }, true);
   }
 })(typeof window !== 'undefined' ? window : this);
 
@@ -6924,6 +6968,8 @@
       if (o.member) return V(o.member, 26) + (neg ? ' is not cursed' : ' is cursed');
       return 'the ' + (o.uncurable ? 'uncurably ' : '') + 'cursed players in ' + (o.scope === 'raid' ? 'the raid' : (o.scope === 'group' ? 'my group' : 'range')) + ' number ' + c + n;
     }
+    if (of === 'roster' && (o.compare == null || o.compare === '>=') && (o.value == null || +o.value === 1) && !(o.valueOf && typeof o.valueOf === 'object'))
+      return (o.scope === 'raid' ? 'the raid has ' : 'the group has ') + (neg ? 'no ' : 'a ') + Wd().split(o.is).toLowerCase();
     if (of === 'roster') return 'the ' + Wd().split(o.is) + (/s$/.test(str(o.is)) ? '' : 's') + ' in ' + (o.scope === 'raid' ? 'the raid' : 'my group') + ' number ' + c + n;
     return 'there are ' + c + n + ' of ' + (o.find ? Wd().find(o.find) : Wd().query(o.of));
   }
@@ -10472,6 +10518,9 @@
         if (d === 'teleporter' && !has(st, 'name') && !has(st, 'walkOnto')) say('error', path, 'teleporter: give its name, or walkOnto and landing.');
         if (d === 'named' && st.stepId && !/^named\d+(\.|$)/.test(str(st.stepId))) say('info', path, 'A named\'s stepId reads best as named1, named2 ...: Skip the boss and part-way starts go by it.');
         if (kind === 'zone' && Z.ONE_BOX[d]) say('info', path, d + ' in a zone file changes the IC character only: it cannot be sent to the others. For every box, put it in the named\'s fight file.');
+        /* Ogre's load refuses this one (its reload of 2026-11-17 skipped seven files for it) */
+        if (kind === 'zone' && d === 'heroicOpportunity' && has(st, 'sendTo') && ['disableIcon', 'allowIcon', 'clearIcons'].indexOf(str(st.op)) < 0)
+          say('error', path, 'heroicOpportunity: Send to works only with op disableIcon, allowIcon or clearIcons: Ogre skips the whole file. Take Send to off, or use a fight file (forwho) for the others.');
         if (d !== 'template') checkKeys(st, path, kind === 'fight' ? withAwait(keys) : keys, what, 'warn');
         if (zoneVerb) checkTyped(st, path, keys, d);
         if (has(st, 'wait')) say('warn', path, 'A step has either do or wait, not both.');
@@ -11102,7 +11151,7 @@
     if (u) u.disabled = !s.undo.length;
     if (r) r.disabled = !s.redo.length;
     var c = Z().counts(s.probs), b = $('openic-checkbtn');
-    if (b) { b.textContent = s.doc ? (c.error ? c.error + ' problem' + (c.error === 1 ? '' : 's') : 'No problems') + (c.warn ? ', ' + c.warn + ' to check' : '') : 'Problems'; b.className = 'oic-btn' + (c.error ? ' oic-bad' : (c.warn ? ' oic-warnb' : '')); }
+    if (b) { b.textContent = 'Validate' + (s.doc ? ': ' + (c.error ? c.error + ' problem' + (c.error === 1 ? '' : 's') : 'no problems') + (c.warn ? ', ' + c.warn + ' to check' : '') : ''); b.className = 'oic-btn' + (c.error ? ' oic-bad' : (c.warn ? ' oic-warnb' : '')); }
     var segs = document.querySelectorAll('#openic-views [data-oic-view]');
     for (var i = 0; i < segs.length; i++) segs[i].className = segs[i].getAttribute('data-oic-view') === s.view ? 'oic-on' : '';
     var views = ['flow', 'words', 'json', 'map'];
@@ -11300,8 +11349,8 @@
     var el = $('openic-problems'), s = A.st;
     if (!el) return;
     if (!s.doc) { el.innerHTML = ''; return; }
-    var c = Z().counts(s.probs), h = '<div class="oic-ph">' + (s.probs.length ? 'Checks: ' + c.error + ' problem' + (c.error === 1 ? '' : 's') + ', ' + c.warn + ' to check, ' + c.info + ' tip' + (c.info === 1 ? '' : 's') + '.' :
-      'Checks: nothing found.') + (s.kind !== 'jb' ? ' Then Reload in Ogre: its log line is the final word.' : '') + '</div>';
+    var c = Z().counts(s.probs), h = (A.testHtml ? A.testHtml() : '') + '<div class="oic-ph">' + (s.probs.length ? 'Checks: ' + c.error + ' problem' + (c.error === 1 ? '' : 's') + ', ' + c.warn + ' to check, ' + c.info + ' tip' + (c.info === 1 ? '' : 's') + '.' :
+      'Checks: nothing found.') + (s.kind === 'zone' || s.kind === 'fight' ? ' Ogre\'s own word: <span class="oic-link" data-oic="ogre-ask" title="In game: Ogre checks the saved file (or reloads your zone files) and says whether it loads">Ask Ogre about this file</span>' : '') + '</div>';
     for (var i = 0; i < s.probs.length && i < 200; i++) {
       var p = s.probs[i];
       h += '<div class="oic-pr oic-pr-' + p.level + '"' + (p.ref ? ' data-oic-ref="' + esc(p.ref) + '"' : '') + '><b>' + (p.level === 'error' ? '!' : (p.level === 'warn' ? '?' : 'i')) + '</b>' +
@@ -11453,6 +11502,7 @@
     else if (v === 'undo') A.undo();
     else if (v === 'redo') A.redo();
     else if (v === 'check') { A.refresh(); var pe = $('openic-problems'); if (pe && pe.scrollIntoView) pe.scrollIntoView({ block: 'nearest' }); }
+    else if (v === 'ogre-ask') A.ogreAsk();
     else if (v === 'game') { if (menu && menu.style.display === 'block') A.closeMenu(); else A.gameMenu(anchor); }
     else if (v.indexOf('view:') === 0) { A.st.view = v.slice(5); A.refresh(); if (A.st.view === 'flow' && A.st.chart) setTimeout(function () { A.st.chart.fit(); }, 30); }
     else if (v === 'json-apply') A.applyJson();
@@ -11478,6 +11528,7 @@
       if (t.getAttribute('data-oic-field') != null) A.setField(t.getAttribute('data-oic-field'), t.value);
       else if (t.getAttribute('data-oic-tick') != null) A.setTick(t.getAttribute('data-oic-tick'), t.checked);
       else if (t.getAttribute('data-oic-sf') != null) A.setStepField(t.getAttribute('data-oic-sf'), t.type === 'checkbox' ? t.checked : t.value);
+      else if (t.getAttribute('data-oic-cf') != null && A.setCondField) A.setCondField(t.getAttribute('data-oic-cf'), t.type === 'checkbox' ? t.checked : t.value);
       else if (t.id === 'openic-file') A.readFile(t.files && t.files[0]);
     });
     root0.addEventListener('input', function (e) { if (e.target.id === 'openic-json') e.target._dirty = true; else if (A.onInput) A.onInput(e); });
@@ -11747,16 +11798,19 @@
     var items = [{ head: 'OgreBot' }];
     items.push({ label: 'Reload zone files (ogre ic reload)', run: function () { A.game('Reload', { kind: 'zone' }, L.reloadZone); } });
     items.push({ label: 'Reload fight files (ogre encounter reload)', run: function () { A.game('Reload', { kind: 'fight' }, L.reloadFight); } });
-    var canCheck = A.ogreCanCheck();
-    if (zone || fight) items.push({ label: 'Check this file by Ogre\'s own rules' + (canCheck ? '' : ' (this Ogre has no file check yet)'),
+    var canCheck = A.ogreCanCheck(), byReload = inGame && zone && !canCheck;
+    if (zone || fight) items.push({ label: 'Ask Ogre about this file' + (canCheck || byReload ? '' : ' (this Ogre has no fight-file check yet)'),
       tip: canCheck ? 'Ogre checks the file as saved: it loads nothing and changes nothing, it only says whether the file would load'
-        : 'ISXOgreEQ2\'s Validate is newer than the Ogre loaded: Reload lists the problems instead',
-      off: !canCheck, run: A.ogreCheck });
+        : (byReload ? 'Ogre reloads your zone files (as Reload does) and the page reads what it said about this one, and which files claim the zone'
+          : 'ISXOgreEQ2\'s Validate is newer than the Ogre loaded: Reload fight files lists the problems in the console'),
+      off: !canCheck && !byReload, run: A.ogreAsk });
     if (zone) {
       items.push({ label: 'Queue this zone file', tip: L.queue('<path>'), run: function () { A.withGamePath('zone', function (p) { A.game('Queue', { path: p }, L.queue(p)); }); } });
       items.push({ label: 'Run this zone file now', tip: L.run('<path>'), run: function () { A.withGamePath('zone', function (p) { A.game('Run', { path: p }, L.run(p)); }); } });
     }
     if (fight) items.push({ label: 'Start the fight setup now', tip: L.setUp('<named>'), run: function () { var n = O().namedOf(s.doc); A.game('SetUp', { named: n }, L.setUp(n)); } });
+    if (fight) items.push({ label: 'Test this fight file now', tip: 'Ogre reloads its fight files (the saved file), then sets up for the named; the named must be up in this zone',
+      run: function () { if (A.fightTest) A.fightTest(); } });
     items.push({ head: 'ISXJQB' + (inGame && !e.jqb ? ' (not loaded)' : '') });
     items.push({ label: 'Run this file with ISXJQB (jb ic rundirect)', off: inGame && !e.jqb || fight, run: function () { A.withGamePath(s.kind, function (p) { A.game('JbRun', { path: p, kind: s.kind }, 'jb ic rundirect "' + p + '"'); }); } });
     if (zone) items.push({ label: 'Queue the zone in ISXJQB (jb ic queue)', off: inGame && !e.jqb, run: function () {
@@ -11847,7 +11901,83 @@
     A.renderProblems();
     H().toast(r.ok === true ? 'Ogre: the file would load.' : 'Ogre: the file would not load.', r.ok === true ? 'ok' : 'err');
   };
+  /* Ask Ogre: its own Validate when this Ogre has one; for a zone file without it, a reload, then what Ogre said about
+     this file and which loaded files claim the zone (OpenIC.iss OpenIC_OnVerify) */
+  A.ogreAsk = function () {
+    var s = A.st;
+    if (!s.doc || (s.kind !== 'zone' && s.kind !== 'fight')) { H().toast('Ogre checks zone files and fight files.', 'warn'); return; }
+    if (!H().inGame || A.ogreCanCheck()) { A.ogreCheck(); return; }
+    if (s.kind !== 'zone') { H().toast('This Ogre has no fight-file check yet: Reload fight files lists the problems in the console.', 'warn'); return; }
+    var tp = A.tierPath();
+    if (!tp) { H().toast('Ogre reads the file as saved: save it first (My zone files), then ask.', 'warn'); return; }
+    s.verify = { busy: true, kind: s.kind, file: tp.tier + '/' + tp.path, at: Date.now() };
+    H().call('Verify', { tier: tp.tier, path: tp.path, zone: str(s.doc.zone) });
+    H().toast('Ogre is reloading your zone files; its answer about this one comes in a moment.');
+    A.renderProblems();
+  };
+  /* its answer, a line at a time (OpenIC_SendVerify): begin|<tier>/<path>, s|<count line>, l|<a loaded file that
+     claims the zone>, p|<a line of Ogre's log about this file>, nolog|, end| */
+  function clean(t) { return str(t).replace(/\x07./g, '').replace(/^\[[\d:.]+\]\s*/, '').replace(/^\[Ogre\]\[IC\]\s*/, '').trim(); }
+  A.onVerify = function (p) {
+    var s = A.st, bar = str(p).indexOf('|'), k = bar < 0 ? str(p) : str(p).slice(0, bar), t = bar < 0 ? '' : str(p).slice(bar + 1), V = s.verify;
+    if (k === 'begin') { s.verify = V = { busy: true, kind: 'zone', file: t, count: '', list: [], lines: [], nolog: false, at: Date.now() }; return; }
+    if (!V || !V.list) return;
+    if (k === 's') V.count = clean(t);
+    else if (k === 'l') V.list.push(clean(t));
+    else if (k === 'p') V.lines.push(clean(t));
+    else if (k === 'nolog') V.nolog = true;
+    else if (k === 'end') {
+      V.busy = false;
+      A.verdict(V, s.doc);
+      A.renderProblems();
+      H().toast(V.loaded ? 'Ogre loaded this file' + (V.issues.length ? ', with ' + V.issues.length + ' note' + (V.issues.length === 1 ? '' : 's') : '') + '.' : 'Ogre did not load this file: the reasons are under the checks.',
+        V.loaded ? (V.issues.length || V.clash.length ? 'warn' : 'ok') : 'err');
+    }
+  };
+  /* what the lines say: loaded or not (the file among IC:List's), another file for the same zone and difficulty, and
+     each of Ogre's lines on the step it names ("steps[3]: path: ..." counts from 1) */
+  A.verdict = function (V, doc) {
+    var tier = /^default\//.test(V.file) ? 'default' : 'custom', rel = V.file.replace(/^(custom|default)\//, ''), tags = function (c) { return str(c).match(/\[[^\]]+\]/g) || []; };
+    var base = function (c) { return str(c).replace(/\s*\[[^\]]+\]/g, '').trim().toLowerCase(); };
+    V.loaded = false; V.mine = ''; V.clash = [];
+    var others = [];
+    V.list.forEach(function (l) {
+      var m = /^\[(custom|default)\]\s+(.+?)\s+->\s+(.+)$/.exec(l);
+      if (!m) return;
+      if (m[1] === tier && m[2] === rel) { V.loaded = true; V.mine = m[3]; } else others.push({ file: m[1] + '/' + m[2], claims: m[3] });
+    });
+    var mineZone = V.mine || (str(doc && doc.zone) + ' ' + (isArr(doc && doc.variants) ? doc.variants.join(' ') : ''));
+    others.forEach(function (o) {
+      var a = tags(mineZone), b = tags(o.claims), same = base(o.claims) === base(mineZone);
+      if (same && (!a.length || !b.length ? a.length === b.length : a.some(function (x) { return b.indexOf(x) >= 0; }))) V.clash.push(o);
+    });
+    V.issues = V.lines.map(function (l) {
+      var at = l.indexOf(V.file + ': '), msg = at >= 0 ? l.slice(at + V.file.length + 2) : l, ref = '';
+      var m = /^(steps|enter|exit)\[(\d+)\](?:\.steps\[(\d+)\])?:\s*([A-Za-z]+)?/.exec(msg);
+      if (m && doc) {
+        var path = [m[1], +m[2] - 1].concat(m[3] ? ['steps', +m[3] - 1] : []), st = IC.ogf && IC.ogf.at ? IC.ogf.at(doc, path) : null;
+        if (isObj(st) && (!m[4] || str(st['do']) === m[4] || !st['do'])) ref = JSON.stringify(path);
+      }
+      var soft = /degrades|nothing reads it|did you mean|warning/i.test(msg);
+      return { msg: msg, ref: ref, level: V.loaded || soft ? 'warn' : 'error' };
+    });
+  };
   A.ogreCheckHtml = function () {
+    var V = A.st.verify;
+    if (V && V.kind === A.st.kind) {
+      if (V.busy) return '<div class="oic-ph"><b>Ogre\'s answer:</b> Ogre is reloading your zone files...</div>';
+      var h = '<div class="oic-ph"><b>Ogre\'s answer</b> (it reloaded your zone files' + (V.count ? ': ' + esc(V.count) : '') + ')</div>' +
+        '<div class="oic-pr oic-pr-' + (V.loaded ? 'ok' : 'error') + '"><b>' + (V.loaded ? '&#10003;' : '!') + '</b>' +
+        (V.loaded ? 'Ogre loaded this file: ' + esc(V.mine) + '.' : 'Ogre did not load this file' + (V.issues.length ? ': the lines below say why.' : ' (it lists no file of that name: is it saved where Ogre reads?).')) + '</div>';
+      for (var i = 0; i < V.issues.length && i < 100; i++) {
+        var p = V.issues[i];
+        h += '<div class="oic-pr oic-pr-' + p.level + '"' + (p.ref ? ' data-oic-ref="' + esc(p.ref) + '"' : '') + '><b>' + (p.level === 'error' ? '!' : '?') + '</b>Ogre: ' + esc(p.msg) + '</div>';
+      }
+      for (var c = 0; c < V.clash.length; c++) h += '<div class="oic-pr oic-pr-warn"><b>?</b>Another loaded file claims the same zone and difficulty: ' + esc(V.clash[c].file) + ' (' + esc(V.clash[c].claims) +
+        '). Queued by name, Ogre picks one of them: a file of yours in custom over Ogre\'s own.</div>';
+      if (V.nolog) h += '<div class="oic-note">Ogre\'s log could not be read here, so its lines about this file are missing: Reload in the console shows them.</div>';
+      return h;
+    }
     var o = A.st.ogre;
     if (!o || o.ok == null || o.kind !== A.st.kind) return '';
     var h = '<div class="oic-ph"><b>Ogre\'s own check:</b> ' + (o.ok ? 'the file would load' : 'the file would not load') + ' (' + o.errors + ' error' + (o.errors === 1 ? '' : 's') +
@@ -11899,6 +12029,7 @@
       }
     });
     h.on('say', function (p) {
+      if (A.testSaid && A.testSaid(p)) return;
       if (/^ok:saved/.test(p) && A._saving) {
         A.st.saved = A._saving; A._saving = null;
         if (A._savingTo) { A.st.gamePath = A._savingTo.gamePath; if (A._savingTo.where) A.st.where = A._savingTo.where; A._savingTo = null; }
@@ -11908,6 +12039,8 @@
     });
     h.on('list', function (p) { if (A.onList) A.onList(p); });
     h.on('map', function (p) { if (A.onMapMsg) A.onMapMsg(p); });
+    h.on('verify', function (p) { A.onVerify(p); });
+    h.on('test', function (p) { if (A.onTest) A.onTest(p); });
     h.on('check', function (p) { A.ogreResult(p); });
     h.on('route', function (p) {
       var pts = str(p).split(';').map(function (t) { return t.split(',').map(Number); }).filter(function (q) { return q.length === 3 && q.every(isFinite); });
@@ -12262,8 +12395,9 @@
   A.renderNav = function () {
     var nav = $('openic-nav'), s = A.st;
     if (!nav) return;
-    if (!s.doc || (s.view !== 'words' && s.view !== 'flow')) { nav.style.display = 'none'; return; }
-    if (s.view === 'flow' || !A._secs) { var W0 = IC.words || {}; A._secs = []; Z().lines(A.graphNow(false)).forEach(function (L, i, all) { if (L.lane || L.head) A._secs.push({ title: plain(L.text), node: (all[i + 1] || {}).id || L.id || '' }); }); }
+    /* the Steps view only: the Chart has its own chips for its parts */
+    if (!s.doc || s.view !== 'words') { nav.style.display = 'none'; return; }
+    if (!A._secs) { A._secs = []; Z().lines(A.graphNow(false)).forEach(function (L, i, all) { if (L.lane || L.head) A._secs.push({ title: plain(L.text), node: (all[i + 1] || {}).id || L.id || '' }); }); }
     if (A._secs.length < 2) { nav.style.display = 'none'; return; }
     var h = '<span class="oic-note">Jump to:</span>';
     for (var i = 0; i < A._secs.length; i++) h += '<span class="oic-jump" data-oic="ed:jump:' + i + '">' + esc(A._secs[i].title) + '</span>';
@@ -12331,6 +12465,7 @@
   var FAMILY = { warrior: ['Guardian', 'Berserker'], crusader: ['Paladin', 'Shadowknight'], brawler: ['Monk', 'Bruiser'], cleric: ['Templar', 'Inquisitor'],
     druid: ['Warden', 'Fury'], shaman: ['Mystic', 'Defiler'], sorcerer: ['Wizard', 'Warlock'], enchanter: ['Illusionist', 'Coercer'], summoner: ['Conjuror', 'Necromancer'],
     rogue: ['Swashbuckler', 'Brigand'], bard: ['Troubador', 'Dirge'], predator: ['Ranger', 'Assassin'], animalist: ['Beastlord'], shaper: ['Channeler'] };
+  A.WHO = WHO; A.FAMILY = FAMILY; A.whoSay = whoSay;
   /* "the group has one", as Ogre's own fight files write it: a count of the roster by archetype, class or role */
   A.hasCond = function (who) {
     var w = str(who).trim(), lw = w.toLowerCase(), cnt = function (by, is) { return { count: { of: 'roster', scope: 'group', by: by, is: is, compare: '>=', value: 1 } }; };
@@ -12396,9 +12531,16 @@
       if (has(st, 'name')) gb += '<button class="oic-btn" data-oic="here:name" title="Use your current target\'s name">My target</button>';
       if (gb) h += '<div class="oic-row">' + gb + '</div>';
     }
+    if (A.testRowHtml) h += A.testRowHtml(st, JSON.parse(s.sel));
     var sp = A.stepSpec(st), K = sp && sp.keys ? sp.keys : null;
+    /* who does it, only if, repeat: first, in words (openic-cond.js); the form below leaves those keys out */
+    var WHEN = { forwho: 1, sendTo: 1, when: 1 };
+    if (A.whenHtml && isObj(st) && (s.kind === 'zone' || s.kind === 'fight')) {
+      var whoKeys = ['forwho', 'sendTo'].filter(function (k) { return (K && has(K, k)) || has(st, k) || (k === 'forwho' && s.kind === 'fight'); });
+      h += A.whenHtml(st, JSON.parse(s.sel), whoKeys);
+    } else WHEN = {};
     if (K && isObj(st)) {
-      var keys = Object.keys(K), main = '', more = '';
+      var keys = Object.keys(K).filter(function (k) { return !WHEN[k]; }), main = '', more = '';
       keys.sort(function (a, b) { var ra = (K[a].required ? 0 : (has(st, a) ? 1 : 2)), rb = (K[b].required ? 0 : (has(st, b) ? 1 : 2)); return ra - rb || (a < b ? -1 : 1); });
       for (var k = 0; k < keys.length; k++) {
         var row = A.fieldHtml(keys[k], K[keys[k]] || {}, st);
@@ -12424,7 +12566,9 @@
     else if (t === 'loc') input = '<input type="text" data-oic-sf="' + key + '|loc" value="' + esc(isArr(v) ? v.join(', ') : str(v)) + '" placeholder="x, y, z">';
     else if (t === 'string' || t === 'row' || t === 'string|int') input = '<input type="text" data-oic-sf="' + key + '|string" value="' + esc(v == null ? '' : v) + '" spellcheck="false">';
     else input = '<textarea data-oic-sf="' + key + '|json" class="oic-ta oic-ta-s" spellcheck="false">' + esc(v === undefined ? '' : JSON.stringify(v, null, 1)) + '</textarea>';
-    return '<div class="oic-key oic-field' + (set ? ' oic-key-set' : '') + '">' + lab + input + (ks.about ? '<small>' + esc(about(ks.about)) + '</small>' : '') + '</div>';
+    /* a line that only lists an op list's values says nothing the op's own words do not */
+    var listOnly = t === 'enum' && ks.valuesAbout && !str(ks.about).replace(new RegExp('\\b(' + (ks.values || []).map(function (x) { return str(x).replace(/[^\w]/g, ''); }).filter(Boolean).join('|') + '|or|and)\\b', 'g'), '').replace(/[\s,.;]/g, '');
+    return '<div class="oic-key oic-field' + (set ? ' oic-key-set' : '') + '">' + lab + input + (ks.about && !listOnly ? '<small>' + esc(about(ks.about)) + '</small>' : '') + '</div>';
   };
   /* a field changed: the step takes the value (empty = the key goes, unless it is needed) */
   A.setStepField = function (spec0, val) {
@@ -12677,7 +12821,9 @@
     var fl = '';
     if (floors.length > 1) { fl = ' <span class="oic-note">Floor:</span>'; floors.forEach(function (f, k) { fl += ' <span class="oic-jump' + (k === fi ? ' oic-on' : '') + '" data-oic="map:floor:' + k + '">' + esc(floorWord(f, k)) + '</span>'; }); }
     note.innerHTML = esc(pts.length + ' spot' + (pts.length === 1 ? '' : 's') + ' from the file, seen from above as the game\'s map shows it' + (route.length ? '; the dashed line is the route ISXADD found' : '') +
-      (me ? '; the square is you' : '') + '. Click a dot to pick its step. Wheel: zoom, drag: move. ') + '<span class="oic-link" data-oic="map:fit">Fit</span>' + fl + artNote(token, here, fz, F, art);
+      (me ? '; the square is you' : '') + '. Click a dot to pick its step; drag to move. ') +
+      '<span class="oic-jump" data-oic="map:out" title="Zoom out">&#8722;</span> <span class="oic-jump" data-oic="map:in" title="Zoom in">+</span> ' +
+      '<span class="oic-jump" data-oic="map:fit" title="Show all of it">Fit</span>' + fl + artNote(token, here, fz, F, art);
   };
   /* where the map picture comes from, or why there is none */
   function artNote(token, here, fz, F, art) {
@@ -12696,8 +12842,422 @@
   A.editClick = function (v, el) {
     var m;
     if (v === 'map:fit') { A.mapFit(); return true; }
+    /* zoom about the middle: in game the wheel may never reach the page (Ogre's windows scroll natively) */
+    if (v === 'map:in' || v === 'map:out') { var V0 = A.mapView, f = v === 'map:in' ? 1.25 : 0.8, nk = Math.max(0.25, Math.min(60, V0.k * f)); f = nk / V0.k; V0.ox *= f; V0.oy *= f; V0.k = nk; redraw(); return true; }
     if ((m = /^map:floor:(\d+)$/.exec(v))) { A.jmap.pick = +m[1]; A.mapView = { k: 1, ox: 0, oy: 0 }; redraw(); return true; }
     return ec0 ? ec0(v, el) : false;
+  };
+})(typeof window !== 'undefined' ? window : this);
+
+})(OpenIC_LIB, OpenIC_LIB.document, OpenIC_LIB.setInterval, OpenIC_LIB.IC.host.shims.sendCommand, OpenIC_LIB.IC.host.shims.requestFileWith, OpenIC_LIB.IC.host.shims.requestDirWith, OpenIC_LIB.IC.host.shims.lazyLoadJS, OpenIC_LIB.IC.host.shims.colToast, OpenIC_LIB.IC.host.shims.jbAlert, OpenIC_LIB.IC.host.shims.jbConfirm, OpenIC_LIB.IC.host.shims.jbPrompt, OpenIC_LIB.IC.host.shims.invItemIcon, OpenIC_LIB.IC.host.shims.jbClassIcon, OpenIC_LIB.IC.host.shims.escHtml, OpenIC_LIB.IC.host.shims.escJs, OpenIC_LIB.IC.host.shims.unescJs, OpenIC_LIB.IC.host.shims.jbTipAttr, OpenIC_LIB.IC.host.shims.jbDispName, OpenIC_LIB.IC.host.shims._getPos, OpenIC_LIB.IC.host.shims._getTarget, OpenIC_LIB.IC.host.shims.jbDropdown, OpenIC_LIB.IC.host.shims.jbVal, OpenIC_LIB.IC.host.shims.jbSetVal, OpenIC_LIB.IC.host.shims.jbSetOptions);
+</script>
+<script>
+(function (window, document, setInterval, sendCommand, requestFileWith, requestDirWith, lazyLoadJS, colToast, jbAlert, jbConfirm, jbPrompt, invItemIcon, jbClassIcon, escHtml, escJs, unescJs, jbTipAttr, jbDispName, _getPos, _getTarget, jbDropdown, jbVal, jbSetVal, jbSetOptions) {
+/* Open IC Creator - openic-cond.js
+   When and who, at the top of This step: who does it (with a backup for a group without that class), Only if (the
+   step's when: picked from the common conditions or all of Ogre's, each in words with its settings, all of them or
+   any of them, each one turned round with "not"), and Repeat (a number of times, until something is true, or while
+   it is: the step goes inside a repeat block, as Ogre's files write it; "while" is a repeat until it no longer holds,
+   with the same check on the block so it is skipped when false from the start).
+   MIT License, see LICENSE. */
+(function (root) {
+  var IC = root.IC = root.IC || {};
+  var A = IC.app = IC.app || {};
+
+  function str(v) { return v == null ? '' : String(v); }
+  function isArr(v) { return Object.prototype.toString.call(v) === '[object Array]'; }
+  function isObj(v) { return v != null && typeof v === 'object' && !isArr(v); }
+  function has(o, k) { return isObj(o) && Object.prototype.hasOwnProperty.call(o, k); }
+  function esc(s) { return str(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function kindOf(c) { if (!isObj(c)) return ''; for (var k in c) if (has(c, k) && k.charAt(0) !== '_') return k; return ''; }
+  function V() { return IC.vocab || { conditions: {} }; }
+
+  /* the common ones first, each ready to fill in (the shapes Ogre's own files use) */
+  A.COND_PRESETS = [
+    { key: 'group', label: 'The group has a class or archetype', make: function () { return A.hasCond('priest'); } },
+    { key: 'near', label: 'Something is near (by name)', make: function () { return { count: { of: 'actors', find: { query: 'Name == "" && Distance < 30' }, compare: '>=', value: 1 } }; } },
+    { key: 'combat', label: 'I am in combat', make: function () { return { inCombat: {} }; } },
+    { key: 'engaged', label: 'The named is in combat', make: function () { return { engaged: { named: '' } }; } },
+    { key: 'hp', label: 'The named\'s health is at or below a %', make: function () { return { mobHealthPct: { named: '', compare: '<=', value: 50 } }; } },
+    { key: 'det', label: 'I have a detriment', make: function () { return { hasDet: { det: '' } }; } },
+    { key: 'camp', label: 'I stand on my camp spot', make: function () { return { atCampSpot: {} }; } },
+    { key: 'var', label: 'A saved value is', make: function () { return { varEquals: { scope: 'encounter', name: '', value: '' } }; } },
+    { key: 'option', label: 'An OgreBot option is on', make: function () { return { option: { id: '', value: true } }; } },
+    { key: 'zone', label: 'The zone is', make: function () { return { zone: { is: '' } }; } },
+    { key: 'timer', label: 'A timer has run out', make: function () { return { timerExpired: { name: '' } }; } }
+  ];
+  var COMPARE = ['<', '<=', '==', '!=', '>=', '>'];
+
+  /* a list of conditions as the editor holds it: all or any, each { cond, not } */
+  function readList(list) {
+    var L = isArr(list) ? list : (list == null ? [] : [list]), mode = 'all';
+    /* one "or" is "any of these", unless it is a class family ("a bard": a troubador or a dirge), which is one condition */
+    if (L.length === 1 && isObj(L[0]) && isArr(L[0].or) && rosterWho(L[0]) === null) { mode = 'any'; L = L[0].or; }
+    return { mode: mode, items: L.map(function (c) { return isObj(c) && isArr(c.not) && c.not.length === 1 ? { cond: c.not[0], not: true } : { cond: c, not: false }; }) };
+  }
+  function writeList(R) {
+    var L = R.items.map(function (it) { return it.not ? { not: [it.cond] } : it.cond; });
+    if (!L.length) return undefined;
+    return R.mode === 'any' && L.length > 1 ? [{ or: L }] : L;
+  }
+  /* the repeat block the picked step sits in alone, if any */
+  function wrapPath(path) {
+    if (path.length < 2 || path[path.length - 2] !== 'steps') return null;
+    var pp = path.slice(0, -2), R = IC.ogf.at(A.st.doc, pp);
+    return isObj(R) && isObj(R.repeat) && isArr(R.steps) && R.steps.length === 1 ? pp : null;
+  }
+  function repeatMode(R) {
+    var r = R && R.repeat;
+    if (!r) return 'once';
+    if (r.times != null) return 'times';
+    var u = isArr(r.until) ? r.until : [];
+    return u.length === 1 && isObj(u[0]) && isArr(u[0].not) ? 'while' : 'until';
+  }
+  /* where each condition list of the picked step lives: "when" (Only if) or "until" (Repeat) */
+  function target(doc, path, which) {
+    if (which === 'when') return { node: IC.ogf.at(doc, path), get: function (n) { return n.when; }, set: function (n, v) { if (v === undefined) delete n.when; else n.when = v; } };
+    var pp = wrapPath(path), R = pp ? IC.ogf.at(doc, pp) : null;
+    if (!R) return null;
+    return { node: R, get: function (n) { var u = n.repeat.until; return repeatMode(n) === 'while' ? u[0].not : u; },
+      set: function (n, v) {
+        var L = v || [];
+        if (repeatMode(n) === 'while') { n.repeat.until = [{ not: L }]; if (L.length) n.when = clone(L); else delete n.when; } else n.repeat.until = L;
+      } };
+  }
+
+  /* ------------------------------------------------------------ the section */
+  A.whenHtml = function (st, path, whoKeys) {
+    var s = A.st, h = '<div class="oic-h2">When and who</div><div class="oic-when">', sp = A.stepSpec ? A.stepSpec(st) : null, K = sp && sp.keys ? sp.keys : {};
+    for (var w = 0; w < whoKeys.length; w++) {
+      var wk = whoKeys[w], ab = isObj(K[wk]) ? str(K[wk].about) : '';
+      h += '<div class="oic-field oic-key' + (has(st, wk) ? ' oic-key-set' : '') + '"><label>' + (wk === 'sendTo' ? 'Send it to' : 'Who does it') +
+        '</label>' + A.whoHtml(wk, str(st[wk] == null ? '' : st[wk])) + (ab ? '<small>' + esc(ab) + '</small>' : '') + '</div>';
+    }
+    h += '<div class="oic-field"><label>Only if</label>' + listHtml('when', st.when, 'No condition: it always runs.') + '</div>';
+    if ((s.kind === 'zone' || s.kind === 'fight') && typeof path[path.length - 1] === 'number' && !has(st, 'on')) {
+      var pp = wrapPath(path), R = pp ? IC.ogf.at(s.doc, pp) : null, mode = repeatMode(R);
+      h += '<div class="oic-field"><label>Repeat</label><select data-oic-cf="rep|@mode">';
+      [['once', 'Once'], ['times', 'A number of times'], ['until', 'Until something is true'], ['while', 'While something is true']].forEach(function (o) {
+        h += '<option value="' + o[0] + '"' + (o[0] === mode ? ' selected' : '') + '>' + o[1] + '</option>';
+      });
+      h += '</select>';
+      if (mode === 'times') h += '<div class="oic-row"><input type="number" min="1" data-oic-cf="rep|times" value="' + esc(R.repeat.times) + '"><span class="oic-note">times</span></div>';
+      if (mode === 'until' || mode === 'while') {
+        h += listHtml('until', target(s.doc, path, 'until').get(R), mode === 'while' ? 'Add what must hold.' : 'Add what ends it.') +
+          '<div class="oic-row"><span class="oic-note">at most</span><input type="number" min="1" data-oic-cf="rep|max" value="' + esc(R.repeat.max == null ? '' : R.repeat.max) + '"><span class="oic-note">times</span></div>';
+        if (mode === 'while') h += '<small>Checked before it starts and after each pass.</small>';
+        else h += '<small>It runs, then checks: it stops once this holds.</small>';
+      }
+      h += '</div>';
+    }
+    return h + '</div>';
+  };
+  function listHtml(which, list, empty) {
+    var R = readList(list), h = '';
+    if (!R.items.length) h += '<div class="oic-note">' + esc(empty) + '</div>';
+    if (R.items.length > 1) h += '<div class="oic-row"><span class="oic-note" style="white-space:nowrap;">It needs</span><select data-oic-cf="' + which + ':-1|@mode"><option value="all"' + (R.mode === 'all' ? ' selected' : '') +
+      '>all of these</option><option value="any"' + (R.mode === 'any' ? ' selected' : '') + '>any one of these</option></select></div>';
+    for (var i = 0; i < R.items.length; i++) h += condHtml(which, i, R.items[i]);
+    h += '<select class="oic-cond-add" data-oic-cf="' + which + ':-1|@add"><option value="">+ Add a condition...</option><optgroup label="Common">';
+    A.COND_PRESETS.forEach(function (p) { h += '<option value="p:' + p.key + '">' + esc(p.label) + '</option>'; });
+    h += '</optgroup><optgroup label="Every condition Ogre has">';
+    var C = V().conditions || {}, names = Object.keys(C).filter(function (k) { return !C[k].logic && k !== 'forwho'; }).sort();
+    names.forEach(function (k) { h += '<option value="c:' + k + '" title="' + esc(C[k].about || '') + '">' + esc(k) + (C[k].about ? ': ' + esc(cut(C[k].about, 60)) : '') + '</option>'; });
+    return h + '</optgroup></select>';
+  }
+  function cut(s, n) { s = str(s); return s.length > n ? s.slice(0, n - 3) + '...' : s; }
+  /* a condition in words, turned round when "not" is ticked ("we are not in combat"); the group ones in short */
+  function words(c, neg) {
+    var who = rosterWho(c);
+    if (who !== null) return 'the group has ' + (neg ? 'no ' : 'a ') + (who === '@tank' ? 'tank' : (who === '@healer1' ? 'healer' : who));
+    try { return IC.ogf.condsText([c], 0, !!neg); } catch (e) { return (neg ? 'not ' : '') + kindOf(c); }
+  }
+  function condHtml(which, i, it) {
+    var c = it.cond, k = kindOf(c), o = isObj(c) ? c[k] : null, id = which + ':' + i, h = '<div class="oic-cond"><div class="oic-cond-w"><b>' + (i + 1) + '.</b> ' +
+      esc(words(c, it.not)) + ' <label class="oic-tick" title="Turn it round: true when this is not"><input type="checkbox" data-oic-cf="' + id + '|@not"' + (it.not ? ' checked' : '') + '> not</label>' +
+      '<span class="oic-x" data-oic="cond:del:' + id + '" title="Take this condition away">&#10005;</span></div>';
+    var who = rosterWho(c);
+    if (who !== null) {
+      h += '<div class="oic-row"><span class="oic-note">The group has a</span><select data-oic-cf="' + id + '|@who">';
+      (A.WHO || []).forEach(function (g) {
+        if (g[0] !== 'Archetypes' && g[0] !== 'Classes' && g[0] !== 'One class') return;
+        h += '<optgroup label="' + g[0] + '">';
+        g[1].forEach(function (x) { if (!/^not/.test(x)) h += '<option value="' + x + '"' + (x === who ? ' selected' : '') + '>' + esc(x) + '</option>'; });
+        h += '</optgroup>';
+      });
+      return h + '<option value="@tank"' + (who === '@tank' ? ' selected' : '') + '>a tank</option><option value="@healer1"' + (who === '@healer1' ? ' selected' : '') + '>a healer</option></select></div></div>';
+    }
+    if (!isObj(o)) return h + '<small>Ogre writes this one as a list (not, or, and): change it as text below.</small></div>';
+    var spec = (V().conditions[k] || {}).keys || [], keys = Object.keys(o);
+    spec.forEach(function (x) { if (keys.indexOf(x) < 0) keys.push(x); });
+    if (k === 'count' && isObj(o.find) && has(o.find, 'query')) h += field(id, 'find.query', 'Which ones (query)', o.find.query, 'string');
+    for (var j = 0; j < keys.length && j < 9; j++) {
+      var key = keys[j], v = o[key];
+      if (key === 'find' && isObj(v) && has(v, 'query')) continue;
+      if (!has(o, key) && keys.length > 4) continue;
+      h += field(id, key, key, v, key === 'compare' ? 'compare' : (typeof v === 'number' || /^(value|within|count|nth|maxEffects|abilityId|main|back|plus)$/.test(key) && typeof v !== 'string' ? 'num' :
+        (typeof v === 'boolean' ? 'bool' : (isObj(v) || isArr(v) ? 'json' : 'string'))));
+    }
+    return h + '</div>';
+  }
+  function field(id, key, label, v, type) {
+    var b = 'data-oic-cf="' + id + '|' + key + '|' + type + '"', inp;
+    if (type === 'compare') { inp = '<select ' + b + '><option value=""></option>'; COMPARE.forEach(function (c) { inp += '<option' + (c === v ? ' selected' : '') + '>' + esc(c) + '</option>'; }); inp += '</select>'; }
+    else if (type === 'bool') inp = '<input type="checkbox" ' + b + (v === true ? ' checked' : '') + '>';
+    else if (type === 'num') inp = '<input type="number" ' + b + ' value="' + esc(v == null ? '' : v) + '">';
+    else if (type === 'json') inp = '<input type="text" ' + b + ' value="' + esc(v === undefined ? '' : JSON.stringify(v)) + '" spellcheck="false">';
+    else inp = '<input type="text" ' + b + ' value="' + esc(v == null ? '' : v) + '" spellcheck="false">';
+    return '<div class="oic-cond-f"><span>' + esc(label) + '</span>' + inp + '</div>';
+  }
+  /* a "the group has" condition: the who it names (archetype, class family, one class, tank or healer), else null */
+  function rosterWho(c) {
+    var F = A.FAMILY || {};
+    if (isObj(c) && isObj(c.count) && c.count.of === 'roster') {
+      var by = str(c.count.by), is = str(c.count.is).toLowerCase();
+      if (by === 'Role') return is === 'tank' ? '@tank' : '@healer1';
+      return is;
+    }
+    if (isObj(c) && isArr(c.or) && c.or.length > 1 && c.or.every(function (x) { return isObj(x) && isObj(x.count) && x.count.of === 'roster' && x.count.by === 'Class'; })) {
+      var names = c.or.map(function (x) { return str(x.count.is); }).join(',');
+      for (var f in F) if (has(F, f) && F[f].join(',') === names) return f;
+    }
+    return null;
+  }
+
+  /* ------------------------------------------------------------ changes */
+  A.setCondField = function (spec, val) {
+    var s = A.st, p = str(spec).split('|'), where = p[0], key = p[1], type = p[2] || 'string', path = JSON.parse(s.sel);
+    if (where === 'rep') { setRepeat(path, key, val); return; }
+    var m = /^(when|until):(-?\d+)$/.exec(where);
+    if (!m) return;
+    var which = m[1], i = +m[2], err = '';
+    if (key === '@add' && !val) return;
+    A.edit(function (doc) {
+      var T = target(doc, path, which);
+      if (!T || !isObj(T.node)) return;
+      var R = readList(T.get(T.node)), it = R.items[i];
+      if (key === '@mode') R.mode = val === 'any' ? 'any' : 'all';
+      else if (key === '@add') {
+        var pr = /^p:(.+)$/.exec(val), ck = /^c:(.+)$/.exec(val), made = null;
+        if (pr) A.COND_PRESETS.forEach(function (x) { if (x.key === pr[1]) made = x.make(); });
+        else if (ck) { made = {}; made[ck[1]] = {}; }
+        if (made) R.items.push({ cond: made, not: false });
+      } else if (!it) return;
+      else if (key === '@not') it.not = !!val;
+      else if (key === '@who') it.cond = A.hasCond(val) || it.cond;
+      else {
+        var k = kindOf(it.cond), o = it.cond[k], out;
+        if (type === 'num') out = str(val).trim() === '' ? undefined : +val;
+        else if (type === 'bool') out = !!val;
+        else if (type === 'json') { if (str(val).trim() === '') out = undefined; else { try { out = JSON.parse(val); } catch (e) { err = 'Not valid JSON: ' + e.message; return; } } }
+        else out = str(val) === '' ? undefined : str(val);
+        if (typeof out === 'number' && !isFinite(out)) { err = 'That is not a number.'; return; }
+        var parts = key.split('.'), at = o;
+        for (var q = 0; q < parts.length - 1; q++) { if (!isObj(at[parts[q]])) at[parts[q]] = {}; at = at[parts[q]]; }
+        if (out === undefined) delete at[parts[parts.length - 1]]; else at[parts[parts.length - 1]] = out;
+      }
+      T.set(T.node, writeList(R));
+    });
+    if (err) IC.host.toast(err, 'warn');
+  };
+  A.dropCond = function (id) {
+    var m = /^(when|until):(\d+)$/.exec(str(id)), path = JSON.parse(A.st.sel);
+    if (!m) return;
+    A.edit(function (doc) {
+      var T = target(doc, path, m[1]);
+      if (!T) return;
+      var R = readList(T.get(T.node));
+      R.items.splice(+m[2], 1);
+      T.set(T.node, writeList(R));
+    });
+  };
+  /* Repeat: wrap the step in a repeat block, change it, or take it out again (the selection follows the step) */
+  function setRepeat(path, key, val) {
+    var s = A.st, pp = wrapPath(path);
+    if (key === '@mode') {
+      var mode = str(val), now = pp ? repeatMode(IC.ogf.at(s.doc, pp)) : 'once';
+      if (mode === now) return;
+      var fresh = mode === 'times' ? { times: 2 } : { until: mode === 'while' ? [{ not: [{ inCombat: {} }] }] : [{ inCombat: {} }], max: 10 };
+      A.edit(function (doc) {
+        if (pp) {
+          var R = IC.ogf.at(doc, pp);
+          if (mode === 'once') { var inner = R.steps[0]; setAt(doc, pp, inner); return; }
+          R.repeat = fresh;
+          if (mode === 'while') R.when = [{ inCombat: {} }]; else delete R.when;
+          return;
+        }
+        var st = IC.ogf.at(doc, path), box = { repeat: fresh, steps: [st] };
+        /* the block keeps the step's place among the named's steps (Jump to and results go by stepId) */
+        if (isObj(st) && st.stepId) box = { stepId: str(st.stepId) + '.repeat', repeat: fresh, steps: [st] };
+        if (mode === 'while') box.when = [{ inCombat: {} }];
+        setAt(doc, path, box);
+      });
+      if (mode === 'once') s.sel = JSON.stringify(pp);
+      else if (!pp) s.sel = JSON.stringify(path.concat(['steps', 0]));
+      A.refresh();
+      return;
+    }
+    if (!pp) return;
+    A.edit(function (doc) { var R = IC.ogf.at(doc, pp), n = str(val).trim() === '' ? undefined : Math.max(1, Math.round(+val)); if (n === undefined || !isFinite(n)) delete R.repeat[key]; else R.repeat[key] = n; });
+  }
+  function setAt(doc, path, v) { var parent = IC.ogf.at(doc, path.slice(0, -1)); parent[path[path.length - 1]] = v; }
+
+  /* clicks this module owns: take a condition away */
+  var ec0 = A.editClick;
+  A.editClick = function (v, el) {
+    var m = /^cond:del:(.+)$/.exec(str(v));
+    if (m) { A.dropCond(m[1]); return true; }
+    return ec0 ? ec0(v, el) : false;
+  };
+})(typeof window !== 'undefined' ? window : this);
+
+})(OpenIC_LIB, OpenIC_LIB.document, OpenIC_LIB.setInterval, OpenIC_LIB.IC.host.shims.sendCommand, OpenIC_LIB.IC.host.shims.requestFileWith, OpenIC_LIB.IC.host.shims.requestDirWith, OpenIC_LIB.IC.host.shims.lazyLoadJS, OpenIC_LIB.IC.host.shims.colToast, OpenIC_LIB.IC.host.shims.jbAlert, OpenIC_LIB.IC.host.shims.jbConfirm, OpenIC_LIB.IC.host.shims.jbPrompt, OpenIC_LIB.IC.host.shims.invItemIcon, OpenIC_LIB.IC.host.shims.jbClassIcon, OpenIC_LIB.IC.host.shims.escHtml, OpenIC_LIB.IC.host.shims.escJs, OpenIC_LIB.IC.host.shims.unescJs, OpenIC_LIB.IC.host.shims.jbTipAttr, OpenIC_LIB.IC.host.shims.jbDispName, OpenIC_LIB.IC.host.shims._getPos, OpenIC_LIB.IC.host.shims._getTarget, OpenIC_LIB.IC.host.shims.jbDropdown, OpenIC_LIB.IC.host.shims.jbVal, OpenIC_LIB.IC.host.shims.jbSetVal, OpenIC_LIB.IC.host.shims.jbSetOptions);
+</script>
+<script>
+(function (window, document, setInterval, sendCommand, requestFileWith, requestDirWith, lazyLoadJS, colToast, jbAlert, jbConfirm, jbPrompt, invItemIcon, jbClassIcon, escHtml, escJs, unescJs, jbTipAttr, jbDispName, _getPos, _getTarget, jbDropdown, jbVal, jbSetVal, jbSetOptions) {
+/* Open IC Creator - openic-test.js
+   Test in game. A zone file's steps: this step, from here through the next named, or from the start through here. Ogre
+   runs whole zone files only (ISXOgreEQ2.IC:Run), so the steps go into a small zone file of their own, custom/
+   _OpenIC_test.json, ending in a zoneOut with op none (it stays in the zone); the script reloads and runs it and sends
+   the run's state until it ends; then the page saves that file switched off (enabled false) and reloads again, so it
+   never runs by itself. Run would travel to the file's zone first, so a test is only offered while you stand in it.
+   A fight file: Ogre reloads its fight files and sets up for the named (the named must be up in this zone).
+   MIT License, see LICENSE. */
+(function (root) {
+  var IC = root.IC = root.IC || {};
+  var A = IC.app = IC.app || {};
+
+  function H() { return IC.host; }
+  function str(v) { return v == null ? '' : String(v); }
+  function isArr(v) { return Object.prototype.toString.call(v) === '[object Array]'; }
+  function isObj(v) { return v != null && typeof v === 'object' && !isArr(v); }
+  function esc(s) { return str(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  A.TEST_FILE = '_OpenIC_test.json';
+
+  /* am I standing in the open file's zone (the game's zone name starts with the file's) */
+  A.inFileZone = function () {
+    var me = H().me, d = A.st.doc, fz = str(d && (isArr(d.zone) ? d.zone[0] : d.zone)).toLowerCase().split(' [')[0].trim();
+    return !!(me && fz && str(me.zone).toLowerCase().indexOf(fz) === 0);
+  };
+  /* the steps a test runs, as their own zone file; null when the pick does not fit */
+  A.testDoc = function (scope) {
+    var s = A.st, d = s.doc, path = s.sel ? JSON.parse(s.sel) : null, steps = [], i;
+    if (!isObj(d) || !isArr(d.steps) || !path) return null;
+    var top = path.length === 2 && path[0] === 'steps' ? +path[1] : -1;
+    if (scope === 'step') { var st = IC.ogf.at(d, path); if (!isObj(st)) return null; steps = [clone(st)]; }
+    else if (top < 0) return null;
+    else if (scope === 'next') { for (i = top; i < d.steps.length; i++) { steps.push(clone(d.steps[i])); if (isObj(d.steps[i]) && d.steps[i]['do'] === 'named') break; } }
+    else if (scope === 'upto') steps = d.steps.slice(0, top + 1).map(clone);
+    steps = steps.filter(function (x) { return !(isObj(x) && x['do'] === 'zoneOut'); });
+    if (!steps.length) return null;
+    var t = { _openicTest: 'A test from Open IC Creator: safe to delete.', zone: d.zone, variants: isArr(d.variants) ? clone(d.variants) : [], author: 'Open IC test',
+      progression: 'open', enabled: true };
+    if (d.expansion) t.expansion = d.expansion;
+    if (isObj(d.entrance)) t.entrance = clone(d.entrance);
+    if (isObj(d.options)) t.options = clone(d.options);
+    if (isObj(d.fileOptions)) t.fileOptions = clone(d.fileOptions);
+    if (scope === 'upto' && isArr(d.enter)) t.enter = clone(d.enter);
+    t.steps = steps.concat([{ stepId: 'exit', 'do': 'zoneOut', op: 'none' }]);
+    return t;
+  };
+  var WHAT = { step: 'this step', next: 'from here through the next named', upto: 'from the start through here' };
+
+  A.runTest = function (scope) {
+    var s = A.st;
+    if (!H().inGame) { H().toast('Tests run in game: open this in the game window.', 'warn'); return; }
+    if (s.kind !== 'zone') return;
+    if (s.test && s.test.phase !== 'done') { H().toast('A test is still going: stop it first.', 'warn'); return; }
+    if (!A.inFileZone()) { H().toast('Stand in ' + str(s.doc.zone) + ' first: a test runs where you stand (Ogre would travel there).', 'warn'); return; }
+    var t = A.testDoc(scope);
+    if (!t) { H().toast(scope === 'step' ? 'Pick a step to test (a way out is not tested: a test stays in the zone).' : 'Pick a step of the main list for this test.', 'warn'); return; }
+    s.test = { kind: 'zone', what: WHAT[scope], phase: 'saving', lines: [], state: '', verdict: '', note: '', doc: t, at: Date.now() };
+    saveTest(t, function (ok) {
+      if (!ok) { s.test.phase = 'done'; s.test.state = 'not saved'; A.renderProblems(); return; }
+      s.test.phase = 'running';
+      H().call('Test', { path: A.TEST_FILE });
+      A.renderProblems();
+    });
+    A.renderProblems();
+  };
+  function saveTest(t, then) {
+    A._testSave = then;
+    H().set('openic-arg-text', JSON.stringify(t));
+    H().call('Save', { kind: 'zone', path: A.TEST_FILE });
+  }
+  /* the script's "ok:saved" / "err:" for the test file (openic-game.js hands it on) */
+  A.testSaid = function (p) {
+    if (!A._testSave || !/^(ok:saved|err:)/.test(str(p))) return false;
+    var f = A._testSave;
+    A._testSave = null;
+    f(/^ok:/.test(str(p)));
+    return true;
+  };
+  /* the test file switched off and Ogre's list reloaded, so it never runs by itself */
+  function switchOff() {
+    var T = A.st.test;
+    if (!T || !T.doc) return;
+    var off = clone(T.doc);
+    off.enabled = false;
+    saveTest(off, function () { H().call('Reload', { kind: 'zone' }); });
+  }
+  A.fightTest = function () {
+    var s = A.st, n = IC.ogf && IC.ogf.namedOf ? IC.ogf.namedOf(s.doc) : '';
+    if (s.kind !== 'fight' || !n) return;
+    if (!H().inGame) { H().showLine('ogre encounter reload', 'reload the fight files'); H().showLine('OgreBotAPI.Bot:SetUpFor[igw:${Me.Name},"' + n + '",TRUE]', 'then set up for the named'); return; }
+    if (!A.tierPath()) { H().toast('Save the fight file first (My fight files): Ogre reads it as saved.', 'warn'); return; }
+    s.test = { kind: 'fight', what: 'the fight for ' + n, phase: 'running', lines: [], state: 'reloading the fight files', at: Date.now() };
+    H().call('FightTest', { named: n });
+    A.renderProblems();
+  };
+
+  /* the script's lines: out|<what Ogre printed>, state|<RunState>|<Verdict>|<Note>, end|..., fight|<TRUE, FALSE or
+     asked>, fightend|... */
+  A.onTest = function (p) {
+    var T = A.st.test, a = str(p).split('|'), k = a[0];
+    if (!T) return;
+    var clean = function (x) { return str(x).replace(/\x07./g, '').replace(/^\[[\d:.]+\]\s*/, '').replace(/^\[Ogre\]\[[A-Za-z]+\]\s*/, '').trim(); };
+    if (k === 'out') T.lines.push(clean(a.slice(1).join('|')));
+    else if (k === 'state' || k === 'end') { T.state = a[1] || ''; T.verdict = a[2] || ''; T.note = clean(a.slice(3).join('|')); if (k === 'end') { T.phase = 'done'; switchOff(); } }
+    else if (k === 'fight' || k === 'fightend') { T.state = a[1] === 'asked' ? 'setting up' : (a[1] === 'TRUE' ? 'running' : (a[1] === 'FALSE' ? 'not running' : a[1])); if (k === 'fightend') T.phase = 'done'; }
+    A.renderProblems();
+  };
+  var STATE = { idle: 'it did not start (Ogre\'s lines say why)', 'zoning in': 'travelling to the zone', launching: 'starting', running: 'running',
+    done: 'done', failed: 'failed', unknown: 'this Ogre does not report a run (watch the IC window)' };
+  A.testHtml = function () {
+    var T = A.st.test;
+    if (!T) return '';
+    var st = T.phase === 'saving' ? 'saving the test file' : (T.kind === 'fight' ? (T.state === 'not running' ? 'not running: the named must be up in this zone (in range or fighting), and Enable Heroic or Raid Setups ticked' : T.state) : (STATE[T.state] || T.state || 'asked'));
+    var h = '<div class="oic-test"><b>Test in game</b>, ' + esc(T.what) + ': ' + esc(st) +
+      (T.verdict && T.verdict !== 'idle' && T.verdict !== 'pending' ? ' (' + esc(T.verdict === 'completedWithFailures' ? 'done, with failures' : T.verdict) + ')' : '') +
+      (T.note ? ': ' + esc(T.note) : '') +
+      (T.phase === 'running' && T.kind === 'zone' ? ' <span class="oic-link" data-oic="test:stop">Stop it</span>' : '') +
+      (T.phase === 'done' ? ' <span class="oic-link" data-oic="test:clear">clear</span>' : '') + '</div>';
+    for (var i = 0; i < T.lines.length && i < 8; i++) h += '<div class="oic-note">Ogre: ' + esc(T.lines[i]) + '</div>';
+    if (T.kind === 'zone' && T.what !== WHAT.upto && T.phase !== 'done') h += '<div class="oic-note">A step that reads a value an earlier step saved can fail on its own.</div>';
+    return h;
+  };
+  /* the step form's Test row (zone files, in game) */
+  A.testRowHtml = function (st, path) {
+    if (!H().inGame || A.st.kind !== 'zone' || !isObj(st)) return '';
+    var top = path.length === 2 && path[0] === 'steps', named = st['do'] === 'named', here = A.inFileZone();
+    return '<div class="oic-row oic-testrow"><span class="oic-note">Test in game:</span>' +
+      '<button class="oic-btn" data-oic="test:step"' + (st['do'] === 'zoneOut' ? ' disabled' : '') + ' title="Runs only this step, where you stand">This step</button>' +
+      (top ? '<button class="oic-btn" data-oic="test:next" title="Runs this step and the ones after it, through the next named">Through the next named</button>' +
+        '<button class="oic-btn" data-oic="test:upto" title="Runs the file from its start through this step">From the start' + (named ? ' through this named' : ' to here') + '</button>' : '') +
+      (here ? '' : '<span class="oic-note">(stand in the zone first)</span>') + '</div>';
+  };
+
+  var ec0 = A.editClick;
+  A.editClick = function (v, el) {
+    var m = /^test:(\w+)$/.exec(str(v));
+    if (!m) return ec0 ? ec0(v, el) : false;
+    if (m[1] === 'stop') H().call('TestStop', {});
+    else if (m[1] === 'clear') { A.st.test = null; A.renderProblems(); }
+    else if (m[1] === 'fight') A.fightTest();
+    else A.runTest(m[1]);
+    return true;
   };
 })(typeof window !== 'undefined' ? window : this);
 
@@ -12804,6 +13364,50 @@
     test('the Spots view draws the file\'s spots', function () {
       s.view = 'map'; A.refresh();
       ok(q('#openic-map circle').length >= 4, 'dots: ' + q('#openic-map circle').length);
+    });
+    test('the chart scrolls the native way (Ogre\'s windows scroll natively; the wheel may never reach the page)', function () {
+      var long = clone(A.SAMPLES.zone);
+      for (var i = 0; i < 40; i++) long.steps.splice(1, 0, { 'do': 'path', using: 'nav', spots: [[i, 0, i]] });
+      A.load(long, { name: 'long.json', fromDisk: true });
+      s.view = 'flow'; A.refresh();
+      var sc = document.querySelector('#openic-flow .fv-scroll');
+      ok(!!sc && sc.scrollTop > 1000, 'a scroll layer, held away from its edges: ' + (sc && sc.scrollTop));
+      var y0 = s.fv.y;
+      sc.scrollTop = sc.scrollTop + 200;
+      sc.dispatchEvent(new Event('scroll'));
+      ok(s.fv.y < y0, 'scrolling down moves the chart up: ' + y0 + ' -> ' + s.fv.y);
+      var c = document.querySelector('#openic-flow .fv-canvas'), r = c.getBoundingClientRect(), h = document.getElementById('openic-flow').getBoundingClientRect();
+      ok(Math.abs((r.top - h.top) - s.fv.y) <= 2, 'the boxes are where the view says: ' + Math.round(r.top - h.top) + ' / ' + Math.round(s.fv.y));
+    });
+    test('When and who: only if (all or any, not, the group has a class), repeat until, while and once', function () {
+      var isA = function (v) { return Object.prototype.toString.call(v) === '[object Array]'; };
+      A.load(clone(A.SAMPLES.zone), { name: 'sample.json', fromDisk: true });
+      s.view = 'words'; A.refresh();
+      A.select('["steps",0]');
+      ok(!!document.querySelector('#openic-side .oic-when'), 'the section shows');
+      A.setCondField('when:-1|@add', 'p:group');
+      var w = s.doc.steps[0].when;
+      ok(isA(w) && w.length === 1 && w[0].count && w[0].count.of === 'roster', 'the group has a priest: ' + JSON.stringify(w));
+      A.setCondField('when:0|@who', 'bard');
+      w = s.doc.steps[0].when;
+      ok(w.length === 1 && isA(w[0].or) && w[0].or.length === 2 && document.querySelectorAll('#openic-side .oic-cond').length === 1, 'a bard: a troubador or a dirge, one condition');
+      A.setCondField('when:-1|@add', 'p:combat');
+      A.setCondField('when:1|@not', true);
+      ok(JSON.stringify(s.doc.steps[0].when[1]) === '{"not":[{"inCombat":{}}]}', 'and not in combat');
+      A.setCondField('when:-1|@mode', 'any');
+      w = s.doc.steps[0].when;
+      ok(w.length === 1 && isA(w[0].or) && w[0].or.length === 2, 'any one of these: an or of the two');
+      A.setCondField('when:-1|@mode', 'all');
+      A.setCondField('rep|@mode', 'until');
+      var b = s.doc.steps[0];
+      ok(b.repeat && b.repeat.max === 10 && isA(b.steps) && b.steps.length === 1 && b.steps[0]['do'] === 'path' && s.sel === '["steps",0,"steps",0]', 'Repeat until: the step inside a repeat block, still picked');
+      A.setCondField('rep|@mode', 'while');
+      b = s.doc.steps[0];
+      ok(JSON.stringify(b.repeat.until) === '[{"not":[{"inCombat":{}}]}]' && JSON.stringify(b.when) === '[{"inCombat":{}}]', 'while: until it no longer holds, and skipped if false at the start');
+      A.setCondField('rep|@mode', 'once');
+      ok(s.doc.steps[0]['do'] === 'path' && s.sel === '["steps",0]' && s.doc.steps[0].when.length === 2, 'Once: out of the block again, its own conditions kept');
+      ok(Z.counts(s.probs).error === 0, 'no errors: ' + JSON.stringify(s.probs.filter(function (p) { return p.level === 'error'; }).map(function (p) { return p.msg; })));
+      ok(!!document.querySelector('#openic-side .oic-testrow') === !!H.inGame, 'the Test row shows in game only');
     });
     test('a picked step says who runs it', function () {
       s.view = 'words'; A.refresh();
@@ -12932,7 +13536,7 @@
             ok(sent.some(function (l) { return /Event\[OpenIC_Map\]:Execute/.test(l); }), 'the game was asked for the map');
             ok(!!img && /^data:image\/png/.test(img.getAttribute('href') || ''), 'the floor picture lies under the spots');
             ok(q('#openic-map circle').length >= 4, 'the spots are on it');
-            ok(q('#openic-map-note .oic-jump').length === 2, 'two floors to pick from');
+            ok(q('#openic-map-note [data-oic^="map:floor:"]').length === 2, 'two floors to pick from');
             A.editClick('map:floor:1');
             stage = 1; t0 = Date.now(); setTimeout(wait, 50); return;
           }
@@ -12940,17 +13544,75 @@
           if (!/no picture of this floor/.test(note) && Date.now() - t0 < 5000) { setTimeout(wait, 50); return; }
           ok(/no picture of this floor/.test(note), 'a floor without a picture says so: ' + note.slice(-120));
           ok(!document.querySelector('#openic-map image'), 'and shows none');
+          var k0 = A.mapView.k;
+          A.editClick('map:in');
+          ok(A.mapView.k > k0, 'the + button zooms in (the wheel may never reach the page in game)');
+          A.editClick('map:fit');
         } catch (e) { fails++; out.push('  FAIL ' + name + ' threw ' + (e && e.message)); }
         out.push((fails === f0 ? '  pass ' : '  FAIL ') + name);
         next();
       })();
     }
-    mapTest(function () {
+    /* Ask Ogre with an Ogre that has no Validate: the script reloads, then sends what Ogre said, a line at a time */
+    function verifyTest(next) {
+      if (!H.inGame || !G.__openicFakeGame) { next(); return; }
+      var name = 'in game, Ask Ogre without Ogre\'s Validate: a reload, then what Ogre said about this file', f0 = fails, t0 = Date.now(), keep = H.ext.check;
+      A.load(clone(A.SAMPLES.zone), { name: 'sample.json', fromDisk: true });
+      s.gamePath = 'Sample/sample.json';
+      H.ext.check = false;
+      A.ogreAsk();
+      (function wait() {
+        if ((!s.verify || s.verify.busy) && Date.now() - t0 < 4000) { setTimeout(wait, 50); return; }
+        try {
+          var V = s.verify || {};
+          ok(sent.some(function (l) { return /Event\[OpenIC_Verify\]:Execute/.test(l); }) && document.getElementById('openic-arg-tier').value === 'custom', 'the script was asked, for the saved file');
+          ok(V.loaded === true && /Test Halls \[Heroic\]/.test(V.mine), 'Ogre loaded it: ' + V.mine);
+          ok(V.issues && V.issues.length === 1 && V.issues[0].ref === '["steps",2]' && V.issues[0].level === 'warn', 'its line is on the step it names (Ogre counts from 1): ' + JSON.stringify(V.issues));
+          ok(V.clash && V.clash.length === 1 && /other\.json/.test(V.clash[0].file), 'the other file for the same zone and difficulty is named');
+          ok(/Ogre loaded this file/.test(document.getElementById('openic-problems').textContent) && /3 zone\(s\) from 3 file\(s\)/.test(document.getElementById('openic-problems').textContent), 'shown under the checks, colour codes gone');
+        } catch (e) { fails++; out.push('  FAIL ' + name + ' threw ' + (e && e.message)); }
+        H.ext.check = keep; s.gamePath = ''; s.verify = null;
+        out.push((fails === f0 ? '  pass ' : '  FAIL ') + name);
+        next();
+      })();
+    }
+    /* Test in game: a zone file of the picked steps, run, then switched off; a fight file's setup */
+    function testTest(next) {
+      if (!H.inGame || !G.__openicFakeGame) { next(); return; }
+      var name = 'in game, Test through the next named (a zone file of its own, run, then switched off) and Test this fight', f0 = fails, t0 = Date.now(), stage = 0;
+      A.load(clone(A.SAMPLES.zone), { name: 'sample.json', fromDisk: true });
+      s.test = null;
+      A.select('["steps",0]');
+      A.runTest('next');
+      (function wait() {
+        try {
+          if (stage === 0) {
+            if ((!s.test || s.test.phase !== 'done' || A._testSave) && Date.now() - t0 < 4000) { setTimeout(wait, 50); return; }
+            var T = s.test || {};
+            ok(T.doc && T.doc.steps.length === 3 && T.doc.steps[1]['do'] === 'named' && T.doc.steps[2].op === 'none', 'the walk and the named, then a way out that stays: ' +
+              JSON.stringify(T.doc && T.doc.steps.map(function (x) { return x['do'] + (x.op ? ':' + x.op : ''); })));
+            ok(sent.some(function (l) { return /OpenIC_Test\]/.test(l); }) && T.state === 'done' && T.verdict === 'completed', 'run, and its state came back: ' + T.state + ' ' + T.verdict);
+            ok(/"enabled":false/.test(document.getElementById('openic-arg-text').value) && /OpenIC_Reload/.test(sent[sent.length - 1]), 'then saved switched off, and reloaded');
+            ok(/Test in game/.test(document.getElementById('openic-problems').textContent), 'shown over the checks');
+            A.load(clone(A.SAMPLES.fight), { name: 'Sample Warden.json', fromDisk: true });
+            s.gamePath = 'Sample/Sample Warden.json';
+            A.fightTest();
+            stage = 1; t0 = Date.now(); setTimeout(wait, 50); return;
+          }
+          if ((!s.test || s.test.phase !== 'done') && Date.now() - t0 < 4000) { setTimeout(wait, 50); return; }
+          ok(s.test && s.test.state === 'running' && document.getElementById('openic-arg-named').value === 'Sample Warden', 'the fight test reloads, sets up and sees it running');
+        } catch (e) { fails++; out.push('  FAIL ' + name + ' threw ' + (e && e.message)); }
+        s.test = null; s.gamePath = '';
+        out.push((fails === f0 ? '  pass ' : '  FAIL ') + name);
+        next();
+      })();
+    }
+    mapTest(function () { verifyTest(function () { testTest(function () {
       var report = out.join('\n') + '\n' + (fails ? 'SELFTEST FAILED: ' + fails + ' of ' + checks + ' checks' : 'SELFTEST OK: ' + checks + ' checks passed');
       var el = document.getElementById('openic-selftest');
       if (el) { el.textContent = report; el.style.display = 'block'; }
       document.title = fails ? 'SELFTEST FAILED ' + fails : 'SELFTEST OK ' + checks;
-    });
+    }); }); });
   };
   /* in game the icon parts arrive one at a time after the window opens: the self test waits for the last one to report
      itself in (openic-assets-got "<k>/<n>"), 10 s at most */

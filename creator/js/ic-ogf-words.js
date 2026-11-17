@@ -195,6 +195,8 @@
       if (o.member) return V(o.member, 26) + (neg ? ' is not cursed' : ' is cursed');
       return 'the ' + (o.uncurable ? 'uncurably ' : '') + 'cursed players in ' + (o.scope === 'raid' ? 'the raid' : (o.scope === 'group' ? 'my group' : 'range')) + ' number ' + c + n;
     }
+    if (of === 'roster' && (o.compare == null || o.compare === '>=') && (o.value == null || +o.value === 1) && !(o.valueOf && typeof o.valueOf === 'object'))
+      return (o.scope === 'raid' ? 'the raid has ' : 'the group has ') + (neg ? 'no ' : 'a ') + Wd().split(o.is).toLowerCase();
     if (of === 'roster') return 'the ' + Wd().split(o.is) + (/s$/.test(str(o.is)) ? '' : 's') + ' in ' + (o.scope === 'raid' ? 'the raid' : 'my group') + ' number ' + c + n;
     return 'there are ' + c + n + ' of ' + (o.find ? Wd().find(o.find) : Wd().query(o.of));
   }

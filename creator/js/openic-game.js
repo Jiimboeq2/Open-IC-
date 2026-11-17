@@ -33,16 +33,19 @@
     var items = [{ head: 'OgreBot' }];
     items.push({ label: 'Reload zone files (ogre ic reload)', run: function () { A.game('Reload', { kind: 'zone' }, L.reloadZone); } });
     items.push({ label: 'Reload fight files (ogre encounter reload)', run: function () { A.game('Reload', { kind: 'fight' }, L.reloadFight); } });
-    var canCheck = A.ogreCanCheck();
-    if (zone || fight) items.push({ label: 'Check this file by Ogre\'s own rules' + (canCheck ? '' : ' (this Ogre has no file check yet)'),
+    var canCheck = A.ogreCanCheck(), byReload = inGame && zone && !canCheck;
+    if (zone || fight) items.push({ label: 'Ask Ogre about this file' + (canCheck || byReload ? '' : ' (this Ogre has no fight-file check yet)'),
       tip: canCheck ? 'Ogre checks the file as saved: it loads nothing and changes nothing, it only says whether the file would load'
-        : 'ISXOgreEQ2\'s Validate is newer than the Ogre loaded: Reload lists the problems instead',
-      off: !canCheck, run: A.ogreCheck });
+        : (byReload ? 'Ogre reloads your zone files (as Reload does) and the page reads what it said about this one, and which files claim the zone'
+          : 'ISXOgreEQ2\'s Validate is newer than the Ogre loaded: Reload fight files lists the problems in the console'),
+      off: !canCheck && !byReload, run: A.ogreAsk });
     if (zone) {
       items.push({ label: 'Queue this zone file', tip: L.queue('<path>'), run: function () { A.withGamePath('zone', function (p) { A.game('Queue', { path: p }, L.queue(p)); }); } });
       items.push({ label: 'Run this zone file now', tip: L.run('<path>'), run: function () { A.withGamePath('zone', function (p) { A.game('Run', { path: p }, L.run(p)); }); } });
     }
     if (fight) items.push({ label: 'Start the fight setup now', tip: L.setUp('<named>'), run: function () { var n = O().namedOf(s.doc); A.game('SetUp', { named: n }, L.setUp(n)); } });
+    if (fight) items.push({ label: 'Test this fight file now', tip: 'Ogre reloads its fight files (the saved file), then sets up for the named; the named must be up in this zone',
+      run: function () { if (A.fightTest) A.fightTest(); } });
     items.push({ head: 'ISXJQB' + (inGame && !e.jqb ? ' (not loaded)' : '') });
     items.push({ label: 'Run this file with ISXJQB (jb ic rundirect)', off: inGame && !e.jqb || fight, run: function () { A.withGamePath(s.kind, function (p) { A.game('JbRun', { path: p, kind: s.kind }, 'jb ic rundirect "' + p + '"'); }); } });
     if (zone) items.push({ label: 'Queue the zone in ISXJQB (jb ic queue)', off: inGame && !e.jqb, run: function () {
@@ -133,7 +136,83 @@
     A.renderProblems();
     H().toast(r.ok === true ? 'Ogre: the file would load.' : 'Ogre: the file would not load.', r.ok === true ? 'ok' : 'err');
   };
+  /* Ask Ogre: its own Validate when this Ogre has one; for a zone file without it, a reload, then what Ogre said about
+     this file and which loaded files claim the zone (OpenIC.iss OpenIC_OnVerify) */
+  A.ogreAsk = function () {
+    var s = A.st;
+    if (!s.doc || (s.kind !== 'zone' && s.kind !== 'fight')) { H().toast('Ogre checks zone files and fight files.', 'warn'); return; }
+    if (!H().inGame || A.ogreCanCheck()) { A.ogreCheck(); return; }
+    if (s.kind !== 'zone') { H().toast('This Ogre has no fight-file check yet: Reload fight files lists the problems in the console.', 'warn'); return; }
+    var tp = A.tierPath();
+    if (!tp) { H().toast('Ogre reads the file as saved: save it first (My zone files), then ask.', 'warn'); return; }
+    s.verify = { busy: true, kind: s.kind, file: tp.tier + '/' + tp.path, at: Date.now() };
+    H().call('Verify', { tier: tp.tier, path: tp.path, zone: str(s.doc.zone) });
+    H().toast('Ogre is reloading your zone files; its answer about this one comes in a moment.');
+    A.renderProblems();
+  };
+  /* its answer, a line at a time (OpenIC_SendVerify): begin|<tier>/<path>, s|<count line>, l|<a loaded file that
+     claims the zone>, p|<a line of Ogre's log about this file>, nolog|, end| */
+  function clean(t) { return str(t).replace(/\x07./g, '').replace(/^\[[\d:.]+\]\s*/, '').replace(/^\[Ogre\]\[IC\]\s*/, '').trim(); }
+  A.onVerify = function (p) {
+    var s = A.st, bar = str(p).indexOf('|'), k = bar < 0 ? str(p) : str(p).slice(0, bar), t = bar < 0 ? '' : str(p).slice(bar + 1), V = s.verify;
+    if (k === 'begin') { s.verify = V = { busy: true, kind: 'zone', file: t, count: '', list: [], lines: [], nolog: false, at: Date.now() }; return; }
+    if (!V || !V.list) return;
+    if (k === 's') V.count = clean(t);
+    else if (k === 'l') V.list.push(clean(t));
+    else if (k === 'p') V.lines.push(clean(t));
+    else if (k === 'nolog') V.nolog = true;
+    else if (k === 'end') {
+      V.busy = false;
+      A.verdict(V, s.doc);
+      A.renderProblems();
+      H().toast(V.loaded ? 'Ogre loaded this file' + (V.issues.length ? ', with ' + V.issues.length + ' note' + (V.issues.length === 1 ? '' : 's') : '') + '.' : 'Ogre did not load this file: the reasons are under the checks.',
+        V.loaded ? (V.issues.length || V.clash.length ? 'warn' : 'ok') : 'err');
+    }
+  };
+  /* what the lines say: loaded or not (the file among IC:List's), another file for the same zone and difficulty, and
+     each of Ogre's lines on the step it names ("steps[3]: path: ..." counts from 1) */
+  A.verdict = function (V, doc) {
+    var tier = /^default\//.test(V.file) ? 'default' : 'custom', rel = V.file.replace(/^(custom|default)\//, ''), tags = function (c) { return str(c).match(/\[[^\]]+\]/g) || []; };
+    var base = function (c) { return str(c).replace(/\s*\[[^\]]+\]/g, '').trim().toLowerCase(); };
+    V.loaded = false; V.mine = ''; V.clash = [];
+    var others = [];
+    V.list.forEach(function (l) {
+      var m = /^\[(custom|default)\]\s+(.+?)\s+->\s+(.+)$/.exec(l);
+      if (!m) return;
+      if (m[1] === tier && m[2] === rel) { V.loaded = true; V.mine = m[3]; } else others.push({ file: m[1] + '/' + m[2], claims: m[3] });
+    });
+    var mineZone = V.mine || (str(doc && doc.zone) + ' ' + (isArr(doc && doc.variants) ? doc.variants.join(' ') : ''));
+    others.forEach(function (o) {
+      var a = tags(mineZone), b = tags(o.claims), same = base(o.claims) === base(mineZone);
+      if (same && (!a.length || !b.length ? a.length === b.length : a.some(function (x) { return b.indexOf(x) >= 0; }))) V.clash.push(o);
+    });
+    V.issues = V.lines.map(function (l) {
+      var at = l.indexOf(V.file + ': '), msg = at >= 0 ? l.slice(at + V.file.length + 2) : l, ref = '';
+      var m = /^(steps|enter|exit)\[(\d+)\](?:\.steps\[(\d+)\])?:\s*([A-Za-z]+)?/.exec(msg);
+      if (m && doc) {
+        var path = [m[1], +m[2] - 1].concat(m[3] ? ['steps', +m[3] - 1] : []), st = IC.ogf && IC.ogf.at ? IC.ogf.at(doc, path) : null;
+        if (isObj(st) && (!m[4] || str(st['do']) === m[4] || !st['do'])) ref = JSON.stringify(path);
+      }
+      var soft = /degrades|nothing reads it|did you mean|warning/i.test(msg);
+      return { msg: msg, ref: ref, level: V.loaded || soft ? 'warn' : 'error' };
+    });
+  };
   A.ogreCheckHtml = function () {
+    var V = A.st.verify;
+    if (V && V.kind === A.st.kind) {
+      if (V.busy) return '<div class="oic-ph"><b>Ogre\'s answer:</b> Ogre is reloading your zone files...</div>';
+      var h = '<div class="oic-ph"><b>Ogre\'s answer</b> (it reloaded your zone files' + (V.count ? ': ' + esc(V.count) : '') + ')</div>' +
+        '<div class="oic-pr oic-pr-' + (V.loaded ? 'ok' : 'error') + '"><b>' + (V.loaded ? '&#10003;' : '!') + '</b>' +
+        (V.loaded ? 'Ogre loaded this file: ' + esc(V.mine) + '.' : 'Ogre did not load this file' + (V.issues.length ? ': the lines below say why.' : ' (it lists no file of that name: is it saved where Ogre reads?).')) + '</div>';
+      for (var i = 0; i < V.issues.length && i < 100; i++) {
+        var p = V.issues[i];
+        h += '<div class="oic-pr oic-pr-' + p.level + '"' + (p.ref ? ' data-oic-ref="' + esc(p.ref) + '"' : '') + '><b>' + (p.level === 'error' ? '!' : '?') + '</b>Ogre: ' + esc(p.msg) + '</div>';
+      }
+      for (var c = 0; c < V.clash.length; c++) h += '<div class="oic-pr oic-pr-warn"><b>?</b>Another loaded file claims the same zone and difficulty: ' + esc(V.clash[c].file) + ' (' + esc(V.clash[c].claims) +
+        '). Queued by name, Ogre picks one of them: a file of yours in custom over Ogre\'s own.</div>';
+      if (V.nolog) h += '<div class="oic-note">Ogre\'s log could not be read here, so its lines about this file are missing: Reload in the console shows them.</div>';
+      return h;
+    }
     var o = A.st.ogre;
     if (!o || o.ok == null || o.kind !== A.st.kind) return '';
     var h = '<div class="oic-ph"><b>Ogre\'s own check:</b> ' + (o.ok ? 'the file would load' : 'the file would not load') + ' (' + o.errors + ' error' + (o.errors === 1 ? '' : 's') +
@@ -185,6 +264,7 @@
       }
     });
     h.on('say', function (p) {
+      if (A.testSaid && A.testSaid(p)) return;
       if (/^ok:saved/.test(p) && A._saving) {
         A.st.saved = A._saving; A._saving = null;
         if (A._savingTo) { A.st.gamePath = A._savingTo.gamePath; if (A._savingTo.where) A.st.where = A._savingTo.where; A._savingTo = null; }
@@ -194,6 +274,8 @@
     });
     h.on('list', function (p) { if (A.onList) A.onList(p); });
     h.on('map', function (p) { if (A.onMapMsg) A.onMapMsg(p); });
+    h.on('verify', function (p) { A.onVerify(p); });
+    h.on('test', function (p) { if (A.onTest) A.onTest(p); });
     h.on('check', function (p) { A.ogreResult(p); });
     h.on('route', function (p) {
       var pts = str(p).split(';').map(function (t) { return t.split(',').map(Number); }).filter(function (q) { return q.length === 3 && q.every(isFinite); });

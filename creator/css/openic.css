@@ -146,6 +146,19 @@
 #openic-root .oic-pr b { display: inline-block; width: 14px; text-align: center; margin-right: 4px; }
 #openic-root .oic-pr-error b { color: var(--text-bad); }
 #openic-root .oic-pr-warn b { color: var(--text-warn); }
+#openic-root .oic-pr-ok b { color: var(--text-ok); }
+#openic-root .oic-test { padding: 4px 8px; margin: 2px 0 4px; border-left: 3px solid var(--accent-cyan); background: var(--tint-accent); border-radius: 3px; }
+#openic-root .oic-testrow { flex-wrap: wrap; gap: 4px; }
+#openic-root .oic-when { border: 1px solid var(--border-dark); border-radius: 4px; padding: 4px 6px; margin: 4px 0 8px; background: var(--bg-content); }
+#openic-root .oic-cond { border-left: 3px solid var(--accent-purple); padding: 3px 6px; margin: 4px 0; background: var(--tint-hover); border-radius: 3px; }
+#openic-root .oic-cond-w { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+#openic-root .oic-cond-w i { color: var(--text-warn); font-style: normal; }
+#openic-root .oic-cond-w .oic-x { margin-left: auto; cursor: pointer; color: var(--text-secondary); }
+#openic-root .oic-cond-f { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+#openic-root .oic-cond-f span { min-width: 92px; color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); overflow-wrap: anywhere; }
+#openic-root .oic-cond-f input[type=text], #openic-root .oic-cond-f input[type=number], #openic-root .oic-cond-f select { flex: 1; min-width: 0; }
+#openic-root .oic-cond-add { width: 100%; margin-top: 4px; }
+#openic-root .oic-pr-ok { background: rgba(127, 220, 154, 0.10); }
 #openic-root .oic-pr-info b { color: var(--accent-cyan); }
 #openic-root .oic-pr-error { background: var(--tint-bad); }
 #openic-root .oic-line { display: flex; gap: 10px; align-items: baseline; padding: 1px 0; }
@@ -223,7 +236,7 @@
 #openic-root .fv-tools .fv-tmenu span:last-child { margin-bottom: 0; }
 #openic-root .fv-tools .fv-tmenu span.fv-on { color: var(--accent-cyan); }
 #openic-root .fv-tools .fv-tmenu span.fv-on::before { content: "\2713"; position: absolute; left: 7px; }
-#openic-root .fv-parts { margin-right: 250px; }
+#openic-root .fv-parts { margin-right: 250px; max-height: none; overflow: visible; }
 #openic-root .fv-bar span, #openic-root .fv-pc { font-size: calc(12px * var(--oic-txt, 1)); }
 /* the add-a-step strip: docked along the bottom, the width of the chart, never over a box's middle */
 #openic-root .fv-pal { left: 0; right: 0; bottom: 0; max-width: none; border-radius: 0; border-width: 1px 0 0 0; padding: 4px 8px; }
@@ -249,7 +262,9 @@
 #openic-root .oic-wl-acts { margin: 6px 0 2px 22px; }
 /* the right side: three tabs */
 #openic-root .oic-sidewrap { width: 380px; flex: none; display: flex; flex-direction: column; min-height: 0; border-left: 1px solid var(--border-dark); background: var(--bg-panel); }
-#openic-root .oic-side { width: auto; flex: 1 1 auto; border-left: none; }
+#openic-root .oic-side { width: auto; flex: 1 1 auto; border-left: none; overflow-x: hidden; min-width: 0; }
+#openic-root .oic-side select, #openic-root .oic-side input, #openic-root .oic-side textarea { max-width: 100%; }
+#openic-root .oic-side small, #openic-root .oic-side .oic-words, #openic-root .oic-side .oic-runs { overflow-wrap: break-word; word-wrap: break-word; }
 #openic-root .oic-tabs { display: flex; border-bottom: 1px solid var(--border-dark); background: var(--bg-content); }
 #openic-root .oic-tabs span { flex: 1; text-align: center; padding: 7px 4px; cursor: pointer; color: var(--text-secondary); font-size: calc(12.5px * var(--oic-txt, 1)); border-bottom: 2px solid transparent; }
 #openic-root .oic-tabs span:hover { color: var(--text-primary); background: var(--tint-hover); }

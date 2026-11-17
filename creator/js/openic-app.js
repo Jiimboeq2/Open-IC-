@@ -365,7 +365,7 @@
     if (u) u.disabled = !s.undo.length;
     if (r) r.disabled = !s.redo.length;
     var c = Z().counts(s.probs), b = $('openic-checkbtn');
-    if (b) { b.textContent = s.doc ? (c.error ? c.error + ' problem' + (c.error === 1 ? '' : 's') : 'No problems') + (c.warn ? ', ' + c.warn + ' to check' : '') : 'Problems'; b.className = 'oic-btn' + (c.error ? ' oic-bad' : (c.warn ? ' oic-warnb' : '')); }
+    if (b) { b.textContent = 'Validate' + (s.doc ? ': ' + (c.error ? c.error + ' problem' + (c.error === 1 ? '' : 's') : 'no problems') + (c.warn ? ', ' + c.warn + ' to check' : '') : ''); b.className = 'oic-btn' + (c.error ? ' oic-bad' : (c.warn ? ' oic-warnb' : '')); }
     var segs = document.querySelectorAll('#openic-views [data-oic-view]');
     for (var i = 0; i < segs.length; i++) segs[i].className = segs[i].getAttribute('data-oic-view') === s.view ? 'oic-on' : '';
     var views = ['flow', 'words', 'json', 'map'];
@@ -563,8 +563,8 @@
     var el = $('openic-problems'), s = A.st;
     if (!el) return;
     if (!s.doc) { el.innerHTML = ''; return; }
-    var c = Z().counts(s.probs), h = '<div class="oic-ph">' + (s.probs.length ? 'Checks: ' + c.error + ' problem' + (c.error === 1 ? '' : 's') + ', ' + c.warn + ' to check, ' + c.info + ' tip' + (c.info === 1 ? '' : 's') + '.' :
-      'Checks: nothing found.') + (s.kind !== 'jb' ? ' Then Reload in Ogre: its log line is the final word.' : '') + '</div>';
+    var c = Z().counts(s.probs), h = (A.testHtml ? A.testHtml() : '') + '<div class="oic-ph">' + (s.probs.length ? 'Checks: ' + c.error + ' problem' + (c.error === 1 ? '' : 's') + ', ' + c.warn + ' to check, ' + c.info + ' tip' + (c.info === 1 ? '' : 's') + '.' :
+      'Checks: nothing found.') + (s.kind === 'zone' || s.kind === 'fight' ? ' Ogre\'s own word: <span class="oic-link" data-oic="ogre-ask" title="In game: Ogre checks the saved file (or reloads your zone files) and says whether it loads">Ask Ogre about this file</span>' : '') + '</div>';
     for (var i = 0; i < s.probs.length && i < 200; i++) {
       var p = s.probs[i];
       h += '<div class="oic-pr oic-pr-' + p.level + '"' + (p.ref ? ' data-oic-ref="' + esc(p.ref) + '"' : '') + '><b>' + (p.level === 'error' ? '!' : (p.level === 'warn' ? '?' : 'i')) + '</b>' +
@@ -716,6 +716,7 @@
     else if (v === 'undo') A.undo();
     else if (v === 'redo') A.redo();
     else if (v === 'check') { A.refresh(); var pe = $('openic-problems'); if (pe && pe.scrollIntoView) pe.scrollIntoView({ block: 'nearest' }); }
+    else if (v === 'ogre-ask') A.ogreAsk();
     else if (v === 'game') { if (menu && menu.style.display === 'block') A.closeMenu(); else A.gameMenu(anchor); }
     else if (v.indexOf('view:') === 0) { A.st.view = v.slice(5); A.refresh(); if (A.st.view === 'flow' && A.st.chart) setTimeout(function () { A.st.chart.fit(); }, 30); }
     else if (v === 'json-apply') A.applyJson();
@@ -741,6 +742,7 @@
       if (t.getAttribute('data-oic-field') != null) A.setField(t.getAttribute('data-oic-field'), t.value);
       else if (t.getAttribute('data-oic-tick') != null) A.setTick(t.getAttribute('data-oic-tick'), t.checked);
       else if (t.getAttribute('data-oic-sf') != null) A.setStepField(t.getAttribute('data-oic-sf'), t.type === 'checkbox' ? t.checked : t.value);
+      else if (t.getAttribute('data-oic-cf') != null && A.setCondField) A.setCondField(t.getAttribute('data-oic-cf'), t.type === 'checkbox' ? t.checked : t.value);
       else if (t.id === 'openic-file') A.readFile(t.files && t.files[0]);
     });
     root0.addEventListener('input', function (e) { if (e.target.id === 'openic-json') e.target._dirty = true; else if (A.onInput) A.onInput(e); });

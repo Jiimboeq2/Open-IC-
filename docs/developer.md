@@ -31,6 +31,8 @@ Loaded by the page (`creator/index.html`, in this order; in `creator/js` unless 
 | `openic-browse.js` | `IC.app` | In game, the file window of Open and Save as: the folders Ogre and ISXJQB read, their folders and files, New folder. |
 | `openic-edit.js` | `IC.app` | Where a file is written: the Steps view and Jump to; the right side's tabs (Add a step by category, This step as a form with who runs it and the who-does-it backup, File settings). |
 | `openic-map.js` | `IC.app` | The Map view: spots seen as the game's map shows them, zoom and drag; in game ISXJQB's saved map of my zone under them, floor by floor. |
+| `openic-cond.js` | `IC.app` | When and who, at the top of This step: who does it, Only if (a step's `when`: all or any, `not`, presets and every condition), Repeat (a `repeat` block: times, until, while). |
+| `openic-test.js` | `IC.app` | Test in game: the picked steps as a zone file of their own, run, watched, then switched off; a fight file's setup. |
 | `creator/data/spell-icons.js` | `IC.iconData` | The ability list: name, icon, backdrop, classes (built by `tools/build-icon-data.js`). |
 | `creator/data/item-icons.js` | `IC.iconData` | Item names to their pictures in `creator/assets/item_atlases`. |
 | `openic-selftest.js` | `IC.app.selftest` | The self test (`index.html#selftest`). |
@@ -114,7 +116,8 @@ Ogre's windows share.
 
 Page to script: the page sets hidden fields `openic-arg-<name>` with `ogreUISet('openic', id, value)`, then calls
 `ogreCall('cmd', 'Event[OpenIC_<Action>]:Execute')`. Actions: `Hello`, `Reload`, `Check`, `Open`, `Save`, `Queue`,
-`Run`, `SetUp`, `JbRun`, `JbQueue`, `Route`, `List`, `MkDir`, `Map`. Fields: `kind`, `path`, `text` (the file's JSON
+`Run`, `SetUp`, `JbRun`, `JbQueue`, `Route`, `List`, `MkDir`, `Map`, `Verify` (Ask Ogre by a reload: `tier`, `path`,
+`zone`), `Test` (`path` of the saved test file), `TestStop`, `FightTest` (`named`). Fields: `kind`, `path`, `text` (the file's JSON
 in one line, for `Save`), `tier` (`default` or `custom`, for `Check`), `root` and `name` (the file window's folder and
 a new folder's name, for `List` and `MkDir`; for `Map`, `kind` is `zone` or `art` and `name` a zone token or a floor
 key), `named`, `zone`, `variant`, `loc`.
@@ -124,7 +127,22 @@ Channels: `ext` (which extensions are loaded, and `check` / `fcheck`: whether th
 `me` (`x,y,z|zone|target|class|zone short name`), `file` (an opened file's JSON), `say` (`ok:` / `warn:` / `err:` and
 a message), `route` (`x,y,z;x,y,z;...`), `check` (Ogre's `Validation` JSON: `ok`, `errors`, `warnings`, `issues`),
 `list` (one folder: `<root>|<path>|<1 = there>` then `>D|<folder>` and `>F|<file>|<bytes>`; a Windows name holds
-neither `|` nor `>`), `map` (`<kind>|<name>|1` when the file ran in the page, `|0` when ISXJQB has none).
+neither `|` nor `>`), `map` (`<kind>|<name>|1` when the file ran in the page, `|0` when ISXJQB has none), `verify`
+(one line a message: `begin|<tier>/<path>`, `s|` Ogre's count line, `l|` a loaded file that claims the zone, `p|` a
+line of Ogre's log about this file, `nolog|`, `end|`), `test` (`out|` what Ogre printed, `state|` and
+`end|<RunState>|<Verdict>|<Note>`, `fight|` and `fightend|<IsActive>`). Ogre's printed lines carry colour codes (BEL
+and a letter), which the page takes out.
+
+Ask Ogre with an Ogre that has no `Validate`: `IC:Reload` prints only its count line on the console (`redirect`
+catches it); the line for each problem goes to Ogre's log, `x64\Extensions\ISXDK35\ISXOgreEQ2.<session>.log`, as
+`<tier>/<path>: <message>` (steps counted from 1), so the script notes the log's size before the reload and reads from
+there (`file:Seek`). `IC:List[<zone>]` prints the loaded files that claim the zone. `IC:Check` is not used: it also
+starts Ogre's zone-reset flow, which opens the game's zone reset window to read the timers.
+
+The chart scrolls the native way. Ogre's windows are drawn by Ultralight, where the wheel did not reach the page's own
+handler; so the canvas sits in a scroll layer (`.fv-scroll`, kept away from its edges and a little larger than the
+chart so its bars are clipped) and every native scroll is folded into the chart's own view (`scrolled` in
+`ic-flowview.js`). Ctrl+wheel zooms where the wheel does reach the page; the - and + buttons always do.
 
 ISXJQB's saved map: its JB Map writes `Scripts\Eq2JCommon\JB\Data\jqbmap_zone_<zone>.js` (it sets
 `window.__jqbmapZone`: the zone's `floors`, each with a `key`, its edges `min_x` / `max_x` / `min_z` / `max_z`, a

@@ -112,6 +112,11 @@ On 2026-11-17, with the ISXOgreEQ2 and ISXOgreX of 2026-11-16 (`host/OpenIC.iss`
   folder** made the folder and saved into it, and the file read back.
 - **Buttons after the window is closed and opened again** (0.2.2): a click on Plain English switched the view and New
   opened its question, both before and after a close and open.
+- **Ask Ogre by a reload** (0.5.0): `redirect` caught `IC:Reload`'s "63 zone(s) from 70 file(s) - 7 skipped, 37
+  warning(s)" and `IC:List`'s "[custom] <path>  ->  <zone> [<difficulty>]" lines; Ogre's log held one
+  "custom/<path>: <message>" line per problem (the seven skipped files: heroicOpportunity with Send to and another op);
+  a file's `Size`, `Seek` and `Read` worked on a test file. `IC:Check` was tried and is not used: it started Ogre's
+  zone-reset flow (it opened the game's zone reset window, read the timers and closed it).
 
 Two lessons for anyone extending the script: one LavishScript command carrying 33 KB took a game client down, so keep
 any text in a command to a few KB; and calling a method an extension does not have ends the script that calls it.
@@ -123,6 +128,11 @@ was not run in game for this release:
 
 - ISXJQB: `jb ic rundirect`, `jb ic queue` (their forms are ISXJQB's own usage lines).
 - ISXADD: `u1nav path` and the `U1Nav` members.
+- Test in game (`OpenIC_OnTest`, `OpenIC_OnTestStop`, `OpenIC_OnFightTest`): `ISXOgreEQ2.IC:Run` on the saved test
+  file, `IC:Stop`, the members `RunState`, `Verdict`, `Note` and `Encounter.IsActive` (read only when they exist),
+  `ISXOgreEQ2.Encounter:Reload` then `OgreBotAPI.Bot:SetUpFor`: written when no game client was up. The script loads
+  (checked in InnerSpace's uplink, where it stops before opening a window), and the stand-in for Ogre drives the page's
+  side.
 - The Map's ISXJQB maps (`OpenIC_OnMap`) and the zone's short name it uses (`${Zone.ShortName}`, which Ogre's own
   OgreEffectTracker.iss reads): written when no game client was up. The page's side is driven by the stand-in for
   Ogre (`tests/fake-ogre.js`); the script's side runs only calls proven elsewhere in it (`filepath:FileExists`,

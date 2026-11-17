@@ -139,8 +139,9 @@
   A.renderNav = function () {
     var nav = $('openic-nav'), s = A.st;
     if (!nav) return;
-    if (!s.doc || (s.view !== 'words' && s.view !== 'flow')) { nav.style.display = 'none'; return; }
-    if (s.view === 'flow' || !A._secs) { var W0 = IC.words || {}; A._secs = []; Z().lines(A.graphNow(false)).forEach(function (L, i, all) { if (L.lane || L.head) A._secs.push({ title: plain(L.text), node: (all[i + 1] || {}).id || L.id || '' }); }); }
+    /* the Steps view only: the Chart has its own chips for its parts */
+    if (!s.doc || s.view !== 'words') { nav.style.display = 'none'; return; }
+    if (!A._secs) { A._secs = []; Z().lines(A.graphNow(false)).forEach(function (L, i, all) { if (L.lane || L.head) A._secs.push({ title: plain(L.text), node: (all[i + 1] || {}).id || L.id || '' }); }); }
     if (A._secs.length < 2) { nav.style.display = 'none'; return; }
     var h = '<span class="oic-note">Jump to:</span>';
     for (var i = 0; i < A._secs.length; i++) h += '<span class="oic-jump" data-oic="ed:jump:' + i + '">' + esc(A._secs[i].title) + '</span>';
@@ -208,6 +209,7 @@
   var FAMILY = { warrior: ['Guardian', 'Berserker'], crusader: ['Paladin', 'Shadowknight'], brawler: ['Monk', 'Bruiser'], cleric: ['Templar', 'Inquisitor'],
     druid: ['Warden', 'Fury'], shaman: ['Mystic', 'Defiler'], sorcerer: ['Wizard', 'Warlock'], enchanter: ['Illusionist', 'Coercer'], summoner: ['Conjuror', 'Necromancer'],
     rogue: ['Swashbuckler', 'Brigand'], bard: ['Troubador', 'Dirge'], predator: ['Ranger', 'Assassin'], animalist: ['Beastlord'], shaper: ['Channeler'] };
+  A.WHO = WHO; A.FAMILY = FAMILY; A.whoSay = whoSay;
   /* "the group has one", as Ogre's own fight files write it: a count of the roster by archetype, class or role */
   A.hasCond = function (who) {
     var w = str(who).trim(), lw = w.toLowerCase(), cnt = function (by, is) { return { count: { of: 'roster', scope: 'group', by: by, is: is, compare: '>=', value: 1 } }; };
@@ -273,9 +275,16 @@
       if (has(st, 'name')) gb += '<button class="oic-btn" data-oic="here:name" title="Use your current target\'s name">My target</button>';
       if (gb) h += '<div class="oic-row">' + gb + '</div>';
     }
+    if (A.testRowHtml) h += A.testRowHtml(st, JSON.parse(s.sel));
     var sp = A.stepSpec(st), K = sp && sp.keys ? sp.keys : null;
+    /* who does it, only if, repeat: first, in words (openic-cond.js); the form below leaves those keys out */
+    var WHEN = { forwho: 1, sendTo: 1, when: 1 };
+    if (A.whenHtml && isObj(st) && (s.kind === 'zone' || s.kind === 'fight')) {
+      var whoKeys = ['forwho', 'sendTo'].filter(function (k) { return (K && has(K, k)) || has(st, k) || (k === 'forwho' && s.kind === 'fight'); });
+      h += A.whenHtml(st, JSON.parse(s.sel), whoKeys);
+    } else WHEN = {};
     if (K && isObj(st)) {
-      var keys = Object.keys(K), main = '', more = '';
+      var keys = Object.keys(K).filter(function (k) { return !WHEN[k]; }), main = '', more = '';
       keys.sort(function (a, b) { var ra = (K[a].required ? 0 : (has(st, a) ? 1 : 2)), rb = (K[b].required ? 0 : (has(st, b) ? 1 : 2)); return ra - rb || (a < b ? -1 : 1); });
       for (var k = 0; k < keys.length; k++) {
         var row = A.fieldHtml(keys[k], K[keys[k]] || {}, st);
@@ -301,7 +310,9 @@
     else if (t === 'loc') input = '<input type="text" data-oic-sf="' + key + '|loc" value="' + esc(isArr(v) ? v.join(', ') : str(v)) + '" placeholder="x, y, z">';
     else if (t === 'string' || t === 'row' || t === 'string|int') input = '<input type="text" data-oic-sf="' + key + '|string" value="' + esc(v == null ? '' : v) + '" spellcheck="false">';
     else input = '<textarea data-oic-sf="' + key + '|json" class="oic-ta oic-ta-s" spellcheck="false">' + esc(v === undefined ? '' : JSON.stringify(v, null, 1)) + '</textarea>';
-    return '<div class="oic-key oic-field' + (set ? ' oic-key-set' : '') + '">' + lab + input + (ks.about ? '<small>' + esc(about(ks.about)) + '</small>' : '') + '</div>';
+    /* a line that only lists an op list's values says nothing the op's own words do not */
+    var listOnly = t === 'enum' && ks.valuesAbout && !str(ks.about).replace(new RegExp('\\b(' + (ks.values || []).map(function (x) { return str(x).replace(/[^\w]/g, ''); }).filter(Boolean).join('|') + '|or|and)\\b', 'g'), '').replace(/[\s,.;]/g, '');
+    return '<div class="oic-key oic-field' + (set ? ' oic-key-set' : '') + '">' + lab + input + (ks.about && !listOnly ? '<small>' + esc(about(ks.about)) + '</small>' : '') + '</div>';
   };
   /* a field changed: the step takes the value (empty = the key goes, unless it is needed) */
   A.setStepField = function (spec0, val) {

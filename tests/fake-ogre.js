@@ -49,6 +49,18 @@ const prelude = `
     }
     say('map', kind + '|' + name + '|' + (got ? '1' : '0'));
   }
+  /* Ask Ogre without Ogre's Validate, as OpenIC_SendVerify answers it (Ogre's colour codes are BEL and a letter) */
+  function verifyAnswer() {
+    var v = function (id) { return (document.getElementById(id) || {}).value || ''; };
+    var file = v('openic-arg-tier') + '/' + v('openic-arg-path'), B = String.fromCharCode(7);
+    say('verify', 'begin|' + file);
+    say('verify', 's|[14:00:00.000] [Ogre][IC] ' + B + 'g3 zone(s) from 3 file(s) - 0 skipped, 1 warning(s)' + B + 'w');
+    say('verify', 'l|[14:00:00.001] [Ogre][IC] ' + B + 'y  [' + v('openic-arg-tier') + '] ' + v('openic-arg-path') + '  ->  Sample Zone: The Test Halls [Heroic]' + B + 'w');
+    say('verify', 'l|[14:00:00.001] [Ogre][IC] ' + B + 'y  [default] Sample/other.json  ->  Sample Zone: The Test Halls [Heroic]' + B + 'w');
+    say('verify', 'l|[14:00:00.002] [Ogre][IC] ' + B + 'g2 of 3 zone file(s) matching' + B + 'w');
+    say('verify', 'p|[14:00:00.000] [Ogre][IC] ' + file + ': steps[3]: loot: "sample" is not a field of this action - nothing reads it');
+    say('verify', 'end|');
+  }
   window.ogreCall = function (kind, line) {
     if (kind !== 'cmd') return;
     log.push(line);
@@ -57,6 +69,15 @@ const prelude = `
     if (/OpenIC_List/.test(line)) { listAnswer(); return; }
     setTimeout(function () {
       if (/OpenIC_Map/.test(line)) mapAnswer();
+      if (/OpenIC_Verify/.test(line)) verifyAnswer();
+      /* Save, Test and FightTest, as OpenIC.iss answers them */
+      if (/OpenIC_Save\]/.test(line)) say('say', 'ok:saved ' + ((document.getElementById('openic-arg-path') || {}).value || ''));
+      if (/OpenIC_Test\]/.test(line)) {
+        say('test', 'out|[14:00:00.000] [Ogre][IC] ' + String.fromCharCode(7) + 'g3 zone(s) from 3 file(s) - 0 skipped, 0 warning(s)' + String.fromCharCode(7) + 'w');
+        say('test', 'state|running|pending|');
+        setTimeout(function () { say('test', 'end|done|completed|'); }, 30);
+      }
+      if (/OpenIC_FightTest\]/.test(line)) { say('test', 'fight|asked'); say('test', 'fight|TRUE'); say('test', 'fightend|TRUE'); }
       if (/OpenIC_Hello/.test(line)) { say('ext', 'ogrex=1;eq2=1;ogreeq2=1;bot=1;jqb=0;add=1;check=1;fcheck=1'); say('me', '10.5,2,-30.25|Sample Zone: The Test Halls [Heroic]|A Target|fury|Sample_Zone'); }
       if (/OpenIC_Check/.test(line)) {
         var answer = '{"ok":false,"errors":1,"warnings":0,"issues":[{"list":"steps","step":1,"message":"a sample problem","warning":false}]}';
@@ -72,6 +93,8 @@ const prelude = `
 /* what OpenIC.iss does once the window is open: ISXOgreX.UI:EvalFile of each asset part, in order */
 const parts = fs.readdirSync(path.join(ROOT, 'host')).map((f) => /^OpenIC-assets-(\d+)\.js$/.exec(f)).filter(Boolean)
   .sort((a, b) => a[1] - b[1]).map((m) => fs.readFileSync(path.join(ROOT, 'host', m[0]), 'utf8').replace(/<\/(script)/gi, '<\\/$1'));
+/* the window's body is a box of its own size, as in Ogre's window (the page fits itself to it: IC.app.fitWindow) */
 fs.writeFileSync(out, '<!doctype html>\n<html><head><meta charset="utf-8"><title>Ogre window stand-in</title></head><body style="margin:0;background:#000;">\n' +
-  prelude + '\n' + win + '\n' + parts.map((p) => '<script>\n' + p + '\n</script>\n').join('') + '</body></html>\n');
+  prelude + '\n<div id="ogre-window-body" style="position:fixed;left:0;top:0;width:1180px;height:880px;overflow:hidden;">\n' + win + '\n</div>\n' +
+  parts.map((p) => '<script>\n' + p + '\n</script>\n').join('') + '</body></html>\n');
 console.log('wrote ' + out);

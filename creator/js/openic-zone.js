@@ -390,6 +390,9 @@
         if (d === 'teleporter' && !has(st, 'name') && !has(st, 'walkOnto')) say('error', path, 'teleporter: give its name, or walkOnto and landing.');
         if (d === 'named' && st.stepId && !/^named\d+(\.|$)/.test(str(st.stepId))) say('info', path, 'A named\'s stepId reads best as named1, named2 ...: Skip the boss and part-way starts go by it.');
         if (kind === 'zone' && Z.ONE_BOX[d]) say('info', path, d + ' in a zone file changes the IC character only: it cannot be sent to the others. For every box, put it in the named\'s fight file.');
+        /* Ogre's load refuses this one (its reload of 2026-11-17 skipped seven files for it) */
+        if (kind === 'zone' && d === 'heroicOpportunity' && has(st, 'sendTo') && ['disableIcon', 'allowIcon', 'clearIcons'].indexOf(str(st.op)) < 0)
+          say('error', path, 'heroicOpportunity: Send to works only with op disableIcon, allowIcon or clearIcons: Ogre skips the whole file. Take Send to off, or use a fight file (forwho) for the others.');
         if (d !== 'template') checkKeys(st, path, kind === 'fight' ? withAwait(keys) : keys, what, 'warn');
         if (zoneVerb) checkTyped(st, path, keys, d);
         if (has(st, 'wait')) say('warn', path, 'A step has either do or wait, not both.');

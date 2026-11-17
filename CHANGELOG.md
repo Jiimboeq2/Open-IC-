@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.5.0 - 2026-11-17
+
+- **When and who**, at the top of This step: who does it (with the backup when the group has no such class);
+  **Only if**, the step's conditions in words: the common ones first (the group has a class or archetype, something
+  is near, I am in combat, the named is in combat, its health, a detriment, my camp spot, a saved value, an OgreBot
+  option, the zone, a timer), then every condition Ogre has, each with its settings, **not** to turn one round, and
+  **all of these** or **any one of these**; **Repeat** a number of times, until something is true, or while it is
+  (a repeat block, as Ogre's files write it; **Once** takes the step out again).
+- **Validate** (the bar button that was Problems) and **Ask Ogre about this file**: Ogre's Validate when it has one;
+  otherwise Ogre reloads your zone files and the page reads Ogre's own lines about this file: loaded or not, each
+  problem on its step, and another file that claims the same zone and difficulty. A new check from that: a
+  heroicOpportunity step with Send to and an op other than disableIcon, allowIcon or clearIcons (Ogre skips the file;
+  it skipped seven of the converted ones).
+- **Test in game**: this step, through the next named, or from the start to here (or through this named), while you
+  stand in the zone; **Stop it**; a fight file's setup (**Use in game > Test this fight file now**). Not run in game
+  yet: no game client was up.
+- The Chart scrolls with the wheel in Ogre's window (it is drawn by Ultralight, where the wheel never reached the
+  chart's own handler: the chart now scrolls natively); its part chips show in full instead of behind a small scroll
+  bar, and the Jump to row shows on the Steps view only. The Map has - and + buttons.
+- Words: "the group has a bard" (not "the troubadors in my group number at least 1"); a condition turned round reads
+  "we are not in combat".
+- The right side no longer scrolls sideways; an op list's line of bare values is left out (the op's own words say more).
+
 ## 0.4.0 - 2026-11-17
 
 Writing files, not just looking at them.

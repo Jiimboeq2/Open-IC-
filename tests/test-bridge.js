@@ -10,7 +10,7 @@ const { ROOT, ok, test, done } = require('./lib.js');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const iss = read('host/OpenIC.iss'), host = read('creator/js/openic-host.js'), html = read('creator/index.html');
 const page = read('creator/js/openic-app.js') + read('creator/js/openic-game.js') + read('creator/js/openic-browse.js') + read('creator/js/openic-edit.js') +
-  read('creator/js/openic-map.js') + host;
+  read('creator/js/openic-map.js') + read('creator/js/openic-test.js') + host;
 const uniq = (a) => Array.from(new Set(a)).sort();
 const lines = iss.split(/\r?\n/);
 /* the comment lines just above the first line that uses this call (not a comment itself) */
@@ -99,7 +99,7 @@ test('the script never writes under Scripts/Ogre and refuses paths that climb ou
 test('the calls Ogre\'s developer API reference documents say where (API: ...)', () => {
   const documented = ['ISXOgreEQ2.IC:Reload', 'ISXOgreEQ2.Encounter:Reload', 'ISXOgreEQ2.IC:Validate', 'ISXOgreEQ2.Encounter:Validate', 'ISXOgreEQ2.IC:Queue[',
     'ISXOgreEQ2.IC:Run[', 'OgreBotAPI.Bot:SetUpFor[', 'OgreBotAPI.Util.FileExists', 'ISXOgreX.UI:Open[', 'ISXOgreX.UI:EvalFile[', 'ISXOgreX.UI:Set[',
-    'ISXOgreX.UI.Value[', 'ISXOgreX.UI.Window[', 'ISXOgreX.UI:Close['];
+    'ISXOgreX.UI.Value[', 'ISXOgreX.UI.Window[', 'ISXOgreX.UI:Close[', 'ISXOgreEQ2.IC:List[', 'ISXOgreEQ2.IC:Stop'];
   for (const c of documented) {
     const n = notesFor(c);
     ok(n.at >= 0, c + ' is used');
@@ -116,7 +116,7 @@ test('every call the reference does not cover is marked UNVERIFIED', () => {
   }
 });
 test('the calls run in game say what they did (PROVEN ...)', () => {
-  for (const u of ['ISXOgreX.UI:Set[', 'ISXOgreX.UI:EvalFile[', 'Doc:ParseFile[', 'F:Open[writeover]', 'Doc:WriteFile[']) {
+  for (const u of ['ISXOgreX.UI:Set[', 'ISXOgreX.UI:EvalFile[', 'Doc:ParseFile[', 'F:Open[writeover]', 'Doc:WriteFile[', 'ISXOgreEQ2.IC:List[', 'F:Seek[']) {
     const n = notesFor(u);
     ok(n.at >= 0, u + ' is used in the script');
     ok(/PROVEN \d{4}-\d\d-\d\d/.test(n.notes), u + ' has a PROVEN note above it');

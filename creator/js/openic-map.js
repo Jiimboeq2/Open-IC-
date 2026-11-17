@@ -203,7 +203,9 @@
     var fl = '';
     if (floors.length > 1) { fl = ' <span class="oic-note">Floor:</span>'; floors.forEach(function (f, k) { fl += ' <span class="oic-jump' + (k === fi ? ' oic-on' : '') + '" data-oic="map:floor:' + k + '">' + esc(floorWord(f, k)) + '</span>'; }); }
     note.innerHTML = esc(pts.length + ' spot' + (pts.length === 1 ? '' : 's') + ' from the file, seen from above as the game\'s map shows it' + (route.length ? '; the dashed line is the route ISXADD found' : '') +
-      (me ? '; the square is you' : '') + '. Click a dot to pick its step. Wheel: zoom, drag: move. ') + '<span class="oic-link" data-oic="map:fit">Fit</span>' + fl + artNote(token, here, fz, F, art);
+      (me ? '; the square is you' : '') + '. Click a dot to pick its step; drag to move. ') +
+      '<span class="oic-jump" data-oic="map:out" title="Zoom out">&#8722;</span> <span class="oic-jump" data-oic="map:in" title="Zoom in">+</span> ' +
+      '<span class="oic-jump" data-oic="map:fit" title="Show all of it">Fit</span>' + fl + artNote(token, here, fz, F, art);
   };
   /* where the map picture comes from, or why there is none */
   function artNote(token, here, fz, F, art) {
@@ -222,6 +224,8 @@
   A.editClick = function (v, el) {
     var m;
     if (v === 'map:fit') { A.mapFit(); return true; }
+    /* zoom about the middle: in game the wheel may never reach the page (Ogre's windows scroll natively) */
+    if (v === 'map:in' || v === 'map:out') { var V0 = A.mapView, f = v === 'map:in' ? 1.25 : 0.8, nk = Math.max(0.25, Math.min(60, V0.k * f)); f = nk / V0.k; V0.ox *= f; V0.oy *= f; V0.k = nk; redraw(); return true; }
     if ((m = /^map:floor:(\d+)$/.exec(v))) { A.jmap.pick = +m[1]; A.mapView = { k: 1, ox: 0, oy: 0 }; redraw(); return true; }
     return ec0 ? ec0(v, el) : false;
   };
