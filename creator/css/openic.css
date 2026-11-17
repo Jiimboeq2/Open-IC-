@@ -172,3 +172,17 @@
 
 /* the self test's report */
 #openic-selftest { display: none; white-space: pre; font: 11px Consolas, monospace; color: #9fe39f; }
+
+/* game icons: a cell of an icon sheet (the sheet is a class: css/openic-icons.css, or the in-game asset pack), a spell
+   icon stacked over its backdrop tile, a class icon */
+.oic-ic { display: inline-block; vertical-align: middle; flex-shrink: 0; background-repeat: no-repeat; image-rendering: pixelated; border-radius: 3px; }
+.oic-stack { position: relative; display: inline-block; vertical-align: middle; flex-shrink: 0; }
+.oic-cls { display: inline-block; vertical-align: middle; flex-shrink: 0; border-radius: 3px; object-fit: cover; }
+#openic-root .oic-wi { display: inline-block; width: 14px; margin-right: 6px; vertical-align: middle; }
+
+/* the class picker */
+#openic-root .oic-menu-wide { width: 460px; padding: 4px 8px 6px; }
+#openic-root .oic-cgrid { display: flex; flex-wrap: wrap; gap: 3px; margin: 2px 0 6px; }
+#openic-root .oic-cc { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px 2px 3px; border: 1px solid var(--border-dark); border-radius: 10px; cursor: pointer; font-size: 10px; color: var(--text-secondary); }
+#openic-root .oic-cc:hover { border-color: var(--accent-cyan); color: var(--text-primary); }
+#openic-root .oic-cc.oic-on { border-color: var(--accent-cyan); color: var(--accent-cyan); background: var(--tint-on); }

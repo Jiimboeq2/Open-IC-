@@ -14,12 +14,18 @@ Make and edit OgreBot zone files (the instance controller) and fight files, see 
 - **JSON** - the whole file as text: edit it, then **Apply**.
 - **Spots** - every spot the file names, seen from above, with you on it.
 
+### Icons
+- **Class** - pick your class, and the classes in your group if you like. Your class's abilities show their own icon; an ability of another class shows that class's icon (its tooltip says who). Until you pick one, the class you play counts.
+- **Ability icons** (above the flowchart) turns the icons off.
+- The icons are EverQuest II's own art. The spell and item sheets load a moment after the window opens.
+
 ### The right side
 - With nothing picked: the file's settings (zone, variants, entrance) and the lines that run it from an ISXJQB quest.
 - With a step picked: its words, its problems, its text (edit, then **Apply**), the keys it can have, and **Here** / **My target** buttons.
 
 ### In game menu
 - **Reload** zone or fight files in Ogre: the console lists every problem Ogre finds.
+- **Check this file by Ogre's own rules** - Ogre reads the open file as it is in the editor (nothing is saved) and its answer is listed with the checks.
 - **Queue** or **Run** the zone file (it must be saved in the custom folder first).
 - **ISXJQB** (when loaded) - run the file with `jb ic rundirect`, or queue the zone.
 - **ISXADD** (when loaded) - a route preview to the picked spot, drawn on the Spots view.

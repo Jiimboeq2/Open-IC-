@@ -116,6 +116,29 @@
       A.select('0');
       ok(/WAYPOINT/.test(document.getElementById('openic-step-json').value), 'step text');
     });
+    test('game icons: my class\'s ability shows its own cell, another class\'s its class icon, Who: <Class>', function () {
+      var D = IC.iconData || {};
+      ok(!!D.spellText && +D.spellSheets === 34, 'the ability list and 34 spell sheets');
+      var doc = { named: [{ name: 'Sample Warden', distance: 50 }], setup: [{ 'do': 'castAbility', ability: 'Abandoned Fury' }] };
+      var keep = { my: A.iconPref.myClass, grp: A.iconPref.group.slice() };
+      A.iconPref.myClass = 'berserker'; A.iconPref.group = [];
+      A.load(clone(doc), { name: 'icons.json', fromDisk: true });
+      s.view = 'flow'; A.refresh();
+      var art = '#openic-flow .fv-node .oic-sp-9[style*="background-position:0px 0px"]';
+      var cell = document.querySelector(art);
+      ok(!!cell, 'the box shows its cell: Abandoned Fury is icon 288, the first cell of sheet 9');
+      var bg = cell ? String(G.getComputedStyle(cell).backgroundImage) : '';
+      ok(/atlas-9\.png|data:image\/png/.test(bg), 'the sheet is there: ' + bg.slice(0, 60));
+      A.iconPref.myClass = 'wizard'; A.refresh();
+      ok(!document.querySelector(art), 'not my class: no ability art');
+      var who = document.querySelector('#openic-flow span[title="Who: Berserker"] img.oic-cls');
+      ok(!!who && /Berserker\.webp|data:image\/webp/.test(who.getAttribute('src')), 'the class icon, with its tooltip');
+      ok(!document.querySelector('#openic-flow .fv-det'), 'no detriment icon');
+      s.fv.abicons = false; A.setAbIcons(false);
+      ok(!document.querySelector('#openic-flow .fv-node .oic-cls'), 'Ability icons off: no class icons on boxes');
+      A.setAbIcons(true);
+      A.iconPref.myClass = keep.my; A.iconPref.group = keep.grp; A.applyIcons();
+    });
     test('a new zone file starts with a way out', function () {
       ok(A.load(Z.newZone({ zone: 'Another Zone', variants: ['[Solo]'] }), {}), 'load');
       ok(s.doc.steps.length === 1 && s.doc.steps[0]['do'] === 'zoneOut', 'zoneOut');
@@ -128,6 +151,13 @@
       A.game('Reload', { kind: 'zone' }, 'ogre ic reload');
       if (H.inGame) ok(sent.length && /Event\[OpenIC_Reload\]:Execute/.test(sent[sent.length - 1]), 'event sent: ' + sent.join(' / '));
       else ok(H.lines.length === n0 + 1 && H.lines[0].line === 'ogre ic reload', 'line shown');
+      if (H.inGame) {
+        A.ogreCheck();
+        ok(/Event\[OpenIC_Check\]:Execute/.test(sent[sent.length - 1]), 'Ogre\'s check asked');
+        var b = document.getElementById('openic-arg-b64').value, back = null;
+        try { back = JSON.parse(decodeURIComponent(escape(G.atob(b)))); } catch (e) { back = null; }
+        ok(!!back && back.zone === s.doc.zone, 'the open file went as base64');
+      }
     });
     var report = out.join('\n') + '\n' + (fails ? 'SELFTEST FAILED: ' + fails + ' of ' + checks + ' checks' : 'SELFTEST OK: ' + checks + ' checks passed');
     var el = document.getElementById('openic-selftest');

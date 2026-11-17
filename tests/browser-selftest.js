@@ -2,6 +2,7 @@
 // the DevTools protocol, and prints its report and any page errors. Optional: skipped when no browser is found.
 //   node tests/browser-selftest.js [--browser <msedge.exe or chrome.exe>] [--page <html file>] [--profile <dir>] [--shot <png>]
 // --page can point at another page that runs the self test (for example the in-game window in a stand-in for Ogre).
+// --eval <expression> runs after the report (a promise is waited for), --wait <ms> before it.
 // Needs Node 22 or newer (its built-in WebSocket).
 'use strict';
 const fs = require('fs');
@@ -61,7 +62,7 @@ async function main() {
   const extra = opt('--eval', '');
   if (extra) {
     await sleep(+opt('--wait', '0') || 0);
-    const r = await send('Runtime.evaluate', { expression: extra, returnByValue: true });
+    const r = await send('Runtime.evaluate', { expression: extra, returnByValue: true, awaitPromise: true });
     console.log('eval: ' + JSON.stringify(r.result && r.result.result ? r.result.result.value : r));
   }
   if (shot) {

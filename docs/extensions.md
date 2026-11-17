@@ -6,7 +6,7 @@ ISXADD is loaded. The in-game window shows which of them it found.
 | | Needed? | What the Creator uses it for |
 |---|---|---|
 | **ISXOgreX** (native OgreBot's core) | needed in game | The window itself (`ISXOgreX.UI`). |
-| **ISXOgreEQ2** (native OgreBot for EverQuest II) | needed in game | Reload zone and fight files, queue and run a zone file, start a fight setup. It is also what runs the files. |
+| **ISXOgreEQ2** (native OgreBot for EverQuest II) | needed in game | Reload zone and fight files, check a file by Ogre's own rules, queue and run a zone file, start a fight setup. It is also what runs the files. |
 | **ISXJQB** | optional | Run a file with ISXJQB, queue a zone in ISXJQB, and the quest-pack lines that run an instance from a quest. Opens ISXJQB's own instance files. |
 | **ISXADD** | optional | A route preview: the path to a spot, drawn on the Spots view, without moving anyone. |
 
@@ -14,18 +14,30 @@ Nothing in the Creator needs the game to open, edit, check or save a file.
 
 ## Native OgreBot (needed in game)
 
-In game, `host/OpenIC.iss` opens the window and does what its buttons ask, with Ogre's documented commands:
+In game, `host/OpenIC.iss` opens the window and does what its buttons ask, with the calls Ogre's developer API
+reference documents (https://kannkor.github.io/ISXOgre/EQ2/bot/developer/api/; the script names the section above
+each call):
 
-| Button | What runs |
-|---|---|
-| Reload zone files | `ogre ic reload` |
-| Reload fight files | `ogre encounter reload` |
-| Queue this zone file | `ISXOgreEQ2.IC:Queue[add,custom,"<path>"]` |
-| Run this zone file now | `ogre ic run custom <path>` (from Ogre's notes; check `ogre ic` on your build) |
-| Start the fight setup now | `oc !ci -SetUpFor igw:${Me.Name} "<named>"` |
-| Open, Save | `jsonvalue:ParseFile`, and `jsonvalue:WriteFile` (saving in game is new: see below) |
+| Button | What runs | Section |
+|---|---|---|
+| Reload zone files | `ISXOgreEQ2.IC:Reload` (the same as `ogre ic reload`) | isxogreeq2/IC |
+| Reload fight files | `ISXOgreEQ2.Encounter:Reload` (the same as `ogre encounter reload`) | isxogreeq2/Encounter |
+| Check this file by Ogre's own rules | `ISXOgreEQ2.IC:Validate[<base64>]`, then `${ISXOgreEQ2.IC.Validation}`; for a fight file `ISXOgreEQ2.Encounter:Validate` and `.Validation` | isxogreeq2/IC, isxogreeq2/Encounter |
+| Queue this zone file | `ISXOgreEQ2.IC:Queue[add,custom,"<path>"]` | isxogreeq2/IC |
+| Run this zone file now | `ISXOgreEQ2.IC:Run[custom,"<path>"]` | isxogreeq2/IC |
+| Start the fight setup now | `OgreBotAPI.Bot:SetUpFor[igw:${Me.Name},"<named>",TRUE]` | ogrebotapi/Bot |
+| Open | `OgreBotAPI.Util.FileExists`, then `jsonvalue:ParseFile` | ogrebotapi/Util |
+| Save | `jsonvalue:WriteFile` (saving in game is new: see below) | not in the reference |
 
 In a browser the same buttons show the console line to type instead.
+
+**Check this file by Ogre's own rules** sends the open file, as it is in the editor, to Ogre's own loader; nothing is
+saved or reloaded. Ogre's answer (`ok`, `errors`, `warnings` and each issue with its step) is listed under the
+page's own checks; click an issue to pick its step.
+
+The window itself uses `ISXOgreX.UI:Open`, `:Set`, `:Close`, `.Value`, `.Window` and the `OgreUI_Opened` /
+`OgreUI_Closed` events (sections isxogrex and events). Once the window is open, the script runs
+`ISXOgreX.UI:EvalFile` on `host/OpenIC-assets.js`, the spell and item icon sheets and the ability list.
 
 Other things a creator can use from Ogre (see Ogre's developer docs): `ISXOgreEQ2.IC:Options[...]`,
 `${ISXOgreEQ2.IC.Running}`, `ogre ic list`, `ogre ic value`, `-ShowAvailableSetups`, `ISXOgreEQ2.Encounter:Fire["<named>"]`,
@@ -73,6 +85,15 @@ These members come from ISXADD's own help and have not been tried with the Creat
 
 ## Lines the script marks unverified
 
-`host/OpenIC.iss` marks every command or member it uses that is not in Ogre's documentation or Ogre's own scripts
-with `UNVERIFIED` in a comment: `ogre ic run`, `jsonvalue:WriteFile`, `jb ic rundirect`, `jb ic queue`, `u1nav path`
-and the `U1Nav` members. Please report what works.
+`host/OpenIC.iss` marks with `UNVERIFIED` in a comment what Ogre's developer API reference does not cover and what
+was not run in game for this release:
+
+- Saving: one `Value` read of the whole file, then `jsonvalue:SetValue` and `jsonvalue:WriteFile` (LavishScript).
+- How much text one `ISXOgreX.UI:Set` carries (opening a large file in game).
+- How large a file `ISXOgreX.UI:EvalFile` takes (`host/OpenIC-assets.js` is about 4.8 MB; without it the window has
+  the class icons and its own symbols).
+- How long a base64 argument the Check line can carry (check a very large file after saving it).
+- ISXJQB: `jb ic rundirect`, `jb ic queue`.
+- ISXADD: `u1nav path` and the `U1Nav` members.
+
+Please report what works.

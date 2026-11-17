@@ -23,6 +23,8 @@
   Z.LISTS = ['enter', 'steps', 'exit'];
   Z.ZONE_ONLY = { path: 'move', named: 'sec', loot: 'action', zoneOut: 'end', teleporter: 'move', waitForCombat: 'cond', waitForLoot: 'cond',
     hunt: 'action', trash: 'action', reward: 'action', progress: 'state', recover: 'alt' };
+  Z.ZONE_ICON = { path: 'move', named: 'named', loot: 'loot', zoneOut: 'door', teleporter: 'door', waitForCombat: 'fight', waitForLoot: 'loot',
+    hunt: 'killlist', trash: 'trash', reward: 'loot', progress: 'flag', recover: 'rez' };
   Z.COMMON = { 'do': 1, stepId: 1, onFail: 1, when: 1, throttleMs: 1, forwho: 1, awaitWhen: 1, awaitTimeout: 1 };
 
   /* ------------------------------------------------------------ which kind of file */
@@ -155,6 +157,7 @@
       if (st.forwho) n.tags.push({ t: 'for ' + who(st.forwho), role: 'action' });
       if (st.throttleMs) n.tags.push({ t: 'at most every ' + secs(st.throttleMs) + ' s', role: 'loop' });
       if (w.timeout) n.tags.push(w.timeout === 'fail' ? { t: 'if it never happens: stop', role: 'alt' } : { t: 'if it never happens: go on', role: 'cond' });
+      Z.stepIcons(n, st, w);
       var pr = ctx.probs[r];
       if (pr === 'error') n.err = true; else if (pr === 'warn') n.warn = true;
       if ((st.repeat || st.forEach) && isArr(st.steps)) {
@@ -164,6 +167,20 @@
     }
     return items;
   }
+  /* a box's icons (IC.icons): a zone-only action by its kind, any other action the way fight-file boxes get theirs */
+  Z.stepIcons = function (n, st, w) {
+    var I = IC.icons, d = str(st['do']);
+    if (!I) return n;
+    if (Z.ZONE_ONLY[d]) {
+      n.gi = I.mk(Z.ZONE_ICON[d], n.role);
+      n.giKind = n.gi;
+      n.need = I.off ? [] : I.withWho(I.needs(I.namesIn(st), 4), st.sendTo != null ? st.sendTo : st.forwho, '', 4);
+      return n;
+    }
+    n.gi = (w.abil && I.forAbil(w.abil)) || I.forFightStep(st, n.role);
+    if (I.fightIcons) I.fightIcons(n, st, w);
+    return n;
+  };
   function kindRole(k) { return k === 'named' ? 'sec' : (k === 'exit' ? 'end' : 'start'); }
   Z.graph = function (doc, opts) {
     opts = opts || {};
@@ -172,7 +189,8 @@
     var zone = str(doc.zone), vars = isArr(doc.variants) ? doc.variants.join(' ') : '';
     var lane = { id: 'zone', title: zone || 'New zone file', sub: vars, role: 'start', seq: null, items: [] }, parts = [], split = [];
     var ent = isObj(doc.entrance) && isArr(doc.entrance.loc) ? 'entrance at ' + loc(doc.entrance.loc) : 'no entrance yet';
-    lane.items.push({ t: 'n', id: 'start', role: 'start', icon: '&#9679;', fixed: true, noActs: true, noSlot: true, ix: 0, iy: -1,
+    var I = IC.icons;
+    lane.items.push({ t: 'n', id: 'start', role: 'start', icon: '&#9679;', fixed: true, noActs: true, noSlot: true, ix: 0, iy: -1, gi: I ? I.forIcBox('start', 'start') : null,
       title: 'Start' + (zone ? ': ' + zone : ''), sub: subs([vars, ent, doc.progression === 'open' ? 'nameds in any order' : '']) });
     if (isObj(doc.run)) {
       lane.items.push({ t: 'n', id: 'run', role: 'note', fixed: true, noActs: true, noSlot: true, ix: 0, iy: -1, title: 'Runs a script instead of steps',
@@ -184,7 +202,8 @@
       var open = has(Z.open, ok) ? Z.open[ok] : true;
       var head = { t: 'n', id: 'h' + list + from, ref: L.length > from ? ref([list, from]) : null, nodrag: true, noActs: true, noSlot: true, ix: from, iy: to, role: role,
         icon: role === 'sec' ? '&#9876;' : '', title: title, sub: cnt ? cnt + ' step' + (cnt === 1 ? '' : 's') : 'nothing yet',
-        tog: cnt ? { key: ok, open: open, count: cnt } : null, sel: false };
+        tog: cnt ? { key: ok, open: open, count: cnt } : null, sel: false,
+        gi: I ? I.forIcBox(role === 'sec' ? 'boss' : (role === 'end' ? 'exit' : 'setup'), role) : null };
       var pk = 'P' + parts.length;
       parts.push({ key: pk, title: title, role: role, count: cnt });
       var inner = stepItems(L.slice(from, to + 1), [list], from, ctx);
@@ -199,14 +218,15 @@
     else if (!P.length) group('steps', 'steps', 'Steps', 'start', 0, S.length - 1);
     for (var k = 0; k < P.length; k++) group('steps', 'steps', P[k].title, kindRole(P[k].kind), P[k].from, P[k].to);
     if (isArr(doc.exit) && doc.exit.length) group('exit', 'exit', 'The way out (exit)', 'end', 0, doc.exit.length - 1);
-    lane.items.push({ t: 'n', id: 'end', role: 'end', icon: '&#9632;', fixed: true, noActs: true, noSlot: true, noSlotAfter: true, ix: 0, iy: -1, title: 'Done', small: true });
+    lane.items.push({ t: 'n', id: 'end', role: 'end', icon: '&#9632;', fixed: true, noActs: true, noSlot: true, noSlotAfter: true, ix: 0, iy: -1, title: 'Done', small: true,
+      gi: I ? I.forIcBox('end', 'end') : null });
     return { lanes: [lane], links: [], parts: parts.length > 1 ? parts : [], split: opts.split ? split : null, chain: true };
   };
 
   /* every box of any graph as lines of words (the Words view): { depth, text, sub, role, ref, head } */
   Z.lines = function (g) {
     var out = [];
-    function node(n, depth, head) { if (n && n.title) out.push({ depth: depth, text: str(n.title), sub: str(n.sub), role: n.role || 'action', ref: n.ref || '', head: !!head, err: !!n.err, warn: !!n.warn, tags: n.tags || [] }); }
+    function node(n, depth, head) { if (n && n.title) out.push({ depth: depth, text: str(n.title), sub: str(n.sub), role: n.role || 'action', ref: n.ref || '', head: !!head, err: !!n.err, warn: !!n.warn, tags: n.tags || [], gi: n.gi || null }); }
     function items(L, depth) {
       for (var i = 0; i < (L || []).length; i++) {
         var it = L[i];

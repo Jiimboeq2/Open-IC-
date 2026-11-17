@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.2.0 - 2026-11-17
+
+Game icons, and the in-game calls checked against Ogre's developer API reference.
+
+- Game icons: EverQuest II's own art (Daybreak Game Company), included for display in the editor: the 34 spell icon
+  sheets, the 26 class icons, and item pictures cut into 4 sheets for the 158 items the shipped zone files, fight
+  files and quest packs name. The ability list (14,021 abilities: icon, backdrop, classes) and the item list ship
+  as scripts the page loads; the page makes no network calls.
+- The flowchart boxes, the palette chips and the Words view show the game's icons. The new **Class** button picks
+  my class (any of the 26, kept in the browser) and, if wanted, the classes in my group. An ability of my class
+  shows its own icon; an ability of another class shows that class's icon, with `Who: <Class>` as its tooltip. With
+  no class picked every ability shows its own icon; in game the class the character plays counts until one is
+  picked. No detriment icons on boxes. The flowchart's **Ability icons** switch turns the icons off.
+- In game: the window carries the class icons inline; the spell and item sheets and the two lists are in
+  `host/OpenIC-assets.js`, which `OpenIC.iss` loads with `ISXOgreX.UI:EvalFile` once the window is open.
+- Checked against https://kannkor.github.io/ISXOgre/EQ2/bot/developer/api/: a zone file now runs with
+  `ISXOgreEQ2.IC:Run[custom,"<path>"]`, a fight setup starts with `OgreBotAPI.Bot:SetUpFor`, reloads use
+  `ISXOgreEQ2.IC:Reload` and `ISXOgreEQ2.Encounter:Reload`, and opening checks the file with
+  `OgreBotAPI.Util.FileExists`. Each call in `OpenIC.iss` names its section; what the reference does not cover
+  stays marked UNVERIFIED.
+- New in the In game menu: **Check this file by Ogre's own rules** (`ISXOgreEQ2.IC:Validate` /
+  `ISXOgreEQ2.Encounter:Validate`). Ogre's answer is listed with the page's checks.
+- New modules: `openic-icons.js` (the icons and the Class button) and `openic-game.js` (the In game menu).
+- Tools: `build-icon-data.js`; `build-window.js` also builds the asset pack. Tests: `test-icons.js`; the self test
+  covers the icons and Ogre's check; the corpus test draws every shipped file with icons on.
+
 ## 0.1.0 - 2026-11-17
 
 The first public version.

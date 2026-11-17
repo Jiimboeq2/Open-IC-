@@ -110,7 +110,7 @@
     var L = H.handlers[channel] || [];
     for (var i = 0; i < L.length; i++) { try { L[i](payload); } catch (e) { H.toast('Could not read what the game sent (' + channel + '): ' + e.message, 'err'); } }
   }
-  H.CHANNELS = ['ext', 'me', 'file', 'say', 'route'];
+  H.CHANNELS = ['ext', 'me', 'file', 'say', 'route', 'check'];
   H.bind = function () {
     for (var i = 0; i < H.CHANNELS.length; i++) (function (ch) {
       var el = $('openic-msg-' + ch);
@@ -130,7 +130,9 @@
     });
     H.on('me', function (p) {
       var a = p.split('|'), xyz = (a[0] || '').split(',');
-      if (xyz.length === 3 && isFinite(+xyz[0]) && isFinite(+xyz[1]) && isFinite(+xyz[2]) && a[0] !== '') H.me = { x: +xyz[0], y: +xyz[1], z: +xyz[2], zone: a[1] || '', target: a[2] || '' };
+      if (xyz.length === 3 && isFinite(+xyz[0]) && isFinite(+xyz[1]) && isFinite(+xyz[2]) && a[0] !== '') {
+        H.me = { x: +xyz[0], y: +xyz[1], z: +xyz[2], zone: a[1] || '', target: a[2] || '', subclass: str(a[3]).toLowerCase() };
+      }
       if (H.onMe) H.onMe(H.me);
     });
     H.on('say', function (p) { var k = /^(err|warn|ok):/.exec(p); H.toast(k ? p.slice(k[0].length) : p, k ? k[1] : 'ok'); });
@@ -160,8 +162,37 @@
   S.jbAlert = function (t, m, cb) { H.alert(t, m, cb); };
   S.jbConfirm = function (t, m, cb) { H.confirm(t, m, cb); };
   S.jbPrompt = function (t, m, d, cb) { H.prompt(t, m, d, cb); };
-  S.invItemIcon = function () { return ''; };
-  S.jbClassIcon = function () { return ''; };
+  /* game icons: EverQuest II's own sheets, 6 x 6 cells of 42 px on 256 px; icon id n is in sheet floor(n / 36) + 1 at
+     place n % 36. Each sheet is a CSS class (css/openic-icons.css in a browser; in game, the asset pack's data: URIs). */
+  H.ASSETS = 'assets/';
+  H.CLASSES = ['Assassin', 'Beastlord', 'Berserker', 'Brigand', 'Bruiser', 'Channeler', 'Coercer', 'Conjuror', 'Defiler', 'Dirge', 'Fury',
+    'Guardian', 'Illusionist', 'Inquisitor', 'Monk', 'Mystic', 'Necromancer', 'Paladin', 'Ranger', 'Shadowknight', 'Swashbuckler', 'Templar',
+    'Troubador', 'Warden', 'Warlock', 'Wizard'];
+  H.cell = function (id) {
+    id = Math.floor(+id);
+    if (!(id > 0)) return null;
+    var tile = id % 36;
+    return { sheet: Math.floor(id / 36) + 1, tile: tile, x: -((tile % 6) * 42), y: -(Math.floor(tile / 6) * 42) };
+  };
+  H.iconData = function () { return IC.iconData || {}; };
+  S.invItemIcon = function (item, px, spell) {
+    var c = H.cell(item && item.icon_id), D = H.iconData();
+    if (!c || c.sheet > (spell ? (+D.spellSheets || 0) : (+D.itemSheets || 0))) return '';
+    var dpr = (typeof G.devicePixelRatio === 'number' && G.devicePixelRatio) || 1, size = Math.round((px || 18) * dpr) / dpr, scale = size / 42;
+    return '<span class="oic-ic oic-' + (spell ? 'sp' : 'it') + '-' + c.sheet + '" style="width:' + size + 'px;height:' + size + 'px;background-size:' +
+      (256 * scale) + 'px ' + (256 * scale) + 'px;background-position:' + (c.x * scale) + 'px ' + (c.y * scale) + 'px;"></span>';
+  };
+  /* a class icon; the title is left to whoever shows it ("Who: <Class>" on a box) */
+  S.jbClassIcon = function (sub, px) {
+    var k = str(sub).trim().toLowerCase(), cap = '';
+    for (var i = 0; i < H.CLASSES.length; i++) if (H.CLASSES[i].toLowerCase() === k) cap = H.CLASSES[i];
+    if (!cap) return '';
+    var D = H.iconData(), src = D.classData ? D.classData[cap] : (H.inGame ? '' : H.ASSETS + 'class_icons/' + cap + '.webp');
+    if (!src) return '';
+    var size = px || 15;
+    return '<img class="oic-cls" src="' + src + '" style="width:' + size + 'px;height:' + size + 'px;" alt="' + cap + '">';
+  };
+  H.hasClassIcons = function () { return !H.inGame || !!H.iconData().classData; };
   S.escHtml = function (s) { return s == null || s === '' ? '' : esc(s); };
   S.escJs = function (s) { s = str(s); var h = ''; for (var i = 0; i < s.length; i++) h += ('0' + s.charCodeAt(i).toString(16)).slice(-2); return h; };
   S.unescJs = function (h) { h = str(h); var s = ''; for (var i = 0; i < h.length; i += 2) s += String.fromCharCode(parseInt(h.substr(i, 2), 16)); return s; };

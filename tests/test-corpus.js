@@ -13,10 +13,16 @@ if (!scripts || !fs.existsSync(path.join(scripts, 'Ogre', 'EQ2'))) {
   console.log('No --scripts <InnerSpace Scripts folder> with Ogre in it: the shipped-file pass is skipped.');
   process.exit(0);
 }
-const IC = load();
+const { ENGINE } = require('./lib.js');
+const IC = load(ENGINE.concat(['openic-app.js', 'openic-icons.js', '../data/spell-icons.js', '../data/item-icons.js']));
+/* with the icons on, as the page draws them: a class picked and a group, so every icon rule runs */
+IC.app.startIcons();
+IC.app.iconPref.myClass = 'wizard';
+IC.app.iconPref.group = ['guardian', 'fury', 'troubador'];
+IC.app.applyIcons();
 function pass(dir, kind) {
   const files = walkJson(dir, []);
-  let errors = 0, threw = 0, warns = 0;
+  let errors = 0, threw = 0, warns = 0, boxes = 0, art = 0, who = 0, items = 0;
   for (const f of files) {
     let d;
     try { d = readJson(f); } catch (e) { continue; }
@@ -29,10 +35,19 @@ function pass(dir, kind) {
       const g = kind === 'zone' ? IC.oic.graph(d, { split: true }) : IC.ogf.graph(d, {});
       ok(IC.oic.lines(g).length > 1, path.basename(f) + ' has words');
       const L = IC.fv.layout(g, 1400);
+      for (const p of L.nodes) {
+        const n = p.n;
+        if (n.fixed || n.card) continue;
+        boxes++;
+        if (n.gi && n.gi.item) items++; else if (n.gi && n.abil && n.gi !== n.giKind) art++;
+        if (n.need && n.need.some((x) => x.cls)) who++;
+        ok(!n.gi || n.gi.cls || (+n.gi.id > 0 && +n.gi.id < (n.gi.item ? 145 : 1224)), path.basename(f) + ': a box icon in a sheet');
+      }
       ok(L.nodes.every((n) => isFinite(n.x) && isFinite(n.y)), path.basename(f) + ' lays out');
     } catch (e) { threw++; ok(false, path.basename(f) + ' threw ' + e.message); }
   }
-  console.log('  ' + kind + ': ' + files.length + ' files, ' + errors + ' errors, ' + warns + ' warnings, ' + threw + ' threw');
+  console.log('  ' + kind + ': ' + files.length + ' files, ' + errors + ' errors, ' + warns + ' warnings, ' + threw + ' threw; ' + boxes + ' boxes: ' + art +
+    ' with ability art, ' + who + ' with a class icon, ' + items + ' with an item picture');
 }
 test('Ogre\'s shipped zone files', () => pass(path.join(scripts, 'Ogre', 'EQ2', 'IC', 'default'), 'zone'));
 test('Ogre\'s shipped fight files', () => pass(path.join(scripts, 'Ogre', 'EQ2', 'Encounters', 'default'), 'fight'));

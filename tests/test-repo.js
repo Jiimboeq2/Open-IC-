@@ -20,16 +20,23 @@ const rel = (p) => path.relative(ROOT, p).replace(/\\/g, '/');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 test('the built files are up to date with their sources', () => {
-  const w = require('../tools/build-window.js'), v = require('../tools/build-vocab.js');
-  ok(fs.readFileSync(w.OUT, 'utf8') === w.build().text, 'host/OpenIC.html: run node tools/build-window.js');
-  ok(fs.readFileSync(v.OUT, 'utf8') === v.build(), 'creator/js/openic-vocab.js: run node tools/build-vocab.js');
+  const w = require('../tools/build-window.js'), v = require('../tools/build-vocab.js'), ic = require('../tools/build-icon-data.js');
+  /* a checkout may turn line ends into CR LF: compare the text, not the line ends */
+  const lf = (s) => String(s).replace(/\r\n/g, '\n');
+  ok(lf(fs.readFileSync(w.OUT, 'utf8')) === lf(w.build().text), 'host/OpenIC.html: run node tools/build-window.js');
+  ok(lf(fs.readFileSync(w.ASSETS_OUT, 'utf8')) === lf(w.buildAssets()), 'host/OpenIC-assets.js: run node tools/build-window.js');
+  ok(lf(fs.readFileSync(v.OUT, 'utf8')) === lf(v.build()), 'creator/js/openic-vocab.js: run node tools/build-vocab.js');
+  ok(lf(read('creator/css/openic-icons.css')) === lf(ic.css(false)), 'creator/css/openic-icons.css: run node tools/build-icon-data.js');
 });
 test('text files are plain ASCII', () => {
   for (const p of all) if (TEXT.test(p) || /LICENSE$/.test(p)) {
-    const t = fs.readFileSync(p, 'utf8');
-    const bad = t.split('').findIndex((c) => c.charCodeAt(0) > 126 || (c.charCodeAt(0) < 32 && c !== '\n' && c !== '\r' && c !== '\t'));
-    ok(bad < 0, rel(p) + (bad >= 0 ? ' has character ' + t.charCodeAt(bad) + ' at ' + bad : ''));
+    const t = fs.readFileSync(p, 'utf8'), m = /[^\t\n\r -~]/.exec(t);
+    ok(!m, rel(p) + (m ? ' has character ' + m[0].charCodeAt(0) + ' at ' + m.index : ''));
   }
+});
+test('the game art is named as EverQuest II\'s own', () => {
+  ok(/Daybreak Game Company/.test(read('README.md')), 'README');
+  for (const p of ['creator/css/openic-icons.css', 'creator/data/spell-icons.js', 'creator/data/item-icons.js', 'host/OpenIC-assets.js']) ok(/Daybreak Game Company/.test(read(p)), p);
 });
 test('no private paths, no notes left to do', () => {
   for (const p of all) if (TEXT.test(p) && !/test-repo\.js$/.test(p)) {
@@ -63,5 +70,6 @@ test('the vocabulary file is valid and the examples parse', () => {
 test('the license and the change log are there', () => {
   ok(/MIT License/.test(read('LICENSE')) && /Copyright \(c\) 2026 Jiimboeq2/.test(read('LICENSE')), 'MIT, Jiimboeq2');
   ok(/0\.1\.0/.test(read('CHANGELOG.md')), 'CHANGELOG 0.1.0');
+  ok(/^## 0\.2\.0 /m.test(read('CHANGELOG.md')), 'CHANGELOG 0.2.0');
 });
 done('test-repo');

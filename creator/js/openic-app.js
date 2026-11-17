@@ -59,7 +59,8 @@
     var s = A.st;
     s.kind = kind; s.doc = doc; s.name = str(meta.name) || Z().fileName(doc); s.path = str(meta.path); s.gamePath = str(meta.gamePath);
     s.handle = meta.handle || null; s.saved = meta.fromDisk ? JSON.stringify(doc) : ''; s.undo = []; s.redo = []; s.sel = ''; s.route = null;
-    s.fv = { z: 0.9, x: 10, y: 34 };
+    s.fv = { z: 0.9, x: 10, y: 34, abicons: A.iconPref ? A.iconPref.abicons : true };
+    s.ogre = null;
     if (kind === 'jb') { M().loadObj(doc, { path: s.path, fromDisk: !!meta.fromDisk }); M().select(null); }
     s.quest.path = s.gamePath || s.name;
     A.refresh();
@@ -185,6 +186,7 @@
     } else if (k === 'jb') {
       (IC.icflow.PALETTE || []).forEach(function (p) { if (p.make || /^T:/.test(p.key)) out.push({ key: p.key, label: p.label, role: p.role, icon: p.icon, more: p.more }); });
     }
+    if (A.chipIcon) for (var i = 0; i < out.length; i++) out[i].gi = A.chipIcon(k, out[i]);
     return out;
   };
   function makeItem(key) {
@@ -363,6 +365,7 @@
     var views = ['flow', 'words', 'json', 'map'];
     for (var v = 0; v < views.length; v++) { var el = $('openic-v-' + views[v]); if (el) el.style.display = views[v] === s.view ? '' : 'none'; }
     A.renderExt();
+    if (A.renderClassButton) A.renderClassButton();
   };
   A.renderExt = function () {
     var el = $('openic-ext'), e = H().ext, inGame = H().inGame;
@@ -379,6 +382,7 @@
     if (!s.doc) { host.innerHTML = '<div class="oic-empty">' + A.welcome() + '</div>'; host._fv = null; s.chart = null; return; }
     if (host.firstChild && host.firstChild.className === 'oic-empty') host.innerHTML = '';
     var split = !!s.fv.mode && s.fv.mode !== 'steps';
+    if (A.applyIcons) A.applyIcons();
     var g = graph(split);
     s.chart = IC.fv.render(host, g, {
       view: s.fv, palette: A.palette(), legendRoles: ['action', 'move', 'cond', 'loop', 'alt', 'state'], foldTools: true, palFold: true,
@@ -389,7 +393,8 @@
       onInsert: function (seq, idx) { A.addMenu(seq, idx); },
       onAct: A.act, onMove: A.move, onDropNew: A.addAt,
       onPick: function (key, slot) { var w = slotFor(slot); A.addAt(key, w.seq, w.idx); },
-      onToggle: A.toggle
+      onToggle: A.toggle,
+      gameIcon: A.gameIcon, abilIcon: A.abilIcon, iconById: A.iconById, onAbIcons: A.setAbIcons
     });
   };
   A.welcome = function () {
@@ -401,13 +406,14 @@
     var host = $('openic-words'), s = A.st;
     if (!host) return;
     if (!s.doc) { host.innerHTML = '<div class="oic-empty">' + A.welcome() + '</div>'; return; }
+    if (A.applyIcons) A.applyIcons();
     var lines = Z().lines(graph(false)), h = '<div class="oic-wordhead">' + esc(Z().KIND_WORDS[s.kind]) + ' in plain words. Click a line to pick that step.</div>';
-    var roles = IC.fv.ROLES || {};
+    var roles = IC.fv.ROLES || {}, icons = s.fv.abicons !== false && A.gameIcon;
     for (var i = 0; i < lines.length; i++) {
-      var L = lines[i], c = (roles[L.role] || roles.action || { c: '#4a90e2' }).c;
+      var L = lines[i], c = (roles[L.role] || roles.action || { c: '#4a90e2' }).c, gi = icons && L.gi ? A.gameIcon(L.gi, 14) : '';
       var plain = IC.words && IC.words.plain ? IC.words.plain(L.text) : L.text, sub = IC.words && IC.words.plain ? IC.words.plain(L.sub) : L.sub;
       h += '<div class="oic-wl' + (L.lane || L.head ? ' oic-wl-h' : '') + (L.ref && L.ref === s.sel ? ' oic-wl-sel' : '') + '" style="padding-left:' + (8 + L.depth * 18) + 'px"' +
-        (L.ref ? ' data-oic-ref="' + esc(L.ref) + '"' : '') + '><i style="background:' + c + '"></i><span>' + esc(plain) +
+        (L.ref ? ' data-oic-ref="' + esc(L.ref) + '"' : '') + '>' + (gi ? '<span class="oic-wi">' + gi + '</span>' : '<i style="background:' + c + '"></i>') + '<span>' + esc(plain) +
         (L.err ? ' <b class="oic-e">!</b>' : (L.warn ? ' <b class="oic-w">?</b>' : '')) + '</span>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
     }
     host.innerHTML = h;
@@ -638,6 +644,7 @@
       h += '<div class="oic-pr oic-pr-' + p.level + '"' + (p.ref ? ' data-oic-ref="' + esc(p.ref) + '"' : '') + '><b>' + (p.level === 'error' ? '!' : (p.level === 'warn' ? '?' : 'i')) + '</b>' +
         esc(p.msg) + (p.fix ? ' <span class="oic-link" data-oic="fix:' + esc(p.fix) + '">fix it</span>' : '') + '</div>';
     }
+    if (A.ogreCheckHtml) h += A.ogreCheckHtml();
     el.innerHTML = h;
   };
 
@@ -653,6 +660,7 @@
     }
     m.innerHTML = h;
     m._items = items;
+    m.className = 'oic-menu';
     m.style.display = 'block';
     var r = anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : { left: 60, bottom: 60 }, x = Math.round(r.left), y = Math.round(r.bottom + 2);
     if (typeof G.ogrePlaceFixed === 'function') G.ogrePlaceFixed(m, x, y);
@@ -676,54 +684,6 @@
       items.push({ label: 'Open by full path...', run: function () { A.openGame('full'); } });
     }
     A.menu(btn, items);
-  };
-  A.gameMenu = function (btn) {
-    var s = A.st, e = H().ext, inGame = H().inGame, zone = s.kind === 'zone', fight = s.kind === 'fight';
-    var items = [{ head: 'OgreBot' }];
-    items.push({ label: 'Reload zone files (ogre ic reload)', run: function () { A.game('Reload', { kind: 'zone' }, 'ogre ic reload'); } });
-    items.push({ label: 'Reload fight files (ogre encounter reload)', run: function () { A.game('Reload', { kind: 'fight' }, 'ogre encounter reload'); } });
-    if (zone) {
-      items.push({ label: 'Queue this zone file', tip: 'ISXOgreEQ2.IC:Queue[add,custom,"<path>"]', run: function () { A.withGamePath('zone', function (p) { A.game('Queue', { path: p }, 'ogre ic queue add custom ' + p); }); } });
-      items.push({ label: 'Run this zone file now', tip: 'ogre ic run custom <path>', run: function () { A.withGamePath('zone', function (p) { A.game('Run', { path: p }, 'ogre ic run custom ' + p); }); } });
-    }
-    if (fight) items.push({ label: 'Start the fight setup now (-SetUpFor)', run: function () { var n = O().namedOf(s.doc); A.game('SetUp', { named: n }, 'oc !ci -SetUpFor igw:${Me.Name} "' + n + '"'); } });
-    items.push({ head: 'ISXJQB' + (inGame && !e.jqb ? ' (not loaded)' : '') });
-    items.push({ label: 'Run this file with ISXJQB (jb ic rundirect)', off: inGame && !e.jqb || fight, run: function () { A.withGamePath(s.kind, function (p) { A.game('JbRun', { path: p, kind: s.kind }, 'jb ic rundirect "' + p + '"'); }); } });
-    if (zone) items.push({ label: 'Queue the zone in ISXJQB (jb ic queue)', off: inGame && !e.jqb, run: function () {
-      var z = str(s.doc.zone), v = isArr(s.doc.variants) && s.doc.variants.length ? str(s.doc.variants[0]) : '';
-      var diff = v.replace(/[\[\]]/g, '').trim().toLowerCase().replace(/\s+/g, '_');
-      A.game('JbQueue', { zone: z, variant: diff }, 'jb ic queue "' + z + '"' + (diff ? ' ' + diff : ''));
-    } });
-    items.push({ head: 'ISXADD' + (inGame && !e.add ? ' (not ready)' : '') });
-    items.push({ label: 'Route preview to the picked spot (u1nav path)', off: inGame && !e.add || s.kind === 'jb', run: A.routePreview });
-    A.menu(btn, items);
-  };
-  /* one game action: in game through the script; in a browser the line to type */
-  A.game = function (action, fields, line) {
-    if (H().inGame) { H().call(action, fields); H().toast('Sent to the game: ' + line); return; }
-    H().showLine(line, 'type it in the InnerSpace console (the page is not in game)');
-    H().toast('In a browser: the console line is under the checks.');
-  };
-  A.withGamePath = function (kind, cb) {
-    var s = A.st, def = s.gamePath || (kind === 'fight' ? Z().fightFolder(s.doc) + '/' + Z().fileName(s.doc) : (kind === 'jb' ? 'JB/Instances/' + s.name : Z().fileName(s.doc)));
-    var where = kind === 'zone' ? 'inside Scripts\\OgreSave\\EQ2\\IC\\custom, with / between folders' : (kind === 'fight' ? 'inside Scripts\\OgreSave\\EQ2\\Encounters\\custom' : 'inside Scripts\\Eq2JCommon, or a full path');
-    H().prompt('The file in game', 'Its path ' + where + ':', def, function (v) {
-      if (v == null || !str(v).trim()) return;
-      if (str(v).indexOf('..') >= 0) { H().toast('A path cannot climb out of its folder (..).', 'warn'); return; }
-      s.gamePath = str(v).trim().replace(/\\/g, '/');
-      A.renderHead();
-      cb(s.gamePath);
-    });
-  };
-  A.routePreview = function () {
-    var s = A.st, st = s.sel ? A.at(s.sel) : null, p = null;
-    if (isObj(st)) p = isArr(st.spots) && st.spots.length ? st.spots[0] : (isArr(st.spot) ? st.spot : (isArr(st.loc) ? st.loc : null));
-    if (!p && s.doc && isObj(s.doc.entrance) && isArr(s.doc.entrance.loc)) p = s.doc.entrance.loc;
-    if (!p) { H().toast('Pick a step with a spot first (a walk, a named with a spot, a camp spot).', 'warn'); return; }
-    var loc = n2(p[0]) + ',' + n2(p[1]) + ',' + n2(p[2]);
-    s.view = 'map';
-    A.game('Route', { loc: loc }, 'u1nav path ' + loc);
-    A.refresh();
   };
 
   /* ------------------------------------------------------------ open and save */
@@ -773,14 +733,6 @@
     r.onerror = function () { H().toast('Could not read ' + file.name, 'err'); };
     r.readAsText(file);
   };
-  A.openGame = function (kind) {
-    H().prompt('Open in game', kind === 'full' ? 'The full path of the file:' : 'The path inside the ' + (kind === 'zone' ? 'IC\\custom' : (kind === 'fight' ? 'Encounters\\custom' : 'Eq2JCommon')) + ' folder:', A.st.gamePath || '', function (v) {
-      if (v == null || !str(v).trim()) return;
-      if (str(v).indexOf('..') >= 0) { H().toast('A path cannot climb out of its folder (..).', 'warn'); return; }
-      A._opening = { kind: kind, path: str(v).trim().replace(/\\/g, '/') };
-      H().call('Open', { kind: kind, path: A._opening.path });
-    });
-  };
   A.save = function (as) {
     var s = A.st;
     if (!s.doc) return;
@@ -815,34 +767,6 @@
     } catch (e) { H().toast('Could not download: ' + e.message, 'err'); }
   };
   A.saved = function () { A.st.saved = JSON.stringify(A.st.doc); A.renderHead(); };
-  A.saveGame = function (as) {
-    var s = A.st, go = function (p) {
-      H().set('openic-arg-text', JSON.stringify(s.doc));
-      A._saving = JSON.stringify(s.doc);
-      H().call('Save', { kind: s.kind === 'jb' ? 'jb' : s.kind, path: p });
-    };
-    if (s.gamePath && !as) go(s.gamePath); else A.withGamePath(s.kind, go);
-  };
-
-  /* ------------------------------------------------------------ messages from the game */
-  A.bindGame = function () {
-    var h = H();
-    h.on('file', function (p) {
-      var o = A._opening || {};
-      A._opening = null;
-      if (A.loadText(p, { name: str(o.path).split('/').pop(), gamePath: o.kind === 'full' ? '' : o.path, path: o.path, fromDisk: true })) H().toast('Opened ' + (o.path || 'the file') + '.');
-    });
-    h.on('say', function (p) { if (/^ok:saved/.test(p) && A._saving) { A.st.saved = A._saving; A._saving = null; A.renderHead(); } });
-    h.on('route', function (p) {
-      var pts = str(p).split(';').map(function (t) { return t.split(',').map(Number); }).filter(function (q) { return q.length === 3 && q.every(isFinite); });
-      A.st.route = pts;
-      if (A.st.view !== 'map') A.st.view = 'map';
-      A.refresh();
-      H().toast(pts.length ? 'Route: ' + pts.length + ' points.' : 'ISXADD found no route.', pts.length ? 'ok' : 'warn');
-    });
-    h.onExt = function () { A.renderExt(); };
-    h.onMe = function () { if (A.st.view === 'map') A.renderMap(); };
-  };
 
   /* ------------------------------------------------------------ the page's clicks and keys */
   A.onClick = function (e) {
@@ -856,6 +780,7 @@
     }
     var menu = $('openic-menu');
     if (mi != null && menu && menu._items) { var it = menu._items[+mi]; A.closeMenu(); if (it && !it.off && it.run) it.run(); return; }
+    if (v != null && A.onClickExtra && A.onClickExtra(v, t, menu)) return;
     if (menu && menu.style.display === 'block' && !(v === 'open' || v === 'game')) A.closeMenu();
     if (v == null && rf != null) { A.select(rf); return; }
     if (v == null) return;
@@ -919,6 +844,7 @@
     A.bind();
     var mode = $('openic-mode');
     if (mode) mode.textContent = H().inGame ? 'in game' : 'in a browser';
+    if (A.startIcons) A.startIcons();
     A.refresh();
     H().hello();
     if (A.onStart) A.onStart();

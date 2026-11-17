@@ -18,8 +18,9 @@
 ; fight files: OgreSave/EQ2/Encounters/custom, ISXJQB files: Eq2JCommon), or a full path with / between folders.
 ; Nothing is ever written under Scripts/Ogre: Ogre's updates replace that folder.
 ;
-; Lines marked UNVERIFIED use commands or members taken from documentation and notes that were not run in game
-; for this release. Everything else is in Ogre's documentation or Ogre's own shipped scripts.
+; "API:" in a comment names the section of Ogre's developer API reference that documents the call
+; (https://kannkor.github.io/ISXOgre/EQ2/bot/developer/api/). Lines marked UNVERIFIED use commands or members that
+; reference does not cover and that were not run in game for this release.
 
 ; This file is Scripts/OpenIC/host/OpenIC.iss, so the Scripts folder is two folders up. ${Script.CurrentDirectory}
 ; is written with forward slashes (Ogre's docs), so the paths built from it need no escaping.
@@ -32,6 +33,7 @@ variable int OpenIC_RouteWait=0
 objectdef openic_bridge
 {
 	; A value the window put in its field openic-arg-<Id>.
+	; API: isxogrex, ISXOgreX.UI.Value[name,id] (NULL until the window is open; after our own Set a read waits for it).
 	member:string Arg(string Id)
 	{
 		return "${ISXOgreX.UI.Value[${OpenIC_Win},openic-arg-${Id}].Escape}"
@@ -55,6 +57,7 @@ objectdef openic_bridge
 	}
 
 	; One message to the window: "<number>|<text>" in its openic-msg-<channel> field.
+	; API: isxogrex, ISXOgreX.UI:Set (a missing value is refused, so a message is never empty).
 	method Say(string Channel, string Text)
 	{
 		OpenIC_Seq:Inc
@@ -88,7 +91,7 @@ objectdef openic_bridge
 		This:Say[ext,"${E}"]
 	}
 
-	; Where I stand, my zone and my target: the window's Here buttons and its Spots view.
+	; Where I stand, my zone, my target and my class: the window's Here buttons, its Spots view and its icons.
 	method SendMe()
 	{
 		variable string T=""
@@ -98,7 +101,7 @@ objectdef openic_bridge
 			return
 		if ${Target(exists)}
 			T:Set["${Target.Name.Escape}"]
-		This:Say[me,"${Me.X},${Me.Y},${Me.Z}|${Zone.Name.Escape}|${T.Escape}"]
+		This:Say[me,"${Me.X},${Me.Y},${Me.Z}|${Zone.Name.Escape}|${T.Escape}|${Me.SubClass}"]
 	}
 }
 variable openic_bridge OpenIC
@@ -120,13 +123,40 @@ atom(script) OpenIC_OnReload()
 	}
 	if ${OpenIC.Arg[kind].Equal[fight]}
 	{
-		ogre encounter reload
+		; API: isxogreeq2/Encounter, Reload (the same as "ogre encounter reload").
+		ISXOgreEQ2.Encounter:Reload
 		OpenIC:Say[say,"ok:Fight files reloaded: the console lists any problem."]
 	}
 	else
 	{
-		ogre ic reload
+		; API: isxogreeq2/IC, Reload (the same as "ogre ic reload").
+		ISXOgreEQ2.IC:Reload
 		OpenIC:Say[say,"ok:Zone files reloaded: the console lists any problem."]
+	}
+}
+
+; Ogre checks the open file by its own load rules and changes nothing: the window sends the file's JSON as base64.
+; API: isxogreeq2/IC, Validate and Validation; isxogreeq2/Encounter, Validate and Validation (a single argument is
+; the base64 text of the file's JSON; Validation is JSON: ok, errors, warnings, issues).
+; UNVERIFIED: how long a base64 argument one command line can carry; check a large file by saving it first.
+atom(script) OpenIC_OnCheck()
+{
+	if !${ISXOgreEQ2(exists)}
+	{
+		OpenIC:Say[say,"err:ISXOgreEQ2 is not loaded: it is Ogre's own check."]
+		return
+	}
+	if ${OpenIC.Arg[kind].Equal[fight]}
+	{
+		; API: isxogreeq2/Encounter, Validate and Validation. UNVERIFIED: how long the base64 argument may be.
+		ISXOgreEQ2.Encounter:Validate[${OpenIC.Arg[b64]}]
+		OpenIC:Say[check,"${ISXOgreEQ2.Encounter.Validation.Escape}"]
+	}
+	else
+	{
+		; API: isxogreeq2/IC, Validate and Validation. UNVERIFIED: how long the base64 argument may be.
+		ISXOgreEQ2.IC:Validate[${OpenIC.Arg[b64]}]
+		OpenIC:Say[check,"${ISXOgreEQ2.IC.Validation.Escape}"]
 	}
 }
 
@@ -138,6 +168,15 @@ atom(script) OpenIC_OnOpen()
 	{
 		OpenIC:Say[say,"err:That path climbs out of its folder."]
 		return
+	}
+	; API: ogrebotapi/Util, FileExists.
+	if ${OgreBotAPI(exists)}
+	{
+		if !${OgreBotAPI.Util.FileExists["${Full}"]}
+		{
+			OpenIC:Say[say,"err:There is no file ${Full}"]
+			return
+		}
 	}
 	Doc:ParseFile["${Full}"]
 	if !${Doc.Type(exists)}
@@ -164,8 +203,8 @@ atom(script) OpenIC_OnSave()
 		return
 	}
 	; UNVERIFIED: a whole file through one Value read, then jsonvalue:SetValue and jsonvalue:WriteFile["<path>",multiline]
-	; (WriteFile as the ISXJQB scripting guide shows it; Ogre's own scripts use jsonvalue:ParseFile). The folder must
-	; already exist. Saving from a browser does not depend on any of this.
+	; (LavishScript, not in Ogre's API reference; WriteFile as the ISXJQB scripting guide shows it, ParseFile as Ogre's
+	; own scripts use it). The folder must already exist. Saving from a browser does not depend on any of this.
 	Doc:SetValue["${OpenIC.Arg[text].Escape}"]
 	if !${Doc.Type(exists)}
 	{
@@ -183,7 +222,7 @@ atom(script) OpenIC_OnQueue()
 		OpenIC:Say[say,"err:ISXOgreEQ2 is not loaded."]
 		return
 	}
-	; Ogre's docs, zone-files/where-they-go.md: a file in custom, queued by its path.
+	; API: isxogreeq2/IC, Queue (add,<tier>,<path>).
 	ISXOgreEQ2.IC:Queue[add,custom,"${OpenIC.Arg[path]}"]
 	OpenIC:Say[say,"ok:Queued custom/${OpenIC.Arg[path]}"]
 }
@@ -195,16 +234,17 @@ atom(script) OpenIC_OnRun()
 		OpenIC:Say[say,"err:ISXOgreEQ2 is not loaded."]
 		return
 	}
-	; UNVERIFIED: "ogre ic run <tier> <path>" as Ogre's converter notes give it; a path with spaces is not tested.
-	ogre ic run custom ${OpenIC.Arg[path]}
-	OpenIC:Say[say,"ok:Started custom/${OpenIC.Arg[path]}"]
+	; API: isxogreeq2/IC, Run[tier,relPath]: starts one zone file, not the list; it refuses with a console line when
+	; you are not in the world, a run is under way, IC is paused, no profile is loaded, or the file will not load.
+	ISXOgreEQ2.IC:Run[custom,"${OpenIC.Arg[path]}"]
+	OpenIC:Say[say,"ok:Asked Ogre to run custom/${OpenIC.Arg[path]}: the console says if it refused."]
 }
 
 atom(script) OpenIC_OnSetUp()
 {
-	; Ogre's fight-file docs: a fight file's setup started early, for the group.
-	oc !ci -SetUpFor igw:${Me.Name} "${OpenIC.Arg[named]}"
-	OpenIC:Say[say,"ok:Fight setup started for ${OpenIC.Arg[named]}"]
+	; API: ogrebotapi/Bot, SetUpFor[fw,what,restart]: the named's fight setup on the next pulse, for my group.
+	OgreBotAPI.Bot:SetUpFor[igw:${Me.Name},"${OpenIC.Arg[named]}",TRUE]
+	OpenIC:Say[say,"ok:Fight setup asked for ${OpenIC.Arg[named]}"]
 }
 
 atom(script) OpenIC_OnJbRun()
@@ -215,7 +255,8 @@ atom(script) OpenIC_OnJbRun()
 		OpenIC:Say[say,"err:ISXJQB is not loaded."]
 		return
 	}
-	; UNVERIFIED: jb ic rundirect with a full path (ISXJQB's command list gives "jb ic rundirect <file> [diff] [step#]").
+	; UNVERIFIED (ISXJQB, not in Ogre's API reference): jb ic rundirect with a full path (ISXJQB's command list gives
+	; "jb ic rundirect <file> [diff] [step#]").
 	jb ic rundirect "${Full}"
 	OpenIC:Say[say,"ok:ISXJQB is running ${Full}"]
 }
@@ -227,8 +268,8 @@ atom(script) OpenIC_OnJbQueue()
 		OpenIC:Say[say,"err:ISXJQB is not loaded."]
 		return
 	}
-	; UNVERIFIED: the difficulty word ISXJQB takes after the zone name ("jb ic queue <name> [diff] [force]"); the
-	; window sends the variant in lower case, without its brackets.
+	; UNVERIFIED (ISXJQB, not in Ogre's API reference): the difficulty word ISXJQB takes after the zone name
+	; ("jb ic queue <name> [diff] [force]"); the window sends the variant in lower case, without its brackets.
 	jb ic queue "${OpenIC.Arg[zone]}" ${OpenIC.Arg[variant]}
 	OpenIC:Say[say,"ok:Queued in ISXJQB: ${OpenIC.Arg[zone]}"]
 }
@@ -245,13 +286,15 @@ atom(script) OpenIC_OnRoute()
 		OpenIC:Say[say,"err:ISXADD is not ready yet."]
 		return
 	}
-	; UNVERIFIED: "u1nav path <x,y,z>" plans a route without moving anyone; main() reads it back (OpenIC_SendRoute).
+	; UNVERIFIED (ISXADD, not in Ogre's API reference): "u1nav path <x,y,z>" plans a route without moving anyone;
+	; main() reads it back (OpenIC_SendRoute).
 	u1nav path ${OpenIC.Arg[loc]}
 	OpenIC_RouteWait:Set[20]
 }
 
 ; The route ISXADD found, as "x,y,z;x,y,z;...".
-; UNVERIFIED: the members U1Nav.PointCount and U1Nav.PointX / PointY / PointZ[n] (ISXADD's help), counted from 1.
+; UNVERIFIED (ISXADD, not in Ogre's API reference): the members U1Nav.PointCount and U1Nav.PointX / PointY /
+; PointZ[n] (ISXADD's help), counted from 1.
 function OpenIC_SendRoute()
 {
 	variable int i
@@ -270,20 +313,26 @@ function OpenIC_SendRoute()
 
 ; ------------------------------------------------------------------ the window itself
 
+; API: isxogrex, ISXOgreX.UI:Open[name,path,helpPath].
 atom(script) OpenIC_OpenWindow()
 {
 	ISXOgreX.UI:Open[${OpenIC_Win},"${OpenIC_Dir}/OpenIC.html","${OpenIC_Dir}/OpenIC.md"]
 }
 
+; API: events, OgreUI_Opened. Once the window is up: the extensions, where I stand, and the game icons.
+; API: isxogrex, ISXOgreX.UI:EvalFile[path] runs a .js file in the UI page: OpenIC-assets.js holds the icon sheets
+; and the ability list, kept out of the window file so the window stays small.
+; UNVERIFIED: how large a file EvalFile takes; without it the window still works, with fewer icons.
 atom(script) OpenIC_OnOpened(string name)
 {
 	if !${name.Equal[${OpenIC_Win}]}
 		return
 	OpenIC:SendExt
 	OpenIC:SendMe
+	ISXOgreX.UI:EvalFile["${OpenIC_Dir}/OpenIC-assets.js"]
 }
 
-; A UI reload closes every window: open ours again. Closed with its X: the script ends.
+; API: events, OgreUI_Closed. A UI reload closes every window: open ours again. Closed with its X: the script ends.
 atom(script) OpenIC_OnClosed(string name, string reason)
 {
 	if !${name.Equal[${OpenIC_Win}]}
@@ -303,6 +352,7 @@ function main()
 	}
 	LavishScript:RegisterEvent[OpenIC_Hello]
 	LavishScript:RegisterEvent[OpenIC_Reload]
+	LavishScript:RegisterEvent[OpenIC_Check]
 	LavishScript:RegisterEvent[OpenIC_Open]
 	LavishScript:RegisterEvent[OpenIC_Save]
 	LavishScript:RegisterEvent[OpenIC_Queue]
@@ -313,6 +363,7 @@ function main()
 	LavishScript:RegisterEvent[OpenIC_Route]
 	Event[OpenIC_Hello]:AttachAtom[OpenIC_OnHello]
 	Event[OpenIC_Reload]:AttachAtom[OpenIC_OnReload]
+	Event[OpenIC_Check]:AttachAtom[OpenIC_OnCheck]
 	Event[OpenIC_Open]:AttachAtom[OpenIC_OnOpen]
 	Event[OpenIC_Save]:AttachAtom[OpenIC_OnSave]
 	Event[OpenIC_Queue]:AttachAtom[OpenIC_OnQueue]
@@ -326,6 +377,7 @@ function main()
 	OpenIC_OpenWindow
 
 	; Once a second: where I stand (the window's Here buttons), and a route preview when one was asked for.
+	; API: isxogrex, ISXOgreX.UI.Window[name] (NULL when no window by that name is open).
 	while TRUE
 	{
 		if ${ISXOgreX.UI.Window[${OpenIC_Win}](exists)}
@@ -349,6 +401,7 @@ atom atexit()
 {
 	Event[OpenIC_Hello]:DetachAtom[OpenIC_OnHello]
 	Event[OpenIC_Reload]:DetachAtom[OpenIC_OnReload]
+	Event[OpenIC_Check]:DetachAtom[OpenIC_OnCheck]
 	Event[OpenIC_Open]:DetachAtom[OpenIC_OnOpen]
 	Event[OpenIC_Save]:DetachAtom[OpenIC_OnSave]
 	Event[OpenIC_Queue]:DetachAtom[OpenIC_OnQueue]
@@ -359,5 +412,6 @@ atom atexit()
 	Event[OpenIC_Route]:DetachAtom[OpenIC_OnRoute]
 	Event[OgreUI_Opened]:DetachAtom[OpenIC_OnOpened]
 	Event[OgreUI_Closed]:DetachAtom[OpenIC_OnClosed]
+	; API: isxogrex, ISXOgreX.UI:Close[name].
 	ISXOgreX.UI:Close[${OpenIC_Win}]
 }

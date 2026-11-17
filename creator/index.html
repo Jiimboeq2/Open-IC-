@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Open IC Creator</title>
 <link rel="stylesheet" href="css/openic.css">
+<link rel="stylesheet" href="css/openic-icons.css">
 <style>
   html, body { margin: 0; padding: 0; height: 100%; background: #0b1220; }
 </style>
@@ -32,6 +33,7 @@
     <button class="oic-btn" id="openic-checkbtn" data-oic="check" title="Check the file now; the list is under the chart">Check</button>
     <span class="oic-sep"></span>
     <button class="oic-btn" data-oic="game" title="Reload in Ogre, run this zone file, and the ISXJQB and ISXADD extras">In game &#9662;</button>
+    <button class="oic-btn" id="openic-classbtn" data-oic="class" title="Your class and your group: your abilities show their own icons, another class shows its class icon">Class: any</button>
   </div>
   <div class="oic-main">
     <div class="oic-left">
@@ -65,10 +67,10 @@
   <input type="file" id="openic-file" accept=".json,application/json" style="display:none;">
   <div style="display:none;">
     <input type="hidden" id="openic-arg-kind"><input type="hidden" id="openic-arg-path"><input type="hidden" id="openic-arg-named">
-    <input type="hidden" id="openic-arg-zone"><input type="hidden" id="openic-arg-variant"><input type="hidden" id="openic-arg-loc">
+    <input type="hidden" id="openic-arg-zone"><input type="hidden" id="openic-arg-variant"><input type="hidden" id="openic-arg-loc"><input type="hidden" id="openic-arg-b64">
     <textarea id="openic-arg-text"></textarea>
     <input type="hidden" id="openic-msg-ext"><input type="hidden" id="openic-msg-me"><input type="hidden" id="openic-msg-say">
-    <input type="hidden" id="openic-msg-route"><textarea id="openic-msg-file"></textarea>
+    <input type="hidden" id="openic-msg-route"><textarea id="openic-msg-check"></textarea><textarea id="openic-msg-file"></textarea>
   </div>
 </div>
 <!-- OPENIC:BODY:END -->
@@ -97,6 +99,10 @@
 <script src="js/openic-vocab.js"></script>
 <script src="js/openic-zone.js"></script>
 <script src="js/openic-app.js"></script>
+<script src="js/openic-icons.js"></script>
+<script src="js/openic-game.js"></script>
+<script src="data/spell-icons.js"></script>
+<script src="data/item-icons.js"></script>
 <script src="js/openic-selftest.js"></script>
 <!-- OPENIC:SCRIPTS:END -->
 <script>

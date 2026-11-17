@@ -5,7 +5,7 @@
 Every module is a plain ES5 script that adds to one namespace, `IC`, on the object it is given as `window`. In a
 browser that is the page's `window`; in Ogre's window it is the private object `OpenIC_LIB`.
 
-Loaded by the page (`creator/index.html`, in this order):
+Loaded by the page (`creator/index.html`, in this order; in `creator/js` unless the path says otherwise):
 
 | File | Namespace | What it does |
 |---|---|---|
@@ -15,7 +15,7 @@ Loaded by the page (`creator/index.html`, in this order):
 | `ic-model.js` | `IC.model` | The open ISXJQB instance file: paths, selection, undo. |
 | `ic-validate.js` | `IC.val` | Checks for ISXJQB instance files. |
 | `ic-words.js` | `IC.words` | Plain words for OgreBot lines, options, for-who words, searches, values. |
-| `ic-icons.js` | `IC.icons` | Which icon a box gets (game icon ids; the page shows glyphs instead). |
+| `ic-icons.js` | `IC.icons` | Which icon a box gets: game icon ids, my class's abilities, who does a job. |
 | `ic-oc-picker.js` | `IC.oc` | OgreBot console commands: descriptions and checks. |
 | `ic-flowview.js`, `ic-flowparts.js`, `ic-flowpal.js` | `IC.fv` | The flowchart engine, its parts and views, its palette. |
 | `ic-flow.js` | `IC.icflow` | An ISXJQB instance file as a flowchart graph. |
@@ -26,13 +26,47 @@ Loaded by the page (`creator/index.html`, in this order):
 | `openic-vocab.js` | `IC.vocab` | `data/vocabulary.json`, built by `tools/build-vocab.js`. |
 | `openic-zone.js` | `IC.oic` | Native files: kind, new files, the zone graph, words, the checks, the palette, file names, quest lines. |
 | `openic-app.js` | `IC.app` | The page itself. |
+| `openic-icons.js` | `IC.app` | Game icons: the Class button, my class and my group, the Ability icons switch, the picture a box or chip gets. |
+| `openic-game.js` | `IC.app` | The In game menu: the console line in a browser, the bridge in game, Ogre's own check. |
+| `creator/data/spell-icons.js` | `IC.iconData` | The ability list: name, icon, backdrop, classes (built by `tools/build-icon-data.js`). |
+| `creator/data/item-icons.js` | `IC.iconData` | Item names to their pictures in `creator/assets/item_atlases`. |
 | `openic-selftest.js` | `IC.app.selftest` | The self test (`index.html#selftest`). |
 
 In the repository but not loaded by the page (they need a host page that is not ported yet, or ISXJQB's own files):
 `ic-ui-core.js`, `ic-ui-form.js`, `ic-ui-list.js`, `ic-ui-picker.js`, `ic-ui-timeline.js`, `ic-panels.js`, `ic-io.js`,
 `ic-extras.js`, `ic-flow-ui.js`, `ic-import-ui.js`, `ic-more.js`, `ic-catch.js`. They are the
 full step-form editor for ISXJQB instance files (generated forms, the add-step picker, the timeline, the import
-dialog) and expect that editor's page layout. Item pictures are not included: the page makes no network calls.
+dialog) and expect that editor's page layout. Item pictures come from the item sheets in `creator/assets/item_atlases`:
+the page makes no network calls.
+
+## Game icons
+
+The icons are EverQuest II's own art (Daybreak Game Company), included for display in the editor:
+
+| Files | What they are |
+|---|---|
+| `creator/assets/spell_atlases/atlas-1.png` ... `atlas-34.png` | The spell icon sheets: 256 x 256 px, 6 x 6 cells of 42 px. |
+| `creator/assets/class_icons/<Class>.webp` | The 26 class icons (70 x 70 px). |
+| `creator/assets/item_atlases/atlas-1.png` ... `atlas-4.png` | Item pictures, cut into sheets of the same layout. |
+| `creator/data/spell-icons.js` | The ability list: one line per ability (name, icon id, backdrop tile, classes). |
+| `creator/data/item-icons.js` | Item names (lower case) to their cell in the item sheets. |
+| `creator/css/openic-icons.css` | One class per sheet (`oic-sp-<n>`, `oic-it-<n>`) that names its picture. |
+
+Icon id `n` is on sheet `floor(n / 36) + 1`, in cell `n % 36`: column `cell % 6`, row `floor(cell / 6)`
+(`IC.host.cell(n)`). The page's `invItemIcon(item, px, spell)` draws one cell at any size; a spell icon sits on its
+backdrop tile (ids 312 to 318, sheet 9). `jbClassIcon(class, px)` draws a class icon.
+
+Which picture a box gets is `IC.icons`' rule (`ic-icons.js`), fed by `openic-icons.js`: `abilPair` (an ability's
+icon and backdrop), `abilClasses` (who has it), `itemPair`, `myClass`, `groupClasses`, `canClass` and `dets`. An
+ability of my class shows its own icon; an ability of another class shows that class's icon (tooltip
+`Who: <Class>`); with no class picked every ability shows its own icon; boxes never get detriment icons
+(`dets` is false). The Class button keeps my class and my group in the browser's local storage (`openic.myClass`,
+`openic.groupClasses`); the Ability icons switch is `openic.abicons`.
+
+In game, the window (`host/OpenIC.html`) carries the class icons inline as data URIs. The spell and item sheets, as
+data URIs in one style element, and the two lists are in `host/OpenIC-assets.js`, which `OpenIC.iss` runs in the
+window with `ISXOgreX.UI:EvalFile` once the window is open; it ends with `IC.app.iconsLoaded()`, which redraws. Until
+then, and if it never arrives, the window draws the class icons and its own symbols.
 
 ## The flowchart graph
 
@@ -57,7 +91,8 @@ roles  = action move cond loop alt state start end sec note
 Options: `onSelect(ref)`, `onInsert(seq, index)`, `onAct(act, ref, node)` (`up`, `down`, `dup`, `del`),
 `onMove(ref, seq, index, node)`, `onDropNew(key, seq, index)`, `onPick(key, slot)`, `onToggle(key)`, `onView(view)`,
 `onMode()`, `palette: [{ key, label, role, icon, more }]`, `view` (kept by the host between draws), `foldTools`,
-`palFold`, `legendRoles`, `emptyText`, and `gameIcon(gi, px)` / `abilIcon(name)` when the host has game icons.
+`palFold`, `legendRoles`, `emptyText`, and `gameIcon(gi, px)`, `abilIcon(name)`, `iconById(id, back)` and
+`onAbIcons(on)` when the host has game icons.
 
 `graph.parts` with `graph.split` (one lane per part) gives the Overview, One part and Side by side views.
 
@@ -72,12 +107,17 @@ Ogre's windows share.
 ## The game bridge
 
 Page to script: the page sets hidden fields `openic-arg-<name>` with `ogreUISet('openic', id, value)`, then calls
-`ogreCall('cmd', 'Event[OpenIC_<Action>]:Execute')`. Actions: `Hello`, `Reload`, `Open`, `Save`, `Queue`, `Run`,
-`SetUp`, `JbRun`, `JbQueue`, `Route`. Fields: `kind`, `path`, `text`, `named`, `zone`, `variant`, `loc`.
+`ogreCall('cmd', 'Event[OpenIC_<Action>]:Execute')`. Actions: `Hello`, `Reload`, `Check`, `Open`, `Save`, `Queue`,
+`Run`, `SetUp`, `JbRun`, `JbQueue`, `Route`. Fields: `kind`, `path`, `text`, `b64` (the open file's JSON as base64,
+for `Check`), `named`, `zone`, `variant`, `loc`.
 
 Script to page: `ISXOgreX.UI:Set[openic,openic-msg-<channel>,"<n>|<text>"]`, which fires the field's change event.
-Channels: `ext` (which extensions are loaded), `me` (`x,y,z|zone|target`), `file` (an opened file's JSON), `say`
-(`ok:` / `warn:` / `err:` and a message), `route` (`x,y,z;x,y,z;...`).
+Channels: `ext` (which extensions are loaded), `me` (`x,y,z|zone|target|class`), `file` (an opened file's JSON),
+`say` (`ok:` / `warn:` / `err:` and a message), `route` (`x,y,z;x,y,z;...`), `check` (Ogre's `Validation` JSON:
+`ok`, `errors`, `warnings`, `issues`).
+
+`host/OpenIC.iss` notes above each Ogre call the section of Ogre's developer API reference that documents it
+(`API: ...`), and marks `UNVERIFIED` what that reference does not cover.
 
 `tests/test-bridge.js` checks that the page and `host/OpenIC.iss` agree on all of these.
 
@@ -86,7 +126,8 @@ Channels: `ext` (which extensions are loaded), `me` (`x,y,z|zone|target`), `file
 | Command | What it does |
 |---|---|
 | `node tools/build-vocab.js` | `data/vocabulary.json` to `creator/js/openic-vocab.js`. |
-| `node tools/build-window.js` | `creator/` to `host/OpenIC.html`, the in-game window. Run it after any change in `creator/`. |
+| `node tools/build-icon-data.js [--spells <list>]` | `creator/css/openic-icons.css`; with `--spells`, `creator/data/spell-icons.js` from a tab-separated ability list. |
+| `node tools/build-window.js` | `creator/` to `host/OpenIC.html`, the in-game window, and `host/OpenIC-assets.js`, its icon sheets. Run it after any change in `creator/`. |
 | `node tools/strip-comments.js <in.js> [out.js]` | Removes comments from a JavaScript file (literals stay as they are). |
 
 ## Tests
@@ -96,8 +137,9 @@ Channels: `ext` (which extensions are loaded), `me` (`x,y,z|zone|target`), `file
 | `node tests/run-all.js` | Everything below that needs only Node. |
 | `node tests/test-strip.js` | The comment stripper, and that each module has only its header comment. |
 | `node tests/test-engine.js` | The modules without a page: kinds, graphs, words, checks, palettes, quest lines. |
-| `node tests/test-bridge.js` | The page and `host/OpenIC.iss` agree; the window is self-contained. |
-| `node tests/test-repo.js` | Built files are up to date; ASCII; no private paths; no planner. |
+| `node tests/test-icons.js` | The icon files are all there; the cell math; my class's ability shows its cell, another class's its class icon, no detriment icon. |
+| `node tests/test-bridge.js` | The page and `host/OpenIC.iss` agree; Ogre's calls cite the API reference; the window is self-contained. |
+| `node tests/test-repo.js` | Built files are up to date; ASCII; the game art notice; no private paths; no planner. |
 | `node tests/test-corpus.js --scripts "<InnerSpace>\Scripts"` | Every zone and fight file Ogre ships: read, drawn, checked with no error. |
 | `node tests/browser-selftest.js` | The page's self test in headless Edge or Chrome (Node 22 or newer). |
 | `node tests/fake-ogre.js out.html` then `node tests/browser-selftest.js --page out.html` | The in-game window in a stand-in for Ogre's host. |
