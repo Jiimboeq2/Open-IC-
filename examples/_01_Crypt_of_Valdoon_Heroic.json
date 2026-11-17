@@ -1,0 +1,22 @@
+{
+  "zone": "Crypt of Valdoon",
+  "variants": ["[Heroic]"],
+  "expansion": "Example",
+  "author": "Open IC Creator example",
+  "_note": "A made-up run: the nameds, spots and lever are invented to show the shapes, not taken from the game.",
+  "progression": "open",
+  "entrance": { "loc": [12.5, 3.0, -40.25], "tolerance": 30 },
+  "steps": [
+    { "stepId": "named1.walk", "do": "path", "using": "nav", "spots": [[18.0, 3.0, -22.5], [40.75, 1.5, 6.0]], "killWithin": 25 },
+    { "stepId": "named1.setup", "do": "raw", "command": "oc !ci -SetUpFor igw:{{me}} \"Gravekeeper Morvane\"" },
+    { "stepId": "named1", "do": "named", "name": "Gravekeeper Morvane", "spot": [44.0, 1.5, 12.0], "prebuffMs": 10000 },
+    { "stepId": "named1.chest", "do": "loot", "op": "chest" },
+    { "stepId": "named2.walk", "do": "path", "using": "nav", "spots": [[60.0, -4.0, 48.5], [71.25, -6.0, 80.0]] },
+    { "stepId": "named2.lever", "do": "actorInteract", "op": "doubleClick", "name": "a rusted lever", "onFail": "proceed" },
+    { "stepId": "named2.gate", "wait": "ms", "limitMs": 3000, "onTimeout": "proceed" },
+    { "stepId": "named2", "do": "named", "name": "The Hollow Regent", "boss": true, "spawnWaitMs": 20000 },
+    { "stepId": "named2.chest", "do": "loot", "op": "chest", "boss": true },
+    { "stepId": "done.said", "do": "announce", "message": "Crypt of Valdoon: done - {{ic.run.verdicts.named1}} / {{ic.run.verdicts.named2}}" },
+    { "stepId": "exit", "do": "zoneOut", "op": "auto" }
+  ]
+}

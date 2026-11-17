@@ -1,0 +1,42 @@
+{
+  "named": [{ "name": "The Hollow Regent", "distance": 60 }],
+  "zone": "Crypt of Valdoon [Heroic]",
+  "expansion": "Example",
+  "_source": "Open IC Creator example: made up to show the shapes, not taken from the game.",
+  "initialize": { "events": ["Regent_ShadowsDone"] },
+  "setup": [
+    { "do": "campSpot", "op": "setLoc", "forwho": "fighter", "loc": [71.25, -6.0, 96.0] },
+    { "do": "campSpot", "op": "setLoc", "forwho": "-fighter", "loc": [71.25, -6.0, 84.0] },
+    { "do": "castAbility", "forwho": "fighter", "ability": "Focus Offensive" }
+  ],
+  "triggers": [
+    {
+      "on": "text",
+      "match": { "mode": "substring", "needle": "gathers the shadows" },
+      "allowConcurrentRuns": false,
+      "do": [
+        { "do": "announce", "console": true, "message": "Shadows: spread out" },
+        { "do": "campSpot", "op": "setRelativeLoc", "forwho": "-fighter", "loc": [78.0, -6.0, 84.0] },
+        { "do": "timer", "event": "Regent_ShadowsDone", "after": "8s" }
+      ]
+    },
+    {
+      "on": "Regent_ShadowsDone",
+      "do": [
+        { "do": "campSpot", "op": "clearRelative", "forwho": "-fighter" }
+      ]
+    }
+  ],
+  "onPulse": [
+    {
+      "id": "health.at30",
+      "when": [{ "mobHealthPct": { "named": "The Hollow Regent", "compare": "<=", "value": 30 } }],
+      "do": [
+        { "do": "announce", "console": true, "message": "The Hollow Regent at 30 percent: burn it" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "do": "campSpot", "op": "clearAll", "forwho": "all" }
+  ]
+}

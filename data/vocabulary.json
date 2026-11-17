@@ -1,0 +1,2389 @@
+{
+  "about": "What native OgreBot zone files (IC) and fight files (encounters) may contain: top-level keys, step shapes, actions with their ops and keys, conditions and {{ }} values. Types and defaults come from Ogre's zone-file docs; actions and conditions from the shipped files and the instance controller. Open IC Creator checks files with it.",
+  "version": "0.1.0",
+  "types": {
+    "string": "text",
+    "int>0": "a whole number above 0",
+    "int>=0": "a whole number, 0 or more",
+    "num>0": "a number above 0",
+    "num>=0": "a number, 0 or more",
+    "num": "a number",
+    "bool": "true or false",
+    "bool|object": "true, false or an object of its own keys",
+    "loc": "[x, y, z]",
+    "spots": "a list of [x, y, z]",
+    "list": "a list",
+    "forwho": "a for-who (see forWho)",
+    "row": "a row text or a 1-based row number",
+    "string|list": "text, or a list of texts",
+    "string|int": "text or a whole number",
+    "enum": "one of the listed values",
+    "conditions": "a list of conditions",
+    "any": "any value"
+  },
+  "zoneFile": {
+    "topKeys": {
+      "zone": {
+        "type": "string",
+        "required": true,
+        "about": "The zone name without the difficulty tag."
+      },
+      "variants": {
+        "type": "list",
+        "required": true,
+        "about": "The difficulty tags the file covers, as the game writes them; [] when the zone has none."
+      },
+      "steps": {
+        "type": "steps",
+        "about": "The main list. The run is enter, then steps, then exit."
+      },
+      "enter": {
+        "type": "steps"
+      },
+      "exit": {
+        "type": "steps"
+      },
+      "entrance": {
+        "type": "object",
+        "about": "{ \"loc\": [x, y, z], \"tolerance\": 30 }. Nameds without an entrance load with a warning."
+      },
+      "progression": {
+        "type": "enum",
+        "values": [
+          "sequential",
+          "open"
+        ],
+        "default": "sequential"
+      },
+      "rerunWholeZoneAfterWipe": {
+        "type": "bool"
+      },
+      "wipeAttempts": {
+        "type": "int>=0",
+        "default": 2,
+        "max": 10
+      },
+      "onWipe": {
+        "type": "steps"
+      },
+      "afterWipe": {
+        "type": "steps"
+      },
+      "fileOptions": {
+        "type": "list",
+        "max": 3,
+        "about": "Up to 3 names, read back as {{ic.options.fileOption1..3}}."
+      },
+      "options": {
+        "type": "object",
+        "about": "The file's own values, read as {{ic.zone.options.X}}."
+      },
+      "difficulty": {
+        "type": "object",
+        "about": "A menu { choices } or { minValue, maxValue }."
+      },
+      "run": {
+        "type": "object",
+        "about": "{ \"iss\": \"<path>\" } or { \"json\": \"<path>\" }. A file has either run or steps, never both."
+      },
+      "enabled": {
+        "type": "bool",
+        "about": "false hides the file."
+      },
+      "expansion": {
+        "type": "string"
+      },
+      "author": {
+        "type": "string"
+      }
+    },
+    "notes": "A key starting with _ is a note: Ogre never reads it and never warns about it in a zone file.",
+    "stepShapes": [
+      "do",
+      "wait",
+      "repeat",
+      "forEach"
+    ],
+    "commonKeys": {
+      "stepId": {
+        "type": "string",
+        "about": "namedN, namedN.walk, namedN.chest ...: Skip the boss and part-way starts go by it."
+      },
+      "onFail": {
+        "type": "enum",
+        "values": [
+          "fail",
+          "proceed"
+        ],
+        "about": "fail in a list, proceed inside a loop, when left out."
+      },
+      "when": {
+        "type": "conditions",
+        "about": "All must hold, or the step is skipped."
+      },
+      "throttleMs": {
+        "type": "int>=0"
+      },
+      "forwho": {
+        "type": "forwho"
+      },
+      "awaitWhen": {
+        "type": "conditions"
+      },
+      "awaitTimeout": {
+        "type": "int>=0"
+      }
+    },
+    "waitKeys": {
+      "wait": {
+        "type": "string|object",
+        "required": true,
+        "about": "\"ms\", \"atCampSpot\", or a condition."
+      },
+      "limitMs": {
+        "type": "int>=0",
+        "required": true
+      },
+      "onTimeout": {
+        "type": "enum",
+        "values": [
+          "proceed",
+          "fail"
+        ],
+        "required": true,
+        "about": "A \"ms\" wait must use proceed."
+      }
+    },
+    "repeatKeys": {
+      "times": {
+        "type": "int>0"
+      },
+      "until": {
+        "type": "conditions"
+      },
+      "max": {
+        "type": "int>0",
+        "about": "Required with until."
+      }
+    },
+    "forEachKeys": {
+      "find": {
+        "type": "object",
+        "about": "{ \"query\": \"...\" }"
+      },
+      "spots": {
+        "type": "spots"
+      },
+      "vars": {
+        "type": "object",
+        "about": "{ \"prefix\", \"groupMember\" }"
+      },
+      "as": {
+        "type": "string"
+      },
+      "max": {
+        "type": "int>0"
+      }
+    },
+    "verbs": {
+      "path": {
+        "about": "Walk the group along spots, on the nav mesh or camp spot by camp spot.",
+        "role": "move",
+        "keys": {
+          "using": {
+            "type": "enum",
+            "values": [
+              "nav",
+              "campspot"
+            ],
+            "required": true,
+            "about": "nav walks the mesh; campspot moves the group camp spot by camp spot."
+          },
+          "spots": {
+            "type": "spots",
+            "required": true,
+            "about": "The spots to walk, in order."
+          },
+          "groupWithin": {
+            "type": "num>0",
+            "default": 10,
+            "about": "How close the group stays (meters)."
+          },
+          "howClose": {
+            "type": "num>0",
+            "about": "Read by the engine; not in the docs."
+          },
+          "spotLimitMs": {
+            "type": "int>0",
+            "default": 30000,
+            "about": "The time limit at each spot."
+          },
+          "onSpotTimeout": {
+            "type": "enum",
+            "values": [
+              "retry",
+              "fail",
+              "proceed"
+            ],
+            "default": "retry",
+            "about": "What a slow spot does."
+          },
+          "waitForCombat": {
+            "type": "bool|object",
+            "default": true,
+            "about": "Stop and fight what attacks on the way."
+          },
+          "fly": {
+            "type": "bool",
+            "default": false,
+            "about": "Fly between the spots."
+          },
+          "waitForStragglers": {
+            "type": "bool",
+            "default": true,
+            "about": "Wait for the group to catch up."
+          },
+          "exitOnActorAggro": {
+            "type": "string",
+            "about": "Stop the walk when this mob attacks."
+          },
+          "fromStart": {
+            "type": "bool",
+            "default": false,
+            "about": "Walk from the first spot even when a later one is nearer."
+          },
+          "sendTo": {
+            "type": "forwho",
+            "about": "Who walks (a for-who); the group when left out."
+          },
+          "killWithin": {
+            "type": "num>0",
+            "max": 100,
+            "about": "Fight anything within this many meters on the way."
+          },
+          "killTypes": {
+            "type": "list",
+            "values": [
+              "NPC",
+              "NamedNPC",
+              "Special"
+            ],
+            "default": [
+              "NPC"
+            ],
+            "about": "What counts for killWithin: NPC, NamedNPC, Special."
+          },
+          "killLimitMs": {
+            "type": "int>0",
+            "default": 120000,
+            "about": "How long the fights on the way may take."
+          },
+          "legM": {
+            "type": "num>=0",
+            "about": "Read by the engine; not in the docs."
+          },
+          "resWithin": {
+            "type": "num",
+            "about": "Read by the engine; not in the docs."
+          },
+          "resLimitMs": {
+            "type": "int>0",
+            "about": "Read by the engine; not in the docs."
+          },
+          "returnNoProgressMs": {
+            "type": "int>0",
+            "about": "Read by the engine; not in the docs."
+          },
+          "returnProgressDist": {
+            "type": "num",
+            "about": "Read by the engine; not in the docs."
+          },
+          "returnLimitMs": {
+            "type": "int>0",
+            "about": "Read by the engine; not in the docs."
+          }
+        }
+      },
+      "named": {
+        "about": "Fight a named: find it, buff up, pull, and record how it went.",
+        "role": "action",
+        "keys": {
+          "name": {
+            "type": "string",
+            "required": true,
+            "about": "The mob, exactly as the game names it."
+          },
+          "spot": {
+            "type": "loc",
+            "about": "Where to fight it."
+          },
+          "navTo": {
+            "type": "bool",
+            "default": false,
+            "about": "Walk to it on the mesh first."
+          },
+          "aliases": {
+            "type": "list",
+            "about": "Other names it goes by."
+          },
+          "boss": {
+            "type": "bool",
+            "default": false,
+            "about": "The zone's last boss: Skip the boss and the boss chest options read it."
+          },
+          "spawnWaitMs": {
+            "type": "int>=0",
+            "default": 0,
+            "about": "How long to wait for it to spawn."
+          },
+          "pullLimitMs": {
+            "type": "int>0",
+            "default": 30000,
+            "about": "How long the pull may take."
+          },
+          "limitMs": {
+            "type": "int>0",
+            "default": 3600000,
+            "about": "How long the whole fight may take."
+          },
+          "scanRadius": {
+            "type": "int>0",
+            "default": 50,
+            "about": "How far to look for it (meters)."
+          },
+          "scanHeight": {
+            "type": "int>0",
+            "about": "How far up and down to look for it."
+          },
+          "prebuffMs": {
+            "type": "int>=0",
+            "default": 10000,
+            "about": "How long to let the group buff up first. 0 for no buff-up."
+          },
+          "preCastTagMs": {
+            "type": "int>=0",
+            "about": "Time for the pre-cast tag before the pull. Its default is not documented."
+          },
+          "waitForCombat": {
+            "type": "bool",
+            "default": true,
+            "about": "Wait for the fight to end before the next step."
+          }
+        }
+      },
+      "loot": {
+        "about": "Loot the chest or pick up the shinies. Never fails the zone.",
+        "role": "action",
+        "keys": {
+          "op": {
+            "type": "enum",
+            "values": [
+              "chest",
+              "shinies"
+            ],
+            "required": true,
+            "about": "chest or shinies."
+          },
+          "within": {
+            "type": "num>0",
+            "default": 75,
+            "about": "How far to look (meters)."
+          },
+          "boss": {
+            "type": "bool",
+            "default": false,
+            "about": "This is the boss chest."
+          },
+          "back": {
+            "type": "bool",
+            "default": true,
+            "about": "Walk back after looting."
+          },
+          "noTrade": {
+            "type": "enum",
+            "values": [
+              "loot",
+              "skip"
+            ],
+            "about": "What to do with no-trade items: loot or skip."
+          },
+          "windowBaseMs": {
+            "type": "int>=0",
+            "about": "Read by the engine; not in the docs."
+          },
+          "windowPerItemMs": {
+            "type": "int>=0",
+            "about": "Read by the engine; not in the docs."
+          }
+        }
+      },
+      "zoneOut": {
+        "about": "The way out. Every zone file needs one, in enter, steps or exit.",
+        "role": "end",
+        "keys": {
+          "op": {
+            "type": "enum",
+            "values": [
+              "door",
+              "auto",
+              "endOfZone",
+              "none"
+            ],
+            "required": true
+          },
+          "name": {
+            "type": "string|list",
+            "about": "Required for door."
+          },
+          "destination": {
+            "type": "row",
+            "about": "A row text or a 1-based row number; the last row when left out."
+          },
+          "within": {
+            "type": "num>0",
+            "default": 30
+          },
+          "walk": {
+            "type": "bool",
+            "about": "door: false, the others: true."
+          },
+          "searchWithin": {
+            "type": "num>0",
+            "default": 100
+          },
+          "findLimitMs": {
+            "type": "int>0",
+            "default": 10000
+          },
+          "zoneLimitMs": {
+            "type": "int>0",
+            "default": 40000
+          },
+          "groupLimitMs": {
+            "type": "int>0",
+            "default": 120000
+          }
+        }
+      },
+      "teleporter": {
+        "about": "Use a teleporter: click it by name, or walk onto a pad and land.",
+        "role": "move",
+        "keys": {
+          "name": {
+            "type": "string",
+            "about": "Required unless walkOnto is used."
+          },
+          "walkOnto": {
+            "type": "loc",
+            "about": "A pad to walk onto instead of a name."
+          },
+          "landing": {
+            "type": "loc",
+            "about": "Where it puts you."
+          },
+          "limitMs": {
+            "type": "int>0",
+            "default": 20000,
+            "about": "How long it may take."
+          }
+        }
+      },
+      "waitForCombat": {
+        "about": "Wait for the fight to end.",
+        "role": "cond",
+        "keys": {
+          "settleMs": {
+            "type": "int>=0",
+            "default": 2000,
+            "about": "Out of combat this long counts as done."
+          },
+          "settleWithin": {
+            "type": "num>0",
+            "default": 15,
+            "about": "Nothing in combat within this many meters."
+          },
+          "noProgressMs": {
+            "type": "int>0",
+            "default": 15000,
+            "about": "A fight going nowhere this long..."
+          },
+          "onNoProgress": {
+            "type": "enum",
+            "values": [
+              "moveOn",
+              "fail"
+            ],
+            "about": "...then move on, or fail."
+          },
+          "limitMs": {
+            "type": "int>=0"
+          }
+        }
+      },
+      "waitForLoot": {
+        "about": "Wait for the loot window.",
+        "role": "cond",
+        "keys": {
+          "settleMs": {
+            "type": "int>=0",
+            "default": 3000,
+            "about": "No loot window this long counts as done."
+          },
+          "limitMs": {
+            "type": "int>=0",
+            "default": 120000,
+            "about": "0 = no limit."
+          },
+          "onTimeout": {
+            "type": "enum",
+            "values": [
+              "proceed",
+              "fail"
+            ],
+            "default": "proceed"
+          }
+        }
+      },
+      "hunt": {
+        "about": "Kill a kind of mob until another shows up.",
+        "role": "action",
+        "keys": {
+          "name": {
+            "type": "string",
+            "required": true,
+            "about": "Part of a name."
+          },
+          "until": {
+            "type": "string",
+            "required": true,
+            "about": "An exact name."
+          },
+          "untilLine": {
+            "type": "string",
+            "about": "Stop when this line shows."
+          },
+          "spots": {
+            "type": "spots",
+            "about": "Where to look."
+          },
+          "limitMs": {
+            "type": "int>0",
+            "default": 900000,
+            "about": "How long the hunt may take."
+          }
+        }
+      },
+      "trash": {
+        "about": "Clear everything in a circle.",
+        "role": "action",
+        "keys": {
+          "radius": {
+            "type": "num>0",
+            "default": 30,
+            "about": "The circle to clear (meters)."
+          },
+          "types": {
+            "type": "list",
+            "default": [
+              "NPC"
+            ],
+            "about": "What to kill."
+          },
+          "until": {
+            "type": "string",
+            "about": "Stop when this mob shows up."
+          },
+          "whenEmpty": {
+            "type": "enum",
+            "values": [
+              "done",
+              "wait"
+            ],
+            "about": "done when the circle is empty, or wait for more."
+          },
+          "quietMs": {
+            "type": "int>0",
+            "default": 60000,
+            "about": "Only with whenEmpty wait."
+          },
+          "move": {
+            "type": "enum",
+            "values": [
+              "none",
+              "nav",
+              "campspot"
+            ],
+            "about": "How to move between fights."
+          },
+          "limitMs": {
+            "type": "int>0",
+            "default": 600000,
+            "about": "Reaching it fails the step."
+          }
+        }
+      },
+      "reward": {
+        "about": "Pick a reward from the reward window.",
+        "role": "action",
+        "keys": {
+          "choose": {
+            "type": "string|int",
+            "required": true,
+            "about": "The reward: its number or its name."
+          },
+          "limitMs": {
+            "type": "int>0",
+            "default": 5000
+          },
+          "sendTo": {
+            "type": "forwho",
+            "about": "Who picks (a for-who)."
+          }
+        }
+      },
+      "groupQuery": {
+        "about": "Ask every box a question; the answers are read as {{encounter.<var>.anyYes}} and the like.",
+        "role": "state",
+        "keys": {
+          "var": {
+            "type": "string",
+            "required": true,
+            "about": "The name the answers are saved under."
+          },
+          "question": {
+            "type": "string",
+            "required": true,
+            "about": "itemCount, abilityReady, slotResolve or LavishScript[\"${...}\"]."
+          },
+          "item": {
+            "type": "string",
+            "about": "For itemCount."
+          },
+          "ability": {
+            "type": "string",
+            "about": "For abilityReady."
+          },
+          "slot": {
+            "type": "string",
+            "about": "For slotResolve."
+          },
+          "compare": {
+            "type": "enum",
+            "values": [
+              "==",
+              "!=",
+              "<",
+              ">",
+              "<=",
+              ">="
+            ]
+          },
+          "value": {
+            "type": "any"
+          },
+          "sendTo": {
+            "type": "forwho",
+            "about": "Who is asked; the group when left out."
+          },
+          "limitMs": {
+            "type": "int>0",
+            "default": 3000
+          },
+          "askAgainIfBlank": {
+            "type": "bool",
+            "about": "Read by the engine; not in the docs."
+          }
+        }
+      },
+      "progress": {
+        "about": "Mark a step done or skipped.",
+        "role": "state",
+        "keys": {
+          "op": {
+            "type": "enum",
+            "values": [
+              "complete",
+              "skip"
+            ],
+            "required": true,
+            "about": "complete or skip."
+          },
+          "id": {
+            "type": "string",
+            "about": "The stepId to mark."
+          }
+        }
+      },
+      "recover": {
+        "about": "Recover after a wipe (in onWipe / afterWipe).",
+        "role": "alt",
+        "keys": {
+          "op": {
+            "type": "enum",
+            "values": [
+              "revive",
+              "evac",
+              "callGH",
+              "callHome"
+            ],
+            "required": true,
+            "about": "revive, evac, callGH or callHome."
+          },
+          "limitMs": {
+            "type": "int>0"
+          },
+          "at": {
+            "type": "string",
+            "about": "A revive row."
+          }
+        }
+      }
+    },
+    "alsoAllowed": "Any fight-file action may also be a zone-file step (see fightFile.actions).",
+    "variants": [
+      "[Solo]",
+      "[Heroic]",
+      "[Heroic I]",
+      "[Heroic II]",
+      "[Heroic III]",
+      "[Advanced Solo]",
+      "[Event Heroic]",
+      "[Event Heroic I]",
+      "[Event Heroic II]",
+      "[Event Heroic III]",
+      "[Event Solo]",
+      "[Expert]",
+      "[Expert Event]",
+      "[Untold Heroic]",
+      "[Signature]"
+    ]
+  },
+  "fightFile": {
+    "topKeys": {
+      "named": {
+        "type": "list",
+        "required": true,
+        "about": "[{ \"name\", \"distance\", \"aliases\" }]: which mobs this file is for."
+      },
+      "zone": {
+        "type": "string|list",
+        "about": "The zone with its difficulty tag; no zone means any zone."
+      },
+      "expansion": {
+        "type": "string"
+      },
+      "setup": {
+        "type": "steps",
+        "about": "Runs on every box when the setup starts."
+      },
+      "triggers": {
+        "type": "list"
+      },
+      "onPulse": {
+        "type": "list"
+      },
+      "initialize": {
+        "type": "object",
+        "about": "{ \"events\": [custom event names], \"vars\": {...} }"
+      },
+      "onKilled": {
+        "type": "object",
+        "about": "{ \"<named>\": [steps] }"
+      },
+      "spotTables": {
+        "type": "object",
+        "about": "{ \"<table>\": [[x, y, z], ...] }"
+      },
+      "routines": {
+        "type": "object",
+        "about": "{ \"<name>\": { \"params\": [], \"steps\": [...] } }, called by { \"use\": \"<name>\", \"with\": {...} }"
+      },
+      "teardown": {
+        "type": "steps",
+        "about": "Runs when the setup ends."
+      },
+      "dets": {
+        "type": "object"
+      },
+      "detTables": {
+        "type": "object"
+      },
+      "noMerge": {
+        "type": "bool",
+        "about": "A custom file at the shipped file's path replaces it whole instead of being laid over it."
+      }
+    },
+    "notes": "On a fight-file action only _comment and _why are silent notes; any other _ key is reported as not a field of that action.",
+    "namedKeys": {
+      "name": {
+        "type": "string",
+        "required": true
+      },
+      "distance": {
+        "type": "num>0"
+      },
+      "aliases": {
+        "type": "list"
+      }
+    },
+    "triggerKeys": {
+      "on": {
+        "type": "string",
+        "required": true
+      },
+      "match": {
+        "type": "object"
+      },
+      "do": {
+        "type": "steps"
+      },
+      "when": {
+        "type": "conditions"
+      },
+      "forwho": {
+        "type": "forwho"
+      },
+      "allowConcurrentRuns": {
+        "type": "bool"
+      },
+      "throttleMs": {
+        "type": "int>=0"
+      },
+      "id": {
+        "type": "string"
+      },
+      "mode": {
+        "type": "string"
+      }
+    },
+    "triggerKinds": [
+      "text",
+      "spawn",
+      "announcement",
+      "chat",
+      "despawn",
+      "detAdded",
+      "detRemoved",
+      "spawnDelayed",
+      "castEnded",
+      "detUpdated"
+    ],
+    "customTriggers": "Any other \"on\" is a custom event: a timer or a broadcast, declared in initialize.events.",
+    "matchKeys": {
+      "mode": {
+        "type": "enum",
+        "values": [
+          "substring",
+          "exact",
+          "regex"
+        ]
+      },
+      "needle": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "named": {
+        "type": "string"
+      },
+      "chatType": {
+        "type": "string"
+      },
+      "field": {
+        "type": "string"
+      },
+      "main": {
+        "type": "int"
+      },
+      "back": {
+        "type": "int"
+      },
+      "det": {
+        "type": "any"
+      },
+      "abilityId": {
+        "type": "any"
+      },
+      "compare": {
+        "type": "string"
+      },
+      "value": {
+        "type": "any"
+      }
+    },
+    "pulseKeys": {
+      "id": {
+        "type": "string"
+      },
+      "when": {
+        "type": "conditions"
+      },
+      "do": {
+        "type": "steps"
+      },
+      "everyPulse": {
+        "type": "bool"
+      },
+      "throttleMs": {
+        "type": "int>=0"
+      },
+      "forwho": {
+        "type": "forwho"
+      },
+      "activeWhile": {
+        "type": "conditions"
+      },
+      "onEnter": {
+        "type": "steps"
+      },
+      "onExit": {
+        "type": "steps"
+      },
+      "abortWhen": {
+        "type": "conditions"
+      },
+      "runOnExitAfterwards": {
+        "type": "bool"
+      },
+      "runOncePerEncounter": {
+        "type": "bool"
+      }
+    },
+    "stepShapes": [
+      "do",
+      "wait",
+      "repeat",
+      "forEach",
+      "use"
+    ],
+    "waitWords": [
+      "ms",
+      "atCampSpot",
+      "moveFinished"
+    ],
+    "actions": {
+      "abilities": {
+        "keys": {
+          "allowCounters": {},
+          "allowEncounters": {},
+          "enabled": {},
+          "sendTo": {},
+          "value": {},
+          "verbose": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "stuns",
+              "interrupts",
+              "dispels",
+              "dispelSetup",
+              "aoes",
+              "castBulwark",
+              "setUpForIntercept",
+              "resetForIntercept",
+              "cancelInvis",
+              "cancelCasting",
+              "bowAbilities"
+            ],
+            "required": true
+          }
+        }
+      },
+      "abilityTracker": {
+        "keys": {
+          "ability": {
+            "required": true
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "add"
+            ]
+          }
+        }
+      },
+      "actorInteract": {
+        "keys": {
+          "awaitCastBar": {},
+          "choiceText": {},
+          "choices": {},
+          "id": {},
+          "maxRounds": {},
+          "name": {},
+          "sendTo": {},
+          "target": {},
+          "untilDone": {},
+          "verb": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "doubleClick",
+              "verb",
+              "target",
+              "hail",
+              "dialog",
+              "clearTarget"
+            ]
+          }
+        }
+      },
+      "announce": {
+        "keys": {
+          "console": {},
+          "irc": {},
+          "message": {
+            "required": true
+          },
+          "noise": {},
+          "noiseToPlay": {}
+        }
+      },
+      "assist": {
+        "keys": {
+          "sendTo": {},
+          "who": {
+            "required": [
+              "anchor"
+            ]
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "anchor"
+            ]
+          }
+        }
+      },
+      "autotarget": {
+        "keys": {
+          "aggroOnGroupOnly": {},
+          "aggroOnNonFighterOnly": {},
+          "aggroOnNotMe": {},
+          "byId": {},
+          "checkCollision": {},
+          "enabled": {},
+          "height": {},
+          "hp": {},
+          "id": {},
+          "list": {},
+          "maxHp": {},
+          "name": {},
+          "outOfCombatScanning": {},
+          "preset": {},
+          "radius": {},
+          "reason": {},
+          "seconds": {},
+          "value": {},
+          "whenHated": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "addActor",
+              "removeActor",
+              "clear",
+              "set",
+              "setScanRadius",
+              "setScanHeight",
+              "setRescanTime",
+              "setEnabled",
+              "setWhenHated",
+              "setOutOfCombatScanning",
+              "suppress",
+              "release",
+              "loadPreset",
+              "loadSaved",
+              "save",
+              "deleteSaved"
+            ],
+            "required": true
+          }
+        }
+      },
+      "beltAdorn": {
+        "keys": {
+          "type": {},
+          "unequip": {}
+        }
+      },
+      "botPause": {
+        "keys": {
+          "value": {}
+        }
+      },
+      "broadcast": {
+        "keys": {
+          "args": {},
+          "event": {
+            "required": true
+          },
+          "includeSelf": {},
+          "sendTo": {
+            "required": true
+          }
+        }
+      },
+      "camera": {
+        "keys": {
+          "firstPerson": {},
+          "pitch": {
+            "required": [
+              "setPitch"
+            ]
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "setPitch",
+              "reset"
+            ],
+            "required": true
+          }
+        }
+      },
+      "campSpot": {
+        "keys": {
+          "2d": {},
+          "angle": {},
+          "avoid": {},
+          "by": {},
+          "circleSpots": {},
+          "dist": {},
+          "find": {},
+          "fraction": {},
+          "from": {},
+          "fromOffset": {},
+          "howClose": {},
+          "howFar": {},
+          "id": {},
+          "includeNpcSize": {},
+          "index": {},
+          "indexVar": {},
+          "keepSpot": {},
+          "kind": {},
+          "loc": {},
+          "maxDistance": {},
+          "middle": {},
+          "minDistance": {},
+          "minMove": {},
+          "name": {},
+          "nav": {},
+          "nth": {},
+          "pick": {},
+          "query": {},
+          "relative": {},
+          "remember": {},
+          "sendTo": {},
+          "silent": {},
+          "skipIfAggro": {},
+          "slot": {
+            "required": [
+              "activate"
+            ]
+          },
+          "spots": {},
+          "step": {},
+          "toward": {},
+          "towardActor": {},
+          "value": {
+            "required": [
+              "setHowClose",
+              "setHowFar",
+              "setUse3D"
+            ]
+          },
+          "x": {},
+          "y": {},
+          "z": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "setLoc",
+              "setLocBy",
+              "enable",
+              "disable",
+              "activate",
+              "clear",
+              "clearRelative",
+              "setCsp",
+              "restoreCsp",
+              "release",
+              "clearAll",
+              "setHowClose",
+              "setHowFar",
+              "setUse3D",
+              "setRelativeLoc",
+              "setRelativeBy",
+              "setLocToActor",
+              "setRelativeLocToActor",
+              "atAngleFromActor",
+              "trackLocToActor",
+              "trackRelativeLocToActor",
+              "clearTracking",
+              "setHere",
+              "bestOf",
+              "spotAt",
+              "formation",
+              "towardLoc",
+              "clearOf"
+            ],
+            "required": true
+          }
+        }
+      },
+      "cancelMaintained": {
+        "keys": {
+          "args": {
+            "required": true
+          }
+        }
+      },
+      "castAbility": {
+        "keys": {
+          "ability": {},
+          "abilityId": {},
+          "abilityQuery": {},
+          "allReady": {},
+          "announce": {},
+          "cancelCasting": {},
+          "firstReady": {},
+          "name": {},
+          "priority": {},
+          "sendTo": {},
+          "target": {}
+        }
+      },
+      "castInterrupt": {
+        "keys": {
+          "mob": {},
+          "priority": {}
+        }
+      },
+      "castStack": {
+        "keys": {
+          "ability": {
+            "required": true
+          },
+          "match": {},
+          "value": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "set"
+            ]
+          }
+        }
+      },
+      "choiceWindow": {
+        "keys": {
+          "clear": {},
+          "text": {
+            "required": [
+              "enterText"
+            ]
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "accept",
+              "enterText"
+            ]
+          }
+        }
+      },
+      "cures": {
+        "keys": {
+          "back": {},
+          "kinds": {},
+          "main": {},
+          "priority": {},
+          "responders": {},
+          "target": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "enable",
+              "disable",
+              "now",
+              "request",
+              "requestGroup",
+              "castGroup",
+              "cancelDetrimental",
+              "clearRequests"
+            ],
+            "required": true
+          }
+        }
+      },
+      "curses": {
+        "keys": {
+          "responders": {},
+          "target": {},
+          "var": {
+            "required": [
+              "order"
+            ]
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "request",
+              "order"
+            ],
+            "required": true
+          }
+        }
+      },
+      "dispel": {
+        "keys": {
+          "back": {},
+          "main": {},
+          "mob": {},
+          "priority": {},
+          "sendTo": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "any",
+              "ability",
+              "spell",
+              "item"
+            ]
+          }
+        }
+      },
+      "examine": {
+        "keys": {
+          "dets": {
+            "required": true
+          },
+          "index": {
+            "required": true
+          },
+          "item": {
+            "required": [
+              "item"
+            ]
+          },
+          "var": {
+            "required": [
+              "det"
+            ]
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "det",
+              "item"
+            ],
+            "required": true
+          }
+        }
+      },
+      "fireEvent": {
+        "keys": {
+          "args": {},
+          "event": {
+            "required": true
+          }
+        }
+      },
+      "flagToon": {
+        "keys": {
+          "flag": {},
+          "value": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "set",
+              "clearAll",
+              "nextPerson"
+            ]
+          }
+        }
+      },
+      "gameCommand": {
+        "keys": {
+          "args": {},
+          "command": {
+            "required": true
+          }
+        }
+      },
+      "heroicOpportunity": {
+        "keys": {
+          "icon": {},
+          "leaveStartOpen": {},
+          "leaveWheelOpen": {},
+          "numToComplete": {},
+          "primeOnly": {},
+          "reason": {},
+          "sendTo": {},
+          "silent": {},
+          "skipTimer": {},
+          "start": {},
+          "starter": {},
+          "surge": {},
+          "target": {},
+          "timeout": {},
+          "wheel": {},
+          "which": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "noAutoStart",
+              "set",
+              "start",
+              "solo",
+              "startSolo",
+              "stopSolo",
+              "cancelStarter",
+              "advance",
+              "disableIcon",
+              "allowIcon",
+              "clearIcons"
+            ],
+            "required": true
+          }
+        }
+      },
+      "inventory": {
+        "keys": {
+          "count": {},
+          "iconId": {},
+          "item": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "destroy"
+            ],
+            "required": true
+          }
+        }
+      },
+      "joust": {
+        "keys": {
+          "op": {
+            "type": "enum",
+            "values": [
+              "out",
+              "in",
+              "on",
+              "off"
+            ]
+          }
+        }
+      },
+      "loot": {
+        "keys": {
+          "item": {
+            "required": true
+          },
+          "to": {
+            "required": true
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "assign"
+            ]
+          }
+        }
+      },
+      "merchant": {
+        "keys": {
+          "actor": {
+            "required": true
+          },
+          "count": {},
+          "item": {
+            "required": true
+          },
+          "onlyBuyWhenUnder": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "buy"
+            ]
+          }
+        }
+      },
+      "method": {
+        "keys": {
+          "args": {},
+          "call": {
+            "required": true
+          }
+        }
+      },
+      "move": {
+        "keys": {
+          "loc": {},
+          "precision": {},
+          "priority": {},
+          "x": {},
+          "y": {},
+          "z": {}
+        }
+      },
+      "movement": {
+        "keys": {
+          "aboveY": {},
+          "actor": {},
+          "attempts": {},
+          "away": {},
+          "completed": {},
+          "end": {},
+          "heading": {},
+          "jump": {},
+          "jumpWithin": {},
+          "legs": {},
+          "loc": {},
+          "maxMs": {},
+          "mode": {},
+          "range": {},
+          "reason": {},
+          "retryDelayMs": {},
+          "runMode": {},
+          "seconds": {},
+          "sendTo": {},
+          "settleMs": {},
+          "start": {},
+          "value": {},
+          "x": {},
+          "y": {},
+          "z": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "stopFollow",
+              "holdUp",
+              "block",
+              "unblock",
+              "clearBlocks",
+              "jump",
+              "crouch",
+              "stand",
+              "setRunMode",
+              "jumpRoute",
+              "stopJumpRoute",
+              "navTo",
+              "navInRange",
+              "setCombatAutoFace",
+              "faceLock",
+              "faceUnlock",
+              "faceHeading"
+            ],
+            "required": true
+          }
+        }
+      },
+      "noDefensive": {
+        "keys": {
+          "reason": {},
+          "value": {}
+        }
+      },
+      "noOffensive": {
+        "keys": {
+          "mob": {},
+          "reason": {},
+          "value": {}
+        }
+      },
+      "ogreBotUIOption": {
+        "keys": {
+          "id": {
+            "required": true
+          },
+          "sendTo": {},
+          "silent": {},
+          "value": {
+            "required": [
+              "set"
+            ]
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "set",
+              "restore"
+            ]
+          }
+        }
+      },
+      "onScreenTimer": {
+        "keys": {
+          "message": {},
+          "minUpdate": {},
+          "slot": {},
+          "time": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "set",
+              "clear"
+            ]
+          }
+        }
+      },
+      "pet": {
+        "keys": {
+          "silent": {},
+          "stayOff": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "attack",
+              "off",
+              "assist",
+              "getLost"
+            ],
+            "required": true
+          }
+        }
+      },
+      "raw": {
+        "keys": {
+          "command": {
+            "required": true
+          }
+        }
+      },
+      "replyDialog": {
+        "keys": {
+          "text": {
+            "required": true
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "choose"
+            ]
+          }
+        }
+      },
+      "report": {
+        "keys": {
+          "broadcast": {},
+          "event": {},
+          "list": {},
+          "singleTargetCuresOnly": {},
+          "skipCureCheckboxes": {},
+          "timeout": {},
+          "who": {},
+          "window": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "in",
+              "complete",
+              "start"
+            ]
+          }
+        }
+      },
+      "repositionOnCondition": {
+        "keys": {
+          "index": {},
+          "indexVar": {},
+          "mode": {},
+          "spots": {
+            "required": [
+              "enter"
+            ]
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "enter",
+              "exit"
+            ]
+          }
+        }
+      },
+      "rosterOrder": {
+        "keys": {
+          "list": {},
+          "var": {
+            "required": true
+          },
+          "who": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "alpha"
+            ]
+          }
+        }
+      },
+      "runscript": {
+        "keys": {
+          "args": {},
+          "script": {
+            "required": true
+          }
+        }
+      },
+      "script": {
+        "keys": {
+          "args": {},
+          "function": {
+            "required": [
+              "call"
+            ]
+          },
+          "method": {
+            "required": [
+              "method"
+            ]
+          },
+          "object": {
+            "required": true
+          },
+          "script": {
+            "required": true
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "call",
+              "method"
+            ],
+            "required": true
+          }
+        }
+      },
+      "setVar": {
+        "keys": {
+          "name": {
+            "required": true
+          },
+          "scope": {},
+          "value": {
+            "required": [
+              "set"
+            ]
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "set",
+              "add",
+              "unset",
+              "unsetPrefix"
+            ]
+          }
+        }
+      },
+      "stopEvaluating": {
+        "keys": {}
+      },
+      "template": {
+        "keys": {}
+      },
+      "threatIgnoreList": {
+        "keys": {
+          "name": {},
+          "sendTo": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "add",
+              "remove",
+              "clear"
+            ]
+          }
+        }
+      },
+      "timer": {
+        "keys": {
+          "after": {},
+          "event": {},
+          "every": {},
+          "global": {},
+          "interval": {},
+          "key": {},
+          "name": {},
+          "payload": {},
+          "persistent": {},
+          "repeats": {},
+          "set": {}
+        }
+      },
+      "tts": {
+        "keys": {
+          "message": {
+            "required": true
+          },
+          "sendTo": {}
+        }
+      },
+      "useItem": {
+        "keys": {
+          "item": {
+            "required": [
+              "use",
+              "drinkAlcohol"
+            ]
+          },
+          "onlyIfDet": {},
+          "partial": {},
+          "priority": {},
+          "slot": {},
+          "target": {},
+          "type": {},
+          "op": {
+            "type": "enum",
+            "values": [
+              "use",
+              "cure",
+              "drinkAlcohol"
+            ]
+          }
+        }
+      },
+      "waypoint": {
+        "keys": {
+          "loc": {},
+          "x": {},
+          "y": {},
+          "z": {}
+        }
+      },
+      "zoneDoorWindow": {
+        "keys": {
+          "destination": {
+            "required": true
+          },
+          "op": {
+            "type": "enum",
+            "values": [
+              "choose"
+            ]
+          }
+        }
+      }
+    },
+    "controlVerbs": {
+      "resolve": {
+        "keys": {
+          "find": {},
+          "as": {},
+          "onMissing": {}
+        }
+      },
+      "rotate": {
+        "keys": {
+          "over": {},
+          "as": {},
+          "id": {}
+        }
+      },
+      "stop": {
+        "keys": {
+          "id": {},
+          "verdict": {},
+          "runOnExitAfterwards": {}
+        }
+      }
+    },
+    "templates": [
+      "castMonitor",
+      "dispel",
+      "getAwayToCure",
+      "radialSpread",
+      "removeTankSwap",
+      "returnFromCure",
+      "tankSwap",
+      "walkToActor",
+      "walkToActorAndInteract"
+    ],
+    "valueKinds": [
+      "textAfter",
+      "calc",
+      "rank",
+      "spotIndex",
+      "textToken",
+      "rosterPick",
+      "actorField",
+      "count",
+      "detIncrements",
+      "cursedMember",
+      "preferredMember"
+    ],
+    "varScopes": [
+      "encounter",
+      "global",
+      "group",
+      "raid"
+    ]
+  },
+  "conditions": {
+    "abilityReady": {
+      "keys": [
+        "ability",
+        "abilityId",
+        "name",
+        "recastOnly"
+      ]
+    },
+    "actorCoord": {
+      "keys": [
+        "axis",
+        "compare",
+        "nth",
+        "of",
+        "value"
+      ]
+    },
+    "actorIs": {
+      "keys": [
+        "aura",
+        "currentAnimation",
+        "dead",
+        "feignDeath",
+        "guild",
+        "id",
+        "name",
+        "overlay",
+        "targetName",
+        "tintFlags",
+        "tooltip",
+        "type"
+      ]
+    },
+    "actorNear": {
+      "keys": [
+        "compare",
+        "find",
+        "of",
+        "ofActor",
+        "ofLoc",
+        "value",
+        "within"
+      ]
+    },
+    "actorPresent": {
+      "keys": [
+        "compare",
+        "count",
+        "id",
+        "name",
+        "type"
+      ]
+    },
+    "actorTarget": {
+      "keys": [
+        "archetype",
+        "id",
+        "inMyGroup"
+      ]
+    },
+    "afflicted": {
+      "keys": [
+        "kind",
+        "name",
+        "uncurable",
+        "who"
+      ]
+    },
+    "assistInControl": {
+      "keys": []
+    },
+    "atCampSpot": {
+      "keys": []
+    },
+    "botPaused": {
+      "keys": []
+    },
+    "campSpotRelative": {
+      "keys": []
+    },
+    "campSpotValid": {
+      "keys": []
+    },
+    "chatMatch": {
+      "keys": [
+        "chatType",
+        "field",
+        "mode",
+        "needle"
+      ]
+    },
+    "collision": {
+      "keys": [
+        "from",
+        "to"
+      ]
+    },
+    "count": {
+      "keys": [
+        "by",
+        "compare",
+        "find",
+        "is",
+        "member",
+        "of",
+        "plus",
+        "prefix",
+        "scope",
+        "uncurable",
+        "value",
+        "valueOf"
+      ]
+    },
+    "csp": {
+      "keys": [
+        "value"
+      ]
+    },
+    "cureCalled": {
+      "keys": [
+        "kind",
+        "victim"
+      ]
+    },
+    "curePotionReady": {
+      "keys": [
+        "type"
+      ]
+    },
+    "detTimeLeft": {
+      "keys": [
+        "actor",
+        "back",
+        "compare",
+        "det",
+        "main",
+        "value"
+      ]
+    },
+    "dispelItemReady": {
+      "keys": []
+    },
+    "dispelReady": {
+      "keys": []
+    },
+    "distance": {
+      "keys": [
+        "2d",
+        "compare",
+        "from",
+        "to",
+        "value",
+        "valueOf"
+      ]
+    },
+    "engaged": {
+      "keys": [
+        "named"
+      ]
+    },
+    "flag": {
+      "keys": [
+        "id",
+        "value"
+      ]
+    },
+    "groupDistance": {
+      "keys": [
+        "compare",
+        "pick",
+        "value"
+      ]
+    },
+    "hasAbility": {
+      "keys": [
+        "ability",
+        "abilityId",
+        "name"
+      ]
+    },
+    "hasDet": {
+      "keys": [
+        "actor",
+        "back",
+        "compare",
+        "det",
+        "main",
+        "maxEffects",
+        "value"
+      ]
+    },
+    "hasItem": {
+      "keys": [
+        "item"
+      ]
+    },
+    "heroicOpportunity": {
+      "keys": [
+        "compare",
+        "for",
+        "state",
+        "timeLeft",
+        "value"
+      ]
+    },
+    "inCombat": {
+      "keys": []
+    },
+    "inMyGroup": {
+      "keys": [
+        "who"
+      ]
+    },
+    "itemReady": {
+      "keys": [
+        "item",
+        "partial",
+        "within"
+      ]
+    },
+    "jumpRoute": {
+      "keys": [
+        "is"
+      ]
+    },
+    "lootWindow": {
+      "keys": [
+        "item",
+        "type"
+      ]
+    },
+    "maintained": {
+      "keys": [
+        "ability"
+      ]
+    },
+    "mobHealthPct": {
+      "keys": [
+        "compare",
+        "named",
+        "value"
+      ]
+    },
+    "moveFinished": {
+      "keys": [
+        "ms"
+      ]
+    },
+    "myStat": {
+      "keys": [
+        "compare",
+        "stat",
+        "value"
+      ]
+    },
+    "namedCasting": {
+      "keys": [
+        "abilityId",
+        "compare",
+        "named",
+        "value"
+      ]
+    },
+    "nearSpot": {
+      "keys": [
+        "index",
+        "of",
+        "spots",
+        "within"
+      ]
+    },
+    "option": {
+      "keys": [
+        "id",
+        "value"
+      ]
+    },
+    "questStep": {
+      "keys": [
+        "done",
+        "quest",
+        "step"
+      ]
+    },
+    "raidSlot": {
+      "keys": [
+        "slot"
+      ]
+    },
+    "replyDialog": {
+      "keys": [
+        "text"
+      ]
+    },
+    "rewardWindow": {
+      "keys": []
+    },
+    "roster": {
+      "keys": [
+        "list",
+        "state"
+      ]
+    },
+    "ruleState": {
+      "keys": [
+        "id",
+        "is"
+      ]
+    },
+    "selfCasting": {
+      "keys": []
+    },
+    "textContains": {
+      "keys": [
+        "text",
+        "value"
+      ]
+    },
+    "textEquals": {
+      "keys": [
+        "text",
+        "value"
+      ]
+    },
+    "threatToMe": {
+      "keys": [
+        "compare",
+        "named",
+        "value"
+      ]
+    },
+    "timerExpired": {
+      "keys": [
+        "name"
+      ]
+    },
+    "timerLeft": {
+      "keys": [
+        "compare",
+        "name",
+        "value"
+      ]
+    },
+    "toonFlagged": {
+      "keys": [
+        "flag"
+      ]
+    },
+    "untoldTier": {
+      "keys": [
+        "back",
+        "baseName",
+        "compare",
+        "det",
+        "main",
+        "named",
+        "value"
+      ]
+    },
+    "varCompare": {
+      "keys": [
+        "compare",
+        "name",
+        "scope",
+        "value"
+      ]
+    },
+    "varEquals": {
+      "keys": [
+        "key",
+        "name",
+        "scope",
+        "value"
+      ]
+    },
+    "zone": {
+      "keys": [
+        "contains",
+        "is"
+      ]
+    },
+    "zoneDoorWindow": {
+      "keys": [
+        "destination"
+      ]
+    },
+    "forwho": {
+      "keys": [],
+      "about": "True on the boxes the for-who names."
+    },
+    "not": {
+      "keys": [],
+      "logic": true,
+      "about": "A list of conditions; true when none of them is."
+    },
+    "or": {
+      "keys": [],
+      "logic": true,
+      "about": "A list of conditions; true when any of them is."
+    },
+    "and": {
+      "keys": [],
+      "logic": true,
+      "about": "A list of conditions; true when all of them are."
+    }
+  },
+  "tokens": {
+    "roots": [
+      "me",
+      "target",
+      "chat",
+      "event",
+      "actor",
+      "det",
+      "encounter",
+      "global",
+      "seq",
+      "ic",
+      "ability"
+    ],
+    "ic": [
+      "ic.zone.name",
+      "ic.zone.variant",
+      "ic.zone.fullName",
+      "ic.zone.tier",
+      "ic.zone.file",
+      "ic.zone.entrance",
+      "ic.zone.options.<name>",
+      "ic.options.<name>",
+      "ic.run.verdicts.<stepId>",
+      "ic.run.id",
+      "ic.run.attempts",
+      "ic.run.completed",
+      "ic.run.skipped",
+      "ic.list.name",
+      "ic.list.entry",
+      "ic.list.of",
+      "ic.group.size",
+      "ic.group.mode"
+    ],
+    "lavishScript": "LavishScript is written LavishScript[\"${...}\"]. A bare ${...} makes a zone file not valid."
+  },
+  "forWho": {
+    "about": "Who runs a step (forwho) or who a line is sent to (sendTo). | means or, + means and, a leading - means not.",
+    "words": [
+      "all",
+      "fighter",
+      "priest",
+      "mage",
+      "scout",
+      "groupleader",
+      "igw:{{me}}",
+      "irw:{{me}}",
+      "igwbn:{{me}}",
+      "groups:1",
+      "groups:2",
+      "groups:3",
+      "groups:4",
+      "@Priest1",
+      "@Scout1",
+      "@Mage1",
+      "@Healer1",
+      "ToonFlagged:1",
+      "*Team:<group>"
+    ]
+  }
+}
