@@ -21,7 +21,7 @@
   F.LEGEND = ['action', 'move', 'cond', 'loop', 'alt', 'state', 'note'];
   function role(r) { return F.ROLES[r] || F.ROLES.action; }
 
-  var NW = 236, GY = 26, GX = 34, IND = 30, GUT = 14, LANE_GAP = 54, ROW_GAP = 64, PAD = 24;
+  var NW = 300, GY = 26, GX = 34, IND = 30, GUT = 14, LANE_GAP = 54, ROW_GAP = 64, PAD = 24;
   var TCH = 31, SCH = 37, TW = 27;
   var CW = NW + 24, FAR = 0.5;
   var CMP = false;
@@ -893,7 +893,13 @@
       if (V._lastWheel && now - V._lastWheel < 8) return;
       V._lastWheel = now;
       var m = local(V, e);
-      zoomAt(V, dy < 0 ? 1.12 : 1 / 1.12, m[0], m[1]);
+      if (e.ctrlKey) zoomAt(V, dy < 0 ? 1.12 : 1 / 1.12, m[0], m[1]);
+      else {
+        var step = (dy < 0 ? -1 : 1) * 90, hh = V.host.clientHeight || 500, ww = V.host.clientWidth || 800, z = V.view.z;
+        if (e.shiftKey) V.view.x = Math.max(ww - 80 - (V.O ? V.O.w * z : 0), Math.min(ww - 80, V.view.x - step));
+        else V.view.y = Math.max(hh - 80 - (V.O ? V.O.h * z : 0), Math.min(hh - 80, V.view.y - step));
+        applyView(V);
+      }
       if (V.opts.onView) V.opts.onView(V.view);
     }
     host.addEventListener('wheel', function (e) { wheel(e, e.deltaY || 0); });

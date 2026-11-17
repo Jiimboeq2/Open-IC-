@@ -26,9 +26,11 @@ Loaded by the page (`creator/index.html`, in this order; in `creator/js` unless 
 | `openic-vocab.js` | `IC.vocab` | `data/vocabulary.json`, built by `tools/build-vocab.js`. |
 | `openic-zone.js` | `IC.oic` | Native files: kind, new files, the zone graph, words, the checks, the palette, file names, quest lines. |
 | `openic-app.js` | `IC.app` | The page itself. |
-| `openic-icons.js` | `IC.app` | Game icons: the Class button, my class and my group, the Ability icons switch, the picture a box or chip gets. |
+| `openic-icons.js` | `IC.app` | Game pictures: the Pictures menu (on or off, my class, my group), the picture a box or step gets. |
 | `openic-game.js` | `IC.app` | The Use in game menu: the console line in a browser, the bridge in game, Ogre's own check. |
 | `openic-browse.js` | `IC.app` | In game, the file window of Open and Save as: the folders Ogre and ISXJQB read, their folders and files, New folder. |
+| `openic-edit.js` | `IC.app` | Where a file is written: the Steps view and Jump to; the right side's tabs (Add a step by category, This step as a form with who runs it and the who-does-it backup, File settings). |
+| `openic-map.js` | `IC.app` | The Map view: spots seen as the game's map shows them, zoom and drag; in game ISXJQB's saved map of my zone under them, floor by floor. |
 | `creator/data/spell-icons.js` | `IC.iconData` | The ability list: name, icon, backdrop, classes (built by `tools/build-icon-data.js`). |
 | `creator/data/item-icons.js` | `IC.iconData` | Item names to their pictures in `creator/assets/item_atlases`. |
 | `openic-selftest.js` | `IC.app.selftest` | The self test (`index.html#selftest`). |
@@ -61,8 +63,8 @@ Which picture a box gets is `IC.icons`' rule (`ic-icons.js`), fed by `openic-ico
 icon and backdrop), `abilClasses` (who has it), `itemPair`, `myClass`, `groupClasses`, `canClass` and `dets`. An
 ability of my class shows its own icon; an ability of another class shows that class's icon (tooltip
 `Who: <Class>`); with no class picked every ability shows its own icon; boxes never get detriment icons
-(`dets` is false). The Class button keeps my class and my group in the browser's local storage (`openic.myClass`,
-`openic.groupClasses`); the Ability icons switch is `openic.abicons`.
+(`dets` is false). The Pictures menu keeps my class and my group in the browser's local storage (`openic.myClass`,
+`openic.groupClasses`), and pictures on or off in `openic.abicons`.
 
 In game, the window (`host/OpenIC.html`) carries the class icons inline as data URIs. The two lists (part 1) and the
 spell and item sheets as data URIs (the other parts, a style element each) are in `host/OpenIC-assets-<k>.js`, each
@@ -112,16 +114,26 @@ Ogre's windows share.
 
 Page to script: the page sets hidden fields `openic-arg-<name>` with `ogreUISet('openic', id, value)`, then calls
 `ogreCall('cmd', 'Event[OpenIC_<Action>]:Execute')`. Actions: `Hello`, `Reload`, `Check`, `Open`, `Save`, `Queue`,
-`Run`, `SetUp`, `JbRun`, `JbQueue`, `Route`, `List`, `MkDir`. Fields: `kind`, `path`, `text` (the file's JSON in one
-line, for `Save`), `tier` (`default` or `custom`, for `Check`), `root` and `name` (the file window's folder and a new
-folder's name, for `List` and `MkDir`), `named`, `zone`, `variant`, `loc`.
+`Run`, `SetUp`, `JbRun`, `JbQueue`, `Route`, `List`, `MkDir`, `Map`. Fields: `kind`, `path`, `text` (the file's JSON
+in one line, for `Save`), `tier` (`default` or `custom`, for `Check`), `root` and `name` (the file window's folder and
+a new folder's name, for `List` and `MkDir`; for `Map`, `kind` is `zone` or `art` and `name` a zone token or a floor
+key), `named`, `zone`, `variant`, `loc`.
 
 Script to page: `ISXOgreX.UI:Set[openic,openic-msg-<channel>,"<n>|<text>"]`, which fires the field's change event.
 Channels: `ext` (which extensions are loaded, and `check` / `fcheck`: whether this Ogre has its own file check),
-`me` (`x,y,z|zone|target|class`), `file` (an opened file's JSON), `say` (`ok:` / `warn:` / `err:` and a message),
-`route` (`x,y,z;x,y,z;...`), `check` (Ogre's `Validation` JSON: `ok`, `errors`, `warnings`, `issues`), `list` (one
-folder: `<root>|<path>|<1 = there>` then `>D|<folder>` and `>F|<file>|<bytes>`; a Windows name holds neither `|` nor
-`>`).
+`me` (`x,y,z|zone|target|class|zone short name`), `file` (an opened file's JSON), `say` (`ok:` / `warn:` / `err:` and
+a message), `route` (`x,y,z;x,y,z;...`), `check` (Ogre's `Validation` JSON: `ok`, `errors`, `warnings`, `issues`),
+`list` (one folder: `<root>|<path>|<1 = there>` then `>D|<folder>` and `>F|<file>|<bytes>`; a Windows name holds
+neither `|` nor `>`), `map` (`<kind>|<name>|1` when the file ran in the page, `|0` when ISXJQB has none).
+
+ISXJQB's saved map: its JB Map writes `Scripts\Eq2JCommon\JB\Data\jqbmap_zone_<zone>.js` (it sets
+`window.__jqbmapZone`: the zone's `floors`, each with a `key`, its edges `min_x` / `max_x` / `min_z` / `max_z`, a
+height band `hmin` / `hmax`, an `avail` rect and a `prio`, and `exits`) and `jqbmap_art_<floor key>.js` (it sets
+`window.__jqbmapArt[<key>]` to a JPEG or PNG data URI). `<zone>` is the zone's short name kept to `a-z 0-9 _ -` in
+lower case (ISXJQB's `ZoneToken`). `Map` runs one of them in the page with `ISXOgreX.UI:EvalFile`, after checking it
+is there; the page waits for the value (5 s at most) and asks for the next. A picture's left edge is `max_x`, its
+right edge `min_x`, its top `min_z`: the game's map has x growing to the left. A spot is on the floor whose height
+band and rect hold it, the highest `prio` winning, as ISXJQB's own map picks it.
 
 The file window's folders (`root`), inside InnerSpace's Scripts folder: `zone` OgreSave\EQ2\IC\custom, `fight`
 OgreSave\EQ2\Encounters\custom, `ozone` Ogre\EQ2\IC\default and `ofight` Ogre\EQ2\Encounters\default (Ogre's own:
@@ -163,6 +175,7 @@ what was run in game.
 | `node tests/run-all.js` | Everything below that needs only Node. |
 | `node tests/test-strip.js` | The comment stripper, and that each module has only its header comment. |
 | `node tests/test-engine.js` | The modules without a page: kinds, graphs, words, checks, palettes, quest lines. |
+| `node tests/test-edit.js` | Who runs a step in words; who-words Ogre does not have; ISXJQB mechanics files; the op picker's words; ISXJQB's map files, floors and the floor a spot is on. |
 | `node tests/test-icons.js` | The icon files are all there; the cell math; my class's ability shows its cell, another class's its class icon, no detriment icon. |
 | `node tests/test-bridge.js` | The page and `host/OpenIC.iss` agree; Ogre's calls cite the API reference; the window is self-contained. |
 | `node tests/test-repo.js` | Built files are up to date; ASCII; the game art notice; no private paths; no planner. |

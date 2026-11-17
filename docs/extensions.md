@@ -76,6 +76,12 @@ is loaded:
 - A zone file can carry data only ISXJQB reads in keys that start with `_jb`: Ogre ignores every key that starts
   with `_` in a zone file.
 - A script can ask ISXJQB first: `${ISXJQB(exists)}`, `${ISXJQB.Version}`.
+- **Its saved zone maps under the Map view.** ISXJQB's JB Map saves a zone's floors and their pictures the first time
+  it is open in that zone (`Scripts\Eq2JCommon\JB\Data\jqbmap_zone_<zone>.js` and `jqbmap_art_<floor>.js`). In game,
+  the Map view asks the script for the zone you stand in, by its short name, and lays the picture of your floor under
+  the file's spots; another floor is a click away. The script only reads those files, and only by a name that stays
+  in that folder. For a zone with no saved map the view says to open JB Map there once (`jb map`). This works from
+  the files on disk: the window does not need ISXJQB loaded at that moment.
 
 ISXJQB runs a native zone file by converting it to its own steps, and not every key is read the same way yet. Try a
 file in ISXJQB before you rely on it there.
@@ -117,6 +123,10 @@ was not run in game for this release:
 
 - ISXJQB: `jb ic rundirect`, `jb ic queue` (their forms are ISXJQB's own usage lines).
 - ISXADD: `u1nav path` and the `U1Nav` members.
+- The Map's ISXJQB maps (`OpenIC_OnMap`) and the zone's short name it uses (`${Zone.ShortName}`, which Ogre's own
+  OgreEffectTracker.iss reads): written when no game client was up. The page's side is driven by the stand-in for
+  Ogre (`tests/fake-ogre.js`); the script's side runs only calls proven elsewhere in it (`filepath:FileExists`,
+  `ISXOgreX.UI:EvalFile`).
 
 Ogre's `ISXOgreEQ2.IC:Run`, `ISXOgreEQ2.IC:Queue` and `OgreBotAPI.Bot:SetUpFor` are documented and that Ogre has them,
 but they start runs and setups, so they were not run for this release. Please report what works.

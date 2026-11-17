@@ -25,17 +25,21 @@
     <button class="oic-btn oic-primary" data-oic="save" title="Save the file where it came from (Ctrl+S)">Save</button>
     <button class="oic-btn" data-oic="save-as" title="Save a copy: pick the folder and the name">Save as</button>
     <span class="oic-sep"></span>
-    <span class="oic-seg" id="openic-views"><span data-oic-view="flow" title="The steps as boxes, in the order they run: click a box to change it, drag one onto a + to move it">Chart</span><span data-oic-view="words" title="Every step written out as a sentence">Plain English</span><span data-oic-view="json" title="The file exactly as Ogre reads it: change it here, then press Apply">File text</span><span data-oic-view="map" title="Every spot the file walks to, seen from above (in game, you are the square)">Map</span></span>
+    <span class="oic-seg" id="openic-views"><span data-oic-view="words" title="Every step in order, in plain words: click one to change it on the right">Steps</span><span data-oic-view="flow" title="The steps as boxes, in the order they run: the wheel scrolls, Ctrl+wheel zooms, drag a box onto a + to move it">Chart</span><span data-oic-view="json" title="The file exactly as Ogre reads it: change it here, then press Apply">File text</span><span data-oic-view="map" title="Every spot the file walks to, seen from above; in game over ISXJQB's saved map of your zone (you are the square)">Map</span></span>
     <span class="oic-sep"></span>
     <button class="oic-btn" id="openic-undo" data-oic="undo" title="Undo the last change (Ctrl+Z)">Undo</button>
     <button class="oic-btn" id="openic-redo" data-oic="redo" title="Redo (Ctrl+Y)">Redo</button>
     <button class="oic-btn" id="openic-checkbtn" data-oic="check" title="What would stop Ogre loading this file: click to see the list under the chart">Problems</button>
     <span class="oic-sep"></span>
     <button class="oic-btn" data-oic="game" title="Reload your files in Ogre, run or queue this zone file, start a fight's setup; ISXJQB and ISXADD extras">Use in game &#9662;</button>
-    <button class="oic-btn" id="openic-classbtn" data-oic="class" title="Whose ability icons to show: your class's abilities show their own icon, another class's show that class's icon">Icons: every class</button>
+    <span style="flex:1;"></span>
+    <button class="oic-btn" id="openic-classbtn" data-oic="class" title="Pictures on the steps: on or off, and whose ability pictures">Pictures &#9662;</button>
+    <button class="oic-btn oic-txt" data-oic="txt-" title="Smaller text (the chart has its own zoom: - and + over it)">A-</button>
+    <button class="oic-btn oic-txt" data-oic="txt+" title="Bigger text">A+</button>
   </div>
   <div class="oic-main">
     <div class="oic-left">
+      <div class="oic-nav" id="openic-nav" style="display:none;"></div>
       <div class="oic-view" id="openic-v-flow"><div id="openic-flow" style="width:100%;height:100%;"></div></div>
       <div class="oic-view" id="openic-v-words" style="display:none;"><div id="openic-words"></div></div>
       <div class="oic-view" id="openic-v-json" style="display:none;">
@@ -44,7 +48,8 @@
       </div>
       <div class="oic-view" id="openic-v-map" style="display:none;"><svg id="openic-map" xmlns="http://www.w3.org/2000/svg"></svg><div id="openic-map-note" class="oic-note"></div></div>
     </div>
-    <div class="oic-side" id="openic-side"></div>
+    <div class="oic-split" id="openic-split" title="Drag to make the right side wider or narrower"></div>
+    <div class="oic-sidewrap" id="openic-sidewrap"><div class="oic-tabs" id="openic-sidetabs"></div><div class="oic-side" id="openic-side"></div></div>
   </div>
   <div class="oic-bottom">
     <div id="openic-problems"></div>
@@ -86,7 +91,7 @@
     <input type="hidden" id="openic-arg-root"><input type="hidden" id="openic-arg-name">
     <textarea id="openic-arg-text"></textarea>
     <input type="hidden" id="openic-msg-ext"><input type="hidden" id="openic-msg-me"><input type="hidden" id="openic-msg-say">
-    <input type="hidden" id="openic-msg-route"><textarea id="openic-msg-check"></textarea><textarea id="openic-msg-file"></textarea><textarea id="openic-msg-list"></textarea>
+    <input type="hidden" id="openic-msg-route"><input type="hidden" id="openic-msg-map"><textarea id="openic-msg-check"></textarea><textarea id="openic-msg-file"></textarea><textarea id="openic-msg-list"></textarea>
     <input type="hidden" id="openic-assets-got">
   </div>
 </div>
@@ -119,6 +124,8 @@
 <script src="js/openic-icons.js"></script>
 <script src="js/openic-game.js"></script>
 <script src="js/openic-browse.js"></script>
+<script src="js/openic-edit.js"></script>
+<script src="js/openic-map.js"></script>
 <script src="data/spell-icons.js"></script>
 <script src="data/item-icons.js"></script>
 <script src="js/openic-selftest.js"></script>

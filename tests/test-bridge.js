@@ -9,7 +9,8 @@ const { ROOT, ok, test, done } = require('./lib.js');
 
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const iss = read('host/OpenIC.iss'), host = read('creator/js/openic-host.js'), html = read('creator/index.html');
-const page = read('creator/js/openic-app.js') + read('creator/js/openic-game.js') + read('creator/js/openic-browse.js') + host;
+const page = read('creator/js/openic-app.js') + read('creator/js/openic-game.js') + read('creator/js/openic-browse.js') + read('creator/js/openic-edit.js') +
+  read('creator/js/openic-map.js') + host;
 const uniq = (a) => Array.from(new Set(a)).sort();
 const lines = iss.split(/\r?\n/);
 /* the comment lines just above the first line that uses this call (not a comment itself) */

@@ -31,6 +31,24 @@ const prelude = `
     var body = p === '' ? '>D|Sample Expansion>F|sample.json|2048' : (p === 'Sample Expansion' ? '>F|inner.json|1024' : '');
     say('list', '1/1|' + r + '|' + p + '|1' + body);
   }
+  /* ISXJQB's saved map of the sample zone, as OpenIC.iss runs its files in the page: two floors, a picture of the
+     lower one only */
+  function mapAnswer() {
+    var kind = (document.getElementById('openic-arg-kind') || {}).value || '', name = (document.getElementById('openic-arg-name') || {}).value || '';
+    var got = false;
+    if (kind === 'zone' && name === 'sample_zone') {
+      window.__jqbmapZone = { zone: 'sample_zone', ok: true, key: 'sample_zone_f0', min_x: -100, max_x: 100, min_z: -100, max_z: 100,
+        exits: [[0, 2, 90, 5, 'Sample Exit', 'jb', '', 1, '']], places: [],
+        floors: [{ key: 'sample_zone_f0', name: 'Sample Zone - (Main Floor)', min_x: -100, max_x: 100, min_z: -100, max_z: 100, hmax: 50, prio: 1 },
+          { key: 'sample_zone_f1', name: 'Sample Zone - (Upper Floor)', min_x: -100, max_x: 100, min_z: -100, max_z: 100, hmin: 50, prio: 1 }] };
+      got = true;
+    }
+    if (kind === 'art' && name === 'sample_zone_f0') {
+      (window.__jqbmapArt = window.__jqbmapArt || {})[name] = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+      got = true;
+    }
+    say('map', kind + '|' + name + '|' + (got ? '1' : '0'));
+  }
   window.ogreCall = function (kind, line) {
     if (kind !== 'cmd') return;
     log.push(line);
@@ -38,7 +56,8 @@ const prelude = `
     if (fake !== log) fake.push(line);
     if (/OpenIC_List/.test(line)) { listAnswer(); return; }
     setTimeout(function () {
-      if (/OpenIC_Hello/.test(line)) { say('ext', 'ogrex=1;eq2=1;ogreeq2=1;bot=1;jqb=0;add=1;check=1;fcheck=1'); say('me', '10.5,2,-30.25|Sample Zone: The Test Halls [Heroic]|A Target|fury'); }
+      if (/OpenIC_Map/.test(line)) mapAnswer();
+      if (/OpenIC_Hello/.test(line)) { say('ext', 'ogrex=1;eq2=1;ogreeq2=1;bot=1;jqb=0;add=1;check=1;fcheck=1'); say('me', '10.5,2,-30.25|Sample Zone: The Test Halls [Heroic]|A Target|fury|Sample_Zone'); }
       if (/OpenIC_Check/.test(line)) {
         var answer = '{"ok":false,"errors":1,"warnings":0,"issues":[{"list":"steps","step":1,"message":"a sample problem","warning":false}]}';
         say('check', '1/2|' + answer.slice(0, 40));

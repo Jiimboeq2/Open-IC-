@@ -193,6 +193,7 @@
       if (A._afterMkdir && /^(ok:folder made|err:)/.test(p) && A.onMkdirSaid) A.onMkdirSaid(/^ok:/.test(p));
     });
     h.on('list', function (p) { if (A.onList) A.onList(p); });
+    h.on('map', function (p) { if (A.onMapMsg) A.onMapMsg(p); });
     h.on('check', function (p) { A.ogreResult(p); });
     h.on('route', function (p) {
       var pts = str(p).split(';').map(function (t) { return t.split(',').map(Number); }).filter(function (q) { return q.length === 3 && q.every(isFinite); });

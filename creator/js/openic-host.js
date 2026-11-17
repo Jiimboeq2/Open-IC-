@@ -42,6 +42,8 @@
     d.className = 'oic-toast oic-toast-' + (kind === 'err' || kind === 'warn' ? kind : 'ok');
     d.textContent = str(msg);
     box.appendChild(d);
+    /* two at most: an older one goes so the newest never sits on the page's own buttons */
+    while (box.children.length > 2) box.removeChild(box.firstChild);
     setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, kind === 'err' ? 6000 : 3500);
   };
 
@@ -125,7 +127,7 @@
     var L = H.handlers[channel] || [];
     for (var i = 0; i < L.length; i++) { try { L[i](payload); } catch (e) { H.toast('Could not read what the game sent (' + channel + '): ' + e.message, 'err'); } }
   }
-  H.CHANNELS = ['ext', 'me', 'file', 'say', 'route', 'check', 'list'];
+  H.CHANNELS = ['ext', 'me', 'file', 'say', 'route', 'check', 'list', 'map'];
   H.bind = function () {
     for (var i = 0; i < H.CHANNELS.length; i++) (function (ch) {
       var el = $('openic-msg-' + ch);
@@ -148,7 +150,7 @@
     H.on('me', function (p) {
       var a = p.split('|'), xyz = (a[0] || '').split(',');
       if (xyz.length === 3 && isFinite(+xyz[0]) && isFinite(+xyz[1]) && isFinite(+xyz[2]) && a[0] !== '') {
-        H.me = { x: +xyz[0], y: +xyz[1], z: +xyz[2], zone: a[1] || '', target: a[2] || '', subclass: str(a[3]).toLowerCase() };
+        H.me = { x: +xyz[0], y: +xyz[1], z: +xyz[2], zone: a[1] || '', target: a[2] || '', subclass: str(a[3]).toLowerCase(), short: a[4] || '' };
       }
       if (H.onMe) H.onMe(H.me);
     });

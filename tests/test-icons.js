@@ -125,7 +125,7 @@ test('chips get icons, and the class picker lists the 26 classes', () => {
   const gi = A.chipIcon('zone', { key: 'z:named', role: 'sec' });
   ok(gi && gi.id === I.K.named, 'the named chip');
   ok(A.chipIcon('fight', { key: 'castAbility', role: 'action' }).id === I.K.cast, 'a fight chip');
-  ok(/^Icons: every class/.test(A.classLabel()), A.classLabel());
+  ok(/^Pictures: every class/.test(A.classLabel()), A.classLabel());
 });
 test('the in-game window has the class icons inline; the asset parts have the sheets and the lists', () => {
   const win = fs.readFileSync(path.join(ROOT, 'host', 'OpenIC.html'), 'utf8');

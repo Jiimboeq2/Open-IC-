@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.4.0 - 2026-11-17
+
+Writing files, not just looking at them.
+
+- **Steps** is the main view: every step in order, numbered, in plain words, by named, with **Jump to** at the top
+  (a named, the end, the way out). The picked step has **Up**, **Down**, **Copy**, **Delete** and **Add a step
+  after it** right under it. The Chart has Jump to as well, and its wheel scrolls (Shift sideways, Ctrl zooms).
+- The right side has three tabs:
+  - **Add a step**: every action Ogre has (the ready-made ones first, filled in), by what it is for (Moving,
+    Fighting, Loot, Clicks and talk, Waiting, Messages, Bot and group, Logic, The way out, Ready-made) or found by a
+    word, each with a line on what it does. A click adds it after the picked step, or where a + was clicked.
+  - **This step**: what it does, **who runs it** (in a zone file the IC character, with the group along on walks,
+    nameds, loot, teleporters and the way out; in a fight file every box, or the ones its forwho names), its
+    problems, then its settings as a form with a line on each. An op list says what each op does. **More
+    settings** holds the rest; **The step as text** takes any change.
+  - **File settings**.
+- **Who does it, with a backup**: a step's forwho or Send to is picked from everyone, one box, an archetype, a class
+  or a raid group (or typed). For an archetype, a class or a role, **If the group has no ...** adds a backup in one
+  click: the step runs only when the group has one, and a copy for the other box only when it has none (a roster
+  count, the way Ogre's own fight files write it).
+- **Map**: drawn the way the game's map shows a zone (x grows to the left); the wheel zooms, a drag moves it, **Fit**
+  shows all of it. In game, ISXJQB's saved map of the zone you stand in lies under the spots, with ISXJQB's ways out,
+  floor by floor. Not run in game yet: no game client was up when it was written.
+- **Pictures** on the bar (it was Icons): pictures on or off, and whose ability pictures show; it says it never
+  changes the file. **A-** / **A+** make the text smaller or bigger.
+- New checks: a who-word Ogre does not have (`scouts` for `scout`: as written it matches only a character called
+  Scouts), and a tip on a per-box action in a zone file (castStack, cancelMaintained, useItem, beltAdorn change the
+  IC character only). An ISXJQB fight mechanics file is no longer read as an Ogre fight file.
+- Words: every fight-file action, all 63 conditions, every op and key now have a line in plain words (from Ogre's docs
+  and its shipped files); loot `op: corpses` and a fight file's `enabled` are known (they showed as an error and a
+  warning). Fixed meanings: a waypoint points the game's on-screen trail and moves nobody; stop following does not
+  hold a box still (stand still does); joust out for everyone at the start clears an old joust hold.
+- [docs/ogre-files.md](docs/ogre-files.md): both formats in plain words, with examples and pitfalls.
+- Fixes: dropdowns and number boxes in the dark theme; two toasts at most; the checks line reads as a sentence.
+
 ## 0.3.0 - 2026-11-17
 
 - In game, **Open** and **Save as** are a file window, no typed paths: My zone files, My fight files, Ogre's zone

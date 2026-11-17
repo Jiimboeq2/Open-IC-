@@ -24,7 +24,7 @@
   function clone(v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); }
   function n2(v) { return Math.round(+v * 100) / 100; }
 
-  A.st = { kind: '', doc: null, name: '', path: '', gamePath: '', handle: null, saved: '', undo: [], redo: [], sel: '', view: 'flow',
+  A.st = { kind: '', doc: null, name: '', path: '', gamePath: '', handle: null, saved: '', undo: [], redo: [], sel: '', view: 'words', side: 'add', arm: null,
     probs: [], fv: { z: 0.9, x: 10, y: 34 }, chart: null, route: null, quest: { path: '', minutes: 90 } };
   var UNDO_MAX = 100;
 
@@ -55,6 +55,7 @@
   A.load = function (doc, meta) {
     meta = meta || {};
     var kind = Z().kindOf(doc);
+    if (!kind && Z().isJbEncounter(doc)) { H().alert('An ISXJQB fight mechanics file', 'This is an ISXJQB mechanics file (one named, its setup, mechanics and cleanup). ISXJQB\'s own window edits those: JB Creator, the Encounters tab.'); return false; }
     if (!kind) { H().alert('Not a file the Creator knows', 'This JSON is not an OgreBot zone file, an OgreBot fight file or an ISXJQB instance file.'); return false; }
     var s = A.st;
     s.kind = kind; s.doc = doc; s.name = str(meta.name) || Z().fileName(doc); s.path = str(meta.path); s.gamePath = str(meta.gamePath);
@@ -193,7 +194,7 @@
   function makeItem(key) {
     var k = A.st.kind, p;
     if (k === 'zone') { p = Z().paletteItem(key); return p ? p.make() : null; }
-    if (k === 'fight') { p = O().paletteItem(key); return p ? p.make() : null; }
+    if (k === 'fight') { p = O().paletteItem(key); return p ? p.make() : (A.makeGeneric ? A.makeGeneric(key) : null); }
     if (k === 'jb') {
       p = IC.icflow.paletteItem(key);
       if (p && p.make) return p.make();
@@ -217,6 +218,9 @@
     if (s.kind === 'zone' && L.length && isObj(L[L.length - 1]) && L[L.length - 1]['do'] === 'zoneOut') return { seq: ref([main]), idx: L.length - 1 };
     return { seq: ref([main]), idx: L.length };
   }
+  A.slotFor = slotFor;
+  A.graphNow = graph;
+  A.stepSpec = function (st) { return stepVerbSpec(st); };
   A.addAt = function (key, seq, idx) {
     var s = A.st;
     if (!s.doc) { H().toast('Start a file first: New zone file, New fight file or Open.', 'warn'); return; }
@@ -348,6 +352,7 @@
     if (A.st.view === 'words') A.renderWords();
     if (A.st.view === 'json') A.renderJson();
     if (A.st.view === 'map') A.renderMap();
+    A.renderNav();
     A.renderSide();
     A.renderProblems();
   };
@@ -386,8 +391,8 @@
     if (A.applyIcons) A.applyIcons();
     var g = graph(split);
     s.chart = IC.fv.render(host, g, {
-      view: s.fv, palette: A.palette(), legendRoles: ['action', 'move', 'cond', 'loop', 'alt', 'state'], foldTools: true, palFold: true,
-      emptyText: 'No steps yet: click a chip at the bottom, or drag it onto the +.',
+      view: s.fv, palette: [], legendRoles: ['action', 'move', 'cond', 'loop', 'alt', 'state'], foldTools: true, palFold: true,
+      emptyText: 'No steps yet: pick one on the right.',
       onView: function (v) { s.fv = v; },
       onMode: function () { A.renderFlow(); },
       onSelect: function (r) { A.select(r || ''); },
@@ -395,29 +400,23 @@
       onAct: A.act, onMove: A.move, onDropNew: A.addAt,
       onPick: function (key, slot) { var w = slotFor(slot); A.addAt(key, w.seq, w.idx); },
       onToggle: A.toggle,
+      /* View: a menu that opens and shuts on its button (the whole chart, titles only, colors, ability icons) */
+      onTool: function (t) { if (t === 'viewmenu') { s.fv.toolsOpen = !s.fv.toolsOpen; A.renderFlow(); } },
       gameIcon: A.gameIcon, abilIcon: A.abilIcon, iconById: A.iconById, onAbIcons: A.setAbIcons
     });
+  };
+  /* the window's text size, A- / A+: every size in the page scales with --oic-txt (the chart has its own zoom) */
+  A.textSize = function (step) {
+    var t = Math.round(Math.max(0.8, Math.min(1.8, (+A._txt || 1) + (step || 0))) * 10) / 10;
+    A._txt = t;
+    var r = $('openic-root');
+    if (r && r.style && r.style.setProperty) r.style.setProperty('--oic-txt', String(t));
+    if (step) H().store('txt', t);
   };
   A.welcome = function () {
     return '<b>Open IC Creator</b><br>Make and edit OgreBot zone files (the instance controller) and fight files.<br><br>' +
       '<span class="oic-link" data-oic="new-zone">New zone file</span> &middot; <span class="oic-link" data-oic="new-fight">New fight file</span> &middot; ' +
       '<span class="oic-link" data-oic="open">Open a file</span>' + (H().inGame ? '' : '<br><br>or drop a .json file here.');
-  };
-  A.renderWords = function () {
-    var host = $('openic-words'), s = A.st;
-    if (!host) return;
-    if (!s.doc) { host.innerHTML = '<div class="oic-empty">' + A.welcome() + '</div>'; return; }
-    if (A.applyIcons) A.applyIcons();
-    var lines = Z().lines(graph(false)), h = '<div class="oic-wordhead">' + esc(Z().KIND_WORDS[s.kind]) + ' in plain words. Click a line to pick that step.</div>';
-    var roles = IC.fv.ROLES || {}, icons = s.fv.abicons !== false && A.gameIcon;
-    for (var i = 0; i < lines.length; i++) {
-      var L = lines[i], c = (roles[L.role] || roles.action || { c: '#4a90e2' }).c, gi = icons && L.gi ? A.gameIcon(L.gi, 14) : '';
-      var plain = IC.words && IC.words.plain ? IC.words.plain(L.text) : L.text, sub = IC.words && IC.words.plain ? IC.words.plain(L.sub) : L.sub;
-      h += '<div class="oic-wl' + (L.lane || L.head ? ' oic-wl-h' : '') + (L.ref && L.ref === s.sel ? ' oic-wl-sel' : '') + '" style="padding-left:' + (8 + L.depth * 18) + 'px"' +
-        (L.ref ? ' data-oic-ref="' + esc(L.ref) + '"' : '') + '>' + (gi ? '<span class="oic-wi">' + gi + '</span>' : '<i style="background:' + c + '"></i>') + '<span>' + esc(plain) +
-        (L.err ? ' <b class="oic-e">!</b>' : (L.warn ? ' <b class="oic-w">?</b>' : '')) + '</span>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
-    }
-    host.innerHTML = h;
   };
   A.renderJson = function () {
     var ta = $('openic-json'), s = A.st;
@@ -440,46 +439,9 @@
     H().toast('The text is in. Undo takes it back.');
   };
 
-  /* the Spots view: every spot the file names, seen from above (x across, z down), with a route preview when there is one */
-  A.renderMap = function () {
-    var svg = $('openic-map'), note = $('openic-map-note'), s = A.st;
-    if (!svg) return;
-    var pts = s.doc && s.kind !== 'jb' ? Z().spots(s.doc) : [], route = s.route || [], me = H().me, all = [];
-    pts.forEach(function (p) { all.push(p.p); });
-    route.forEach(function (p) { all.push(p); });
-    if (me) all.push([me.x, me.y, me.z]);
-    if (!all.length) { svg.innerHTML = ''; if (note) note.textContent = s.kind === 'jb' ? 'The Spots view is for OgreBot zone and fight files.' : 'No spots in this file yet.'; return; }
-    var W = svg.clientWidth || 600, Hh = svg.clientHeight || 400, x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
-    all.forEach(function (p) { x0 = Math.min(x0, +p[0]); x1 = Math.max(x1, +p[0]); z0 = Math.min(z0, +p[2]); z1 = Math.max(z1, +p[2]); });
-    var span = Math.max(x1 - x0, z1 - z0, 20), sc = Math.min((W - 40) / span, (Hh - 40) / span);
-    var X = function (p) { return (20 + (+p[0] - x0) * sc).toFixed(1); }, Y = function (p) { return (20 + (+p[2] - z0) * sc).toFixed(1); };
-    var h = '', i, colors = { path: '#2fd6c3', named: '#e0b050', entrance: '#9fb2c8', spot: '#b388ff' };
-    var byRef = {};
-    pts.forEach(function (p) { if (p.kind === 'path') (byRef[p.ref] = byRef[p.ref] || []).push(p.p); });
-    for (var r in byRef) if (has(byRef, r) && byRef[r].length > 1) h += '<polyline fill="none" stroke="#2fd6c3" stroke-opacity="0.5" stroke-width="2" points="' + byRef[r].map(function (p) { return X(p) + ',' + Y(p); }).join(' ') + '"/>';
-    if (route.length > 1) h += '<polyline fill="none" stroke="#f2c94c" stroke-width="2" stroke-dasharray="6 4" points="' + route.map(function (p) { return X(p) + ',' + Y(p); }).join(' ') + '"/>';
-    for (i = 0; i < pts.length; i++) {
-      var p = pts[i], sel = p.ref && p.ref === s.sel;
-      h += '<circle cx="' + X(p.p) + '" cy="' + Y(p.p) + '" r="' + (p.kind === 'named' ? 6 : 4) + '" fill="' + (colors[p.kind] || '#4a90e2') + '"' + (sel ? ' stroke="#fff" stroke-width="2"' : '') +
-        (p.ref ? ' data-oic-ref="' + esc(p.ref) + '"' : '') + '><title>' + esc(p.kind + (p.label ? ': ' + p.label : '') + ' (' + n2(p.p[0]) + ', ' + n2(p.p[1]) + ', ' + n2(p.p[2]) + ')') + '</title></circle>';
-      if (p.kind === 'named' && p.label) h += '<text x="' + (+X(p.p) + 8) + '" y="' + (+Y(p.p) + 4) + '" fill="#dde6f3" font-size="11">' + esc(p.label) + '</text>';
-    }
-    if (me) h += '<rect x="' + (+X([me.x, 0, me.z]) - 5) + '" y="' + (+Y([me.x, 0, me.z]) - 5) + '" width="10" height="10" fill="none" stroke="#ffffff" stroke-width="2"><title>you</title></rect>';
-    svg.innerHTML = h;
-    if (note) note.textContent = pts.length + ' spot' + (pts.length === 1 ? '' : 's') + ' from the file, seen from above' + (route.length ? '; the dashed line is the route ISXADD found' : '') + (me ? '; the square is you' : '') + '. Click a dot to pick its step.';
-  };
+  /* the Map view: openic-map.js */
 
   /* ------------------------------------------------------------ the side panel */
-  A.renderSide = function () {
-    var host = $('openic-side'), s = A.st;
-    if (!host) return;
-    if (s.snip && s.doc && s.kind === 'zone') { if (host._snip !== s.snip || !host.querySelector('#openic-snip')) A.snipForm(host); return; }
-    host._snip = null;
-    s.snip = null;
-    if (!s.doc) { host.innerHTML = '<div class="oic-h">Nothing open</div><div class="oic-note">New zone file, New fight file, or Open. Your files stay on your PC.</div>' + A.helpHtml(); return; }
-    var st = s.sel ? A.at(s.sel) : undefined;
-    host.innerHTML = st !== undefined ? A.stepHtml(st) : A.fileHtml();
-  };
   A.helpHtml = function () {
     return '<div class="oic-h">Where files go</div><div class="oic-note">Zone files: Scripts\\OgreSave\\EQ2\\IC\\custom\\ (any folder inside it).<br>' +
       'Fight files: Scripts\\OgreSave\\EQ2\\Encounters\\custom\\&lt;Expansion&gt;\\&lt;Zone&gt;\\&lt;Named&gt;.json.<br>Never under Scripts\\Ogre: updates replace that folder.</div>';
@@ -494,43 +456,6 @@
     if (has(st, 'everyPulse') || has(st, 'activeWhile') || (has(st, 'id') && has(st, 'do'))) return { keys: V.fightFile.pulseKeys };
     return null;
   }
-  A.stepHtml = function (st) {
-    var s = A.st, words = '', sub = '';
-    if (s.kind === 'jb') { words = IC.reg.labelFor(st); }
-    else if (isObj(st) && has(st, 'on')) { var w0 = O().whenText(st); words = 'When ' + w0.title; sub = w0.sub || ''; }
-    else if (isObj(st) && (has(st, 'everyPulse') || has(st, 'activeWhile'))) { words = 'A check while the fight runs'; sub = st.when ? 'when ' + Z().condWords(st.when) : ''; }
-    else if (isArr(st)) { words = 'A list of ' + st.length + ' step' + (st.length === 1 ? '' : 's'); }
-    else { var w = Z().stepWords(st, Z().ctxOf(s.doc), s.kind); words = w.title; sub = w.sub; }
-    if (IC.words && IC.words.plain) { words = IC.words.plain(words); sub = IC.words.plain(sub); }
-    var h = '<div class="oic-h">Selected <span class="oic-x" data-oic="unselect" title="Back to the file\'s settings">close</span></div>' +
-      '<div class="oic-words"><b>' + esc(words) + '</b>' + (sub ? '<div>' + esc(sub) + '</div>' : '') + '</div>';
-    var pre = s.kind === 'jb' ? s.sel + '.' : s.sel.slice(0, -1) + ',';
-    var mine = s.probs.filter(function (p) { return p.ref === s.sel || (!!p.ref && !!s.sel && p.ref.indexOf(pre) === 0); });
-    for (var i = 0; i < mine.length && i < 12; i++) h += '<div class="oic-pr oic-pr-' + mine[i].level + '">' + esc(mine[i].msg) + '</div>';
-    h += '<div class="oic-row"><button class="oic-btn" data-oic="act:up">Up</button><button class="oic-btn" data-oic="act:down">Down</button>' +
-      '<button class="oic-btn" data-oic="act:dup">Copy</button><button class="oic-btn oic-danger" data-oic="act:del">Delete</button></div>';
-    if (H().inGame && isObj(st)) {
-      var gb = '';
-      if (isArr(st.spots)) gb += '<button class="oic-btn" data-oic="here:spots" title="Add the spot you stand on to this walk">Add my spot</button>';
-      if (has(st, 'loc') || has(st, 'spot')) gb += '<button class="oic-btn" data-oic="here:' + (has(st, 'loc') ? 'loc' : 'spot') + '" title="Use the spot you stand on">Here</button>';
-      if (has(st, 'name')) gb += '<button class="oic-btn" data-oic="here:name" title="Use your current target\'s name">My target</button>';
-      if (gb) h += '<div class="oic-row">' + gb + '</div>';
-    }
-    h += '<div class="oic-h2">As text</div><textarea id="openic-step-json" class="oic-ta" spellcheck="false">' + esc(A.pretty(st)) + '</textarea>' +
-      '<div class="oic-row"><button class="oic-btn oic-primary" data-oic="step-apply">Apply</button><button class="oic-btn" data-oic="step-revert">Revert</button><span id="openic-step-msg" class="oic-note"></span></div>';
-    var spec = stepVerbSpec(st);
-    if (spec && spec.keys) {
-      var rows = '', keys = Object.keys(spec.keys).sort();
-      for (var k = 0; k < keys.length; k++) {
-        var ks = spec.keys[keys[k]] || {}, set = isObj(st) && has(st, keys[k]);
-        var t = ks.type === 'enum' ? (ks.values || []).join(' | ') : ((IC.vocab && IC.vocab.types && IC.vocab.types[ks.type]) || ks.type || '');
-        rows += '<div class="oic-key' + (set ? ' oic-key-set' : '') + '" data-oic="key:' + esc(keys[k]) + '" title="' + esc((ks.about || '') + (set ? ' (set)' : ' Click to add it.')) + '"><b>' + esc(keys[k]) + '</b>' +
-          (ks.required ? '<i>needed</i>' : '') + '<span>' + esc(t) + (ks['default'] !== undefined ? ' (default ' + esc(JSON.stringify(ks['default'])) + ')' : '') + '</span></div>';
-      }
-      h += '<div class="oic-h2">Its keys</div><div class="oic-note">Click a key to add it with its default.</div><div class="oic-keys">' + rows + '</div>';
-    }
-    return h;
-  };
   A.fileHtml = function () {
     var s = A.st, d = s.doc, h = '';
     if (s.kind === 'zone') {
@@ -638,7 +563,7 @@
     var el = $('openic-problems'), s = A.st;
     if (!el) return;
     if (!s.doc) { el.innerHTML = ''; return; }
-    var c = Z().counts(s.probs), h = '<div class="oic-ph">' + (s.probs.length ? 'Checks: ' + c.error + ' problem' + (c.error === 1 ? '' : 's') + ', ' + c.warn + ' to check, ' + c.info + ' tip' + (c.info === 1 ? '' : 's') :
+    var c = Z().counts(s.probs), h = '<div class="oic-ph">' + (s.probs.length ? 'Checks: ' + c.error + ' problem' + (c.error === 1 ? '' : 's') + ', ' + c.warn + ' to check, ' + c.info + ' tip' + (c.info === 1 ? '' : 's') + '.' :
       'Checks: nothing found.') + (s.kind !== 'jb' ? ' Then Reload in Ogre: its log line is the final word.' : '') + '</div>';
     for (var i = 0; i < s.probs.length && i < 200; i++) {
       var p = s.probs[i];
@@ -668,12 +593,6 @@
     else { m.style.left = Math.max(4, Math.min(x, (G.innerWidth || 1200) - 280)) + 'px'; m.style.top = Math.max(4, Math.min(y, (G.innerHeight || 800) - m.offsetHeight - 4)) + 'px'; }
   };
   A.closeMenu = function () { var m = $('openic-menu'); if (m) m.style.display = 'none'; };
-  A.addMenu = function (seq, idx) {
-    var items = [{ head: 'Add here' }], P = A.palette();
-    for (var i = 0; i < P.length; i++) (function (p) { items.push({ label: p.label, run: function () { A.addAt(p.key, seq, idx); } }); })(P[i]);
-    var at = A._lastMouse || null;
-    setTimeout(function () { A.menu(at, items); }, 0);
-  };
   /* New: the two kinds of file Ogre reads, each said in a line */
   A.newMenu = function (btn) {
     A.menu(btn, [
@@ -786,6 +705,8 @@
     var anchor = t;
     if (v === 'modal-ok' || v === 'modal-cancel') { H().modalDone(v === 'modal-ok'); return; }
     if (v.indexOf('br:') === 0) { if (A.browseClick) A.browseClick(v.slice(3)); return; }
+    if (A.editClick && A.editClick(v, t)) return;
+    if (v === 'txt-' || v === 'txt+') { A.textSize(v === 'txt+' ? 0.1 : -0.1); return; }
     if (v === 'new') { if (menu && menu.style.display === 'block') A.closeMenu(); else A.newMenu(anchor); }
     else if (v === 'new-zone') A.newZone();
     else if (v === 'new-fight') A.newFight();
@@ -814,13 +735,15 @@
     A._bound = true;
     var root0 = $('openic-root');
     root0.addEventListener('click', A.onClick);
+    root0.addEventListener('mousedown', function (e) { if (e.target && e.target.id === 'openic-split' && e.button === 0) A.splitDrag(e); });
     root0.addEventListener('change', function (e) {
       var t = e.target;
       if (t.getAttribute('data-oic-field') != null) A.setField(t.getAttribute('data-oic-field'), t.value);
       else if (t.getAttribute('data-oic-tick') != null) A.setTick(t.getAttribute('data-oic-tick'), t.checked);
+      else if (t.getAttribute('data-oic-sf') != null) A.setStepField(t.getAttribute('data-oic-sf'), t.type === 'checkbox' ? t.checked : t.value);
       else if (t.id === 'openic-file') A.readFile(t.files && t.files[0]);
     });
-    root0.addEventListener('input', function (e) { if (e.target.id === 'openic-json') e.target._dirty = true; });
+    root0.addEventListener('input', function (e) { if (e.target.id === 'openic-json') e.target._dirty = true; else if (A.onInput) A.onInput(e); });
     root0.addEventListener('dragover', function (e) { if (e.dataTransfer && !H().inGame) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
     root0.addEventListener('drop', function (e) {
       var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
@@ -847,8 +770,44 @@
     var mode = $('openic-mode');
     if (mode) mode.textContent = H().inGame ? 'in game' : 'in a browser';
     if (A.startIcons) A.startIcons();
+    A._txt = +H().store('txt') || 1;
+    A.textSize(0);
+    if (+H().store('sideW') > 0) A.sideWidth(+H().store('sideW'));
+    /* in game the page fills Ogre's window, and follows it when the window is made bigger or smaller */
+    if (H().inGame) setInterval(A.fitWindow, 1000);
     A.refresh();
     H().hello();
     if (A.onStart) A.onStart();
+  };
+  A.fitWindow = function () {
+    var r = $('openic-root'), b = r && r.parentNode;
+    if (!b || !b.clientHeight) return;
+    var want = Math.max(420, b.clientHeight - 12);
+    if (Math.abs((r.offsetHeight || 0) - want) > 2) { r.style.height = want + 'px'; if (A.st.chart && A.st.view === 'flow') A.renderFlow(); }
+  };
+  /* the right side's width: the divider beside it is dragged */
+  A.sideWidth = function (w) {
+    var side = $('openic-sidewrap');
+    if (!side) return;
+    w = Math.max(260, Math.min(760, Math.round(+w || 360)));
+    side.style.width = w + 'px';
+    return w;
+  };
+  A.splitDrag = function (e) {
+    var side = $('openic-sidewrap'), sp = $('openic-split');
+    if (!side || !sp) return;
+    e.preventDefault();
+    var right = side.getBoundingClientRect().right, w = side.offsetWidth;
+    sp.className = 'oic-split oic-on';
+    var move = function (ev) { w = A.sideWidth(right - ev.clientX); };
+    var up = function () {
+      document.removeEventListener('mousemove', move, true);
+      document.removeEventListener('mouseup', up, true);
+      sp.className = 'oic-split';
+      H().store('sideW', w);
+      if (A.st.view === 'flow') A.renderFlow();
+    };
+    document.addEventListener('mousemove', move, true);
+    document.addEventListener('mouseup', up, true);
   };
 })(typeof window !== 'undefined' ? window : this);

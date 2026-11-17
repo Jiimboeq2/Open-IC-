@@ -14,7 +14,7 @@
   --border-light: #3b5580;
   --text-primary: #d6e2f2;
   --text-bright: #f2f7ff;
-  --text-secondary: #8fa3bf;
+  --text-secondary: #b0c0d6;
   --text-bad: #ff9a9a;
   --text-warn: #f2c94c;
   --text-ok: #7fdc9a;
@@ -41,32 +41,32 @@
   background: var(--bg-deep);
   color: var(--text-primary);
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-  font-size: 12px;
+  font-size: calc(12px * var(--oic-txt, 1));
   line-height: 1.35;
 }
-#openic-root.oic-ingame { height: 680px; }
+#openic-root.oic-ingame { height: 100%; min-height: 420px; }
 #openic-root *, #openic-root *::before, #openic-root *::after { box-sizing: border-box; }
-#openic-root code { font-family: Consolas, "Courier New", monospace; font-size: 11px; color: var(--accent-cyan); }
+#openic-root code { font-family: Consolas, "Courier New", monospace; font-size: calc(11.5px * var(--oic-txt, 1)); color: var(--accent-cyan); }
 
 /* top lines */
 #openic-root .oic-top { display: flex; align-items: center; gap: 10px; padding: 6px 10px; background: var(--bg-panel); border-bottom: 1px solid var(--border-dark); }
-#openic-root .oic-brand { font-weight: bold; color: var(--accent-cyan); font-size: 13px; white-space: nowrap; }
-#openic-root .oic-mode { color: var(--text-secondary); font-size: 10px; }
+#openic-root .oic-brand { font-weight: bold; color: var(--accent-cyan); font-size: calc(13px * var(--oic-txt, 1)); white-space: nowrap; }
+#openic-root .oic-mode { color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); }
 #openic-root .oic-file { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #openic-root .oic-dirty { color: var(--text-warn); }
-#openic-root .oic-badge { display: inline-block; padding: 1px 7px; margin-right: 6px; border-radius: 10px; border: 1px solid var(--border-med); color: var(--text-secondary); font-size: 10px; }
+#openic-root .oic-badge { display: inline-block; padding: 1px 7px; margin-right: 6px; border-radius: 10px; border: 1px solid var(--border-med); color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); }
 #openic-root .oic-k-zone { border-color: #2fd6c3; color: #2fd6c3; }
 #openic-root .oic-k-fight { border-color: #e0b050; color: #e0b050; }
 #openic-root .oic-k-jb { border-color: var(--accent-purple); color: var(--accent-purple); }
 #openic-root .oic-ext { display: flex; gap: 4px; }
-#openic-root .oic-pill { padding: 1px 8px; border-radius: 10px; font-size: 10px; border: 1px solid var(--border-med); }
+#openic-root .oic-pill { padding: 1px 8px; border-radius: 10px; font-size: calc(11.5px * var(--oic-txt, 1)); border: 1px solid var(--border-med); }
 #openic-root .oic-yes { color: var(--text-ok); border-color: rgba(127, 220, 154, 0.6); }
 #openic-root .oic-no { color: var(--text-secondary); opacity: 0.7; }
 #openic-root .oic-unk { color: var(--text-secondary); border-style: dashed; }
 
 #openic-root .oic-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; padding: 5px 10px; border-bottom: 1px solid var(--border-dark); background: var(--bg-content); }
 #openic-root .oic-sep { width: 1px; height: 18px; background: var(--border-dark); margin: 0 4px; }
-#openic-root .oic-btn { padding: 3px 10px; border: 1px solid var(--border-med); border-radius: var(--radius); background: var(--tint-hover); color: var(--text-primary); cursor: pointer; font: inherit; font-size: 11px; }
+#openic-root .oic-btn { padding: 3px 10px; border: 1px solid var(--border-med); border-radius: var(--radius); background: var(--tint-hover); color: var(--text-primary); cursor: pointer; font: inherit; font-size: calc(11.5px * var(--oic-txt, 1)); }
 #openic-root .oic-btn:hover { background: var(--tint-on); border-color: var(--accent-cyan); }
 #openic-root .oic-btn:disabled { opacity: 0.4; cursor: default; }
 #openic-root .oic-primary { border-color: var(--accent-cyan); color: var(--accent-cyan); }
@@ -74,7 +74,7 @@
 #openic-root .oic-bad { border-color: var(--line-bad); color: var(--text-bad); }
 #openic-root .oic-warnb { border-color: rgba(242, 201, 76, 0.6); color: var(--text-warn); }
 #openic-root .oic-seg { display: inline-flex; border: 1px solid var(--border-med); border-radius: var(--radius); overflow: hidden; }
-#openic-root .oic-seg span { padding: 3px 10px; cursor: pointer; color: var(--text-secondary); font-size: 11px; }
+#openic-root .oic-seg span { padding: 3px 10px; cursor: pointer; color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); }
 #openic-root .oic-seg span.oic-on { background: var(--tint-on); color: var(--accent-cyan); box-shadow: inset 0 -2px 0 var(--accent-cyan); font-weight: bold; }
 
 /* main area */
@@ -86,54 +86,61 @@
 #openic-root #openic-v-json { display: flex; flex-direction: column; padding: 6px; gap: 6px; }
 #openic-root #openic-v-map { display: flex; flex-direction: column; padding: 6px; }
 #openic-root #openic-map { flex: 1; width: 100%; min-height: 200px; background: var(--bg-content); border: 1px solid var(--border-dark); border-radius: var(--radius); }
+#openic-root #openic-map { cursor: grab; }
 #openic-root #openic-map circle { cursor: pointer; }
+#openic-root #openic-map-note .oic-jump { margin-left: 4px; }
 #openic-root .oic-side { width: 360px; flex: none; border-left: 1px solid var(--border-dark); background: var(--bg-panel); overflow: auto; padding: 8px 10px; }
-#openic-root .oic-empty { padding: 40px 30px; color: var(--text-secondary); text-align: center; line-height: 1.8; font-size: 13px; }
+#openic-root .oic-empty { padding: 40px 30px; color: var(--text-secondary); text-align: center; line-height: 1.8; font-size: calc(13px * var(--oic-txt, 1)); }
 #openic-root .oic-link { color: var(--accent-cyan); cursor: pointer; text-decoration: underline; }
 
 /* words view */
-#openic-root .oic-wordhead { color: var(--text-secondary); padding: 2px 8px 8px; font-size: 11px; }
+#openic-root .oic-wordhead { color: var(--text-secondary); padding: 2px 8px 8px; font-size: calc(11.5px * var(--oic-txt, 1)); }
 #openic-root .oic-wl { position: relative; padding: 3px 8px; border-radius: 3px; cursor: default; }
 #openic-root .oic-wl[data-oic-ref] { cursor: pointer; }
 #openic-root .oic-wl[data-oic-ref]:hover { background: var(--fv-hover); }
 #openic-root .oic-wl i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 7px; vertical-align: middle; }
-#openic-root .oic-wl small { display: block; margin-left: 15px; color: var(--text-secondary); font-size: 10px; }
+#openic-root .oic-wl small { display: block; margin-left: 15px; color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); }
 #openic-root .oic-wl-h { font-weight: bold; color: var(--header-gold); margin-top: 6px; }
 #openic-root .oic-wl-sel { background: var(--bg-selected); }
 #openic-root .oic-e { color: var(--text-bad); }
 #openic-root .oic-w { color: var(--text-warn); }
 
 /* text boxes */
-#openic-root textarea, #openic-root input[type=text] { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-med); border-radius: var(--radius); font-family: Consolas, "Courier New", monospace; font-size: 11px; }
+#openic-root { color-scheme: dark; }
+#openic-root select, #openic-root input[type=number] { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-med); border-radius: var(--radius); padding: 3px 5px; font: inherit; }
+#openic-root select option, #openic-root select optgroup { background: var(--bg-panel); color: var(--text-primary); }
+#openic-root .oic-runs { margin: 6px 0; padding: 5px 8px; border-left: 3px solid var(--accent-blue); background: var(--tint-accent); border-radius: 3px; }
+#openic-root .oic-runs b { color: var(--text-bright); }
+#openic-root textarea, #openic-root input[type=text] { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-med); border-radius: var(--radius); font-family: Consolas, "Courier New", monospace; font-size: calc(11.5px * var(--oic-txt, 1)); }
 #openic-root #openic-json { flex: 1; width: 100%; resize: none; padding: 6px; white-space: pre; }
 #openic-root .oic-ta { width: 100%; min-height: 180px; resize: vertical; padding: 5px; white-space: pre; }
 #openic-root .oic-row { display: flex; align-items: center; gap: 4px; margin: 6px 0; }
 #openic-root .oic-wrap { flex-wrap: wrap; }
-#openic-root .oic-note { color: var(--text-secondary); font-size: 11px; margin: 4px 0; }
-#openic-root .oic-h { font-weight: bold; color: var(--header-gold); margin: 2px 0 6px; font-size: 12px; display: flex; justify-content: space-between; }
-#openic-root .oic-h2 { font-weight: bold; color: var(--text-bright); margin: 12px 0 4px; font-size: 11px; }
-#openic-root .oic-x { font-weight: normal; color: var(--text-secondary); cursor: pointer; font-size: 10px; }
+#openic-root .oic-note { color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); margin: 4px 0; }
+#openic-root .oic-h { font-weight: bold; color: var(--header-gold); margin: 2px 0 6px; font-size: calc(12px * var(--oic-txt, 1)); display: flex; justify-content: space-between; }
+#openic-root .oic-h2 { font-weight: bold; color: var(--text-bright); margin: 12px 0 4px; font-size: calc(11.5px * var(--oic-txt, 1)); }
+#openic-root .oic-x { font-weight: normal; color: var(--text-secondary); cursor: pointer; font-size: calc(11.5px * var(--oic-txt, 1)); }
 #openic-root .oic-x:hover { color: var(--accent-cyan); }
 #openic-root .oic-words { padding: 6px 8px; margin-bottom: 6px; background: var(--bg-content); border-left: 3px solid var(--accent-cyan); border-radius: 3px; }
-#openic-root .oic-words div { color: var(--text-secondary); font-size: 11px; margin-top: 2px; }
+#openic-root .oic-words div { color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); margin-top: 2px; }
 #openic-root .oic-f { display: flex; align-items: center; gap: 6px; margin: 4px 0; }
-#openic-root .oic-f span { width: 70px; flex: none; color: var(--text-secondary); font-size: 11px; }
+#openic-root .oic-f span { width: 70px; flex: none; color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); }
 #openic-root .oic-f input { flex: 1; min-width: 0; padding: 3px 5px; }
 #openic-root .oic-tick { display: flex; align-items: center; gap: 6px; cursor: pointer; }
-#openic-root .oic-code { font-family: Consolas, "Courier New", monospace; font-size: 10px; background: var(--bg-input); border: 1px solid var(--border-dark); border-radius: 3px; padding: 4px 6px; margin: 4px 0; word-break: break-all; user-select: text; }
+#openic-root .oic-code { font-family: Consolas, "Courier New", monospace; font-size: calc(11.5px * var(--oic-txt, 1)); background: var(--bg-input); border: 1px solid var(--border-dark); border-radius: 3px; padding: 4px 6px; margin: 4px 0; word-break: break-all; user-select: text; }
 #openic-root .oic-keys { border: 1px solid var(--border-dark); border-radius: var(--radius); max-height: 260px; overflow: auto; }
-#openic-root .oic-key { display: flex; gap: 6px; align-items: baseline; padding: 2px 6px; cursor: pointer; font-size: 11px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+#openic-root .oic-key { display: flex; gap: 6px; align-items: baseline; padding: 2px 6px; cursor: pointer; font-size: calc(11.5px * var(--oic-txt, 1)); border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
 #openic-root .oic-key:hover { background: var(--fv-hover); }
 #openic-root .oic-key b { color: var(--accent-cyan); font-weight: normal; font-family: Consolas, "Courier New", monospace; }
-#openic-root .oic-key i { color: var(--text-warn); font-size: 9px; font-style: normal; }
-#openic-root .oic-key span { color: var(--text-secondary); font-size: 10px; flex: 1; text-align: right; }
+#openic-root .oic-key i { color: var(--text-warn); font-size: calc(10.5px * var(--oic-txt, 1)); font-style: normal; }
+#openic-root .oic-key span { color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); flex: 1; text-align: right; }
 #openic-root .oic-key-set { opacity: 0.55; }
 
 /* checks and console lines */
 #openic-root .oic-bottom { flex: none; max-height: 24vh; overflow: auto; border-top: 1px solid var(--border-dark); background: var(--bg-content); padding: 4px 10px 6px; }
 #openic-root.oic-ingame .oic-bottom { max-height: 150px; }
-#openic-root .oic-ph { color: var(--text-secondary); font-size: 11px; margin-bottom: 2px; }
-#openic-root .oic-pr { padding: 2px 6px; font-size: 11px; border-radius: 3px; }
+#openic-root .oic-ph { color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); margin-bottom: 2px; }
+#openic-root .oic-pr { padding: 2px 6px; font-size: calc(11.5px * var(--oic-txt, 1)); border-radius: 3px; }
 #openic-root .oic-pr[data-oic-ref] { cursor: pointer; }
 #openic-root .oic-pr[data-oic-ref]:hover { background: var(--fv-hover); }
 #openic-root .oic-pr b { display: inline-block; width: 14px; text-align: center; margin-right: 4px; }
@@ -143,17 +150,17 @@
 #openic-root .oic-pr-error { background: var(--tint-bad); }
 #openic-root .oic-line { display: flex; gap: 10px; align-items: baseline; padding: 1px 0; }
 #openic-root .oic-line code { user-select: text; }
-#openic-root .oic-line span { color: var(--text-secondary); font-size: 10px; }
+#openic-root .oic-line span { color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); }
 
 /* menu, dialog, toasts */
 #openic-root .oic-menu { display: none; position: fixed; z-index: 60; min-width: 240px; max-height: 70vh; overflow: auto; padding: 4px 0; background: var(--bg-panel); border: 1px solid var(--border-med); border-radius: var(--radius); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55); }
-#openic-root .oic-mh { padding: 5px 12px 2px; color: var(--text-secondary); font-size: 10px; }
+#openic-root .oic-mh { padding: 5px 12px 2px; color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); }
 #openic-root .oic-mi { padding: 4px 14px; cursor: pointer; white-space: nowrap; }
 #openic-root .oic-mi:hover { background: var(--tint-on); color: var(--accent-cyan); }
 #openic-root .oic-mi.oic-off { opacity: 0.4; cursor: default; }
 #openic-root .oic-modal { display: none; position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 80; background: rgba(0, 0, 0, 0.55); align-items: center; justify-content: center; }
 #openic-root .oic-dialog { width: 420px; max-width: 92%; padding: 14px 16px; background: var(--bg-panel); border: 1px solid var(--border-med); border-radius: 6px; box-shadow: 0 6px 26px rgba(0, 0, 0, 0.65); }
-#openic-root .oic-dialog .oic-dt { font-weight: bold; color: var(--accent-cyan); margin-bottom: 6px; font-size: 13px; }
+#openic-root .oic-dialog .oic-dt { font-weight: bold; color: var(--accent-cyan); margin-bottom: 6px; font-size: calc(13px * var(--oic-txt, 1)); }
 #openic-root .oic-dialog .oic-dm { white-space: pre-line; margin-bottom: 10px; }
 #openic-root .oic-dialog input { width: 100%; padding: 4px 6px; margin-bottom: 10px; }
 /* the file browser (openic-browse.js) */
@@ -168,7 +175,7 @@
 #openic-root .oic-br-item { display: flex; justify-content: space-between; gap: 10px; padding: 4px 10px; cursor: pointer; white-space: nowrap; }
 #openic-root .oic-br-item:hover { background: var(--tint-on); color: var(--accent-cyan); }
 #openic-root .oic-br-up { color: var(--text-secondary); }
-#openic-root .oic-br-size { color: var(--text-secondary); font-size: 11px; }
+#openic-root .oic-br-size { color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); }
 #openic-root .oic-br-note { padding: 10px; color: var(--text-secondary); }
 #openic-root #openic-br-saverow input { margin-bottom: 0; flex: 1; }
 #openic-root .oic-br-typed { color: var(--text-secondary); margin-left: 12px; }
@@ -199,6 +206,73 @@
 /* the class picker */
 #openic-root .oic-menu-wide { width: 460px; padding: 4px 8px 6px; }
 #openic-root .oic-cgrid { display: flex; flex-wrap: wrap; gap: 3px; margin: 2px 0 6px; }
-#openic-root .oic-cc { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px 2px 3px; border: 1px solid var(--border-dark); border-radius: 10px; cursor: pointer; font-size: 10px; color: var(--text-secondary); }
+#openic-root .oic-cc { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px 2px 3px; border: 1px solid var(--border-dark); border-radius: 10px; cursor: pointer; font-size: calc(11.5px * var(--oic-txt, 1)); color: var(--text-secondary); }
 #openic-root .oic-cc:hover { border-color: var(--accent-cyan); color: var(--text-primary); }
 #openic-root .oic-cc.oic-on { border-color: var(--accent-cyan); color: var(--accent-cyan); background: var(--tint-on); }
+
+/* the window's text size: A- / A+ (openic-app.js A.textSize) */
+#openic-root { --oic-txt: 1; }
+#openic-root .oic-txt { min-width: 26px; padding: 3px 6px; }
+/* the chart's own bar: the View menu is a menu (open on a click), the chips leave room for the zoom buttons */
+#openic-root .fv-tools { top: 5px; }
+#openic-root .fv-tools span { font-size: calc(12px * var(--oic-txt, 1)); line-height: 20px; }
+#openic-root .fv-tools .fv-tmenu { display: none; position: absolute; right: 0; top: 25px; padding: 4px; background: var(--bg-panel); border: 1px solid var(--border-med); border-radius: 5px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6); }
+#openic-root .fv-tools.fv-topen { z-index: 40; }
+#openic-root .fv-tools.fv-topen .fv-tmenu { display: block; }
+#openic-root .fv-tools .fv-tmenu span { display: block; position: relative; margin: 0 0 3px 0; padding-left: 22px; }
+#openic-root .fv-tools .fv-tmenu span:last-child { margin-bottom: 0; }
+#openic-root .fv-tools .fv-tmenu span.fv-on { color: var(--accent-cyan); }
+#openic-root .fv-tools .fv-tmenu span.fv-on::before { content: "\2713"; position: absolute; left: 7px; }
+#openic-root .fv-parts { margin-right: 250px; }
+#openic-root .fv-bar span, #openic-root .fv-pc { font-size: calc(12px * var(--oic-txt, 1)); }
+/* the add-a-step strip: docked along the bottom, the width of the chart, never over a box's middle */
+#openic-root .fv-pal { left: 0; right: 0; bottom: 0; max-width: none; border-radius: 0; border-width: 1px 0 0 0; padding: 4px 8px; }
+#openic-root .fv-pal, #openic-root .fv-pal > span, #openic-root .fv-pal i, #openic-root .fvp-chips > span, #openic-root .fvp-chips i { font-size: calc(12px * var(--oic-txt, 1)); }
+#openic-root .fv-mini { bottom: 64px; }
+#openic-root .fv-legend { right: 6px; top: 70px; bottom: auto; font-size: calc(12px * var(--oic-txt, 1)); }
+/* Plain English: whole sentences that wrap, and a second line you can read */
+#openic-root .oic-wl > span { white-space: normal; }
+#openic-root .oic-wl small { color: #c3d0e2; }
+/* the right side: long text wraps; the divider beside it is dragged to make it wider */
+#openic-root .oic-side pre, #openic-root .oic-side code, #openic-root .oic-side textarea { white-space: pre-wrap; word-break: break-word; }
+#openic-root .oic-split { flex: none; width: 6px; cursor: col-resize; background: var(--bg-content); border-left: 1px solid var(--border-dark); }
+#openic-root .oic-split:hover, #openic-root .oic-split.oic-on { background: var(--tint-on); }
+
+/* Jump to: the file's sections, over the Steps list and the chart */
+#openic-root .oic-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 5px 8px; background: var(--bg-content); border-bottom: 1px solid var(--border-dark); }
+#openic-root .oic-jump { padding: 2px 9px; border: 1px solid var(--border-med); border-radius: 11px; cursor: pointer; font-size: calc(12px * var(--oic-txt, 1)); }
+#openic-root .oic-jump:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); background: var(--tint-on); }
+/* the Steps list: numbered, the picked one with its buttons under it */
+#openic-root #openic-v-words { overflow: auto; }
+#openic-root .oic-wl em { display: inline-block; min-width: 22px; color: var(--text-secondary); font-style: normal; font-size: calc(11.5px * var(--oic-txt, 1)); }
+#openic-root .oic-wl-sel { box-shadow: inset 3px 0 0 var(--accent-cyan); }
+#openic-root .oic-wl-acts { margin: 6px 0 2px 22px; }
+/* the right side: three tabs */
+#openic-root .oic-sidewrap { width: 380px; flex: none; display: flex; flex-direction: column; min-height: 0; border-left: 1px solid var(--border-dark); background: var(--bg-panel); }
+#openic-root .oic-side { width: auto; flex: 1 1 auto; border-left: none; }
+#openic-root .oic-tabs { display: flex; border-bottom: 1px solid var(--border-dark); background: var(--bg-content); }
+#openic-root .oic-tabs span { flex: 1; text-align: center; padding: 7px 4px; cursor: pointer; color: var(--text-secondary); font-size: calc(12.5px * var(--oic-txt, 1)); border-bottom: 2px solid transparent; }
+#openic-root .oic-tabs span:hover { color: var(--text-primary); background: var(--tint-hover); }
+#openic-root .oic-tabs span.oic-on { color: var(--accent-cyan); border-bottom-color: var(--accent-cyan); font-weight: bold; }
+#openic-root .oic-tabs span.oic-off { opacity: 0.4; cursor: default; }
+/* Add a step: find, categories, one row per action with what it does */
+#openic-root .oic-find { width: 100%; box-sizing: border-box; padding: 5px 8px; margin: 4px 0 6px; }
+#openic-root .oic-cats { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+#openic-root .oic-cats span { padding: 2px 9px; border: 1px solid var(--border-med); border-radius: 11px; cursor: pointer; font-size: calc(12px * var(--oic-txt, 1)); }
+#openic-root .oic-cats span.oic-on { border-color: var(--accent-cyan); color: var(--accent-cyan); background: var(--tint-on); }
+#openic-root .oic-act { padding: 5px 8px; margin: 2px 0; border: 1px solid var(--border-dark); border-radius: 4px; cursor: pointer; }
+#openic-root .oic-act:hover { border-color: var(--accent-cyan); background: var(--tint-on); }
+#openic-root .oic-act b { display: block; font-size: calc(13px * var(--oic-txt, 1)); }
+#openic-root .oic-act span:not(.oic-wi) { display: block; color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); }
+#openic-root .oic-act .oic-wi { float: left; margin: 1px 6px 0 0; }
+/* This step: one setting a row */
+#openic-root .oic-field { display: block; padding: 5px 6px; margin: 3px 0; border-radius: 4px; cursor: default; }
+#openic-root .oic-field label { display: block; font-weight: bold; margin-bottom: 3px; font-size: calc(12.5px * var(--oic-txt, 1)); }
+#openic-root .oic-field label i { color: var(--text-warn); font-weight: normal; font-style: normal; font-size: calc(11px * var(--oic-txt, 1)); }
+#openic-root .oic-field input[type=text], #openic-root .oic-field input[type=number], #openic-root .oic-field select, #openic-root .oic-field textarea { width: 100%; box-sizing: border-box; }
+#openic-root .oic-field select.oic-who { margin-bottom: 3px; }
+#openic-root .oic-field small { display: block; margin-top: 3px; color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); }
+#openic-root .oic-ta-s { min-height: 60px; }
+#openic-root details.oic-more { margin: 8px 0; }
+#openic-root details.oic-more summary { cursor: pointer; color: var(--accent-cyan); padding: 3px 0; }
+#openic-root .oic-backup { flex-wrap: wrap; margin-top: 6px; }

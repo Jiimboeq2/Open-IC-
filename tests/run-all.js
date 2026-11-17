@@ -4,7 +4,7 @@
 const path = require('path');
 const cp = require('child_process');
 const extra = process.argv.slice(2);
-const TESTS = ['test-strip.js', 'test-engine.js', 'test-icons.js', 'test-bridge.js', 'test-repo.js', 'test-corpus.js'];
+const TESTS = ['test-strip.js', 'test-engine.js', 'test-edit.js', 'test-icons.js', 'test-bridge.js', 'test-repo.js', 'test-corpus.js'];
 let bad = 0;
 for (const t of TESTS) {
   const r = cp.spawnSync(process.execPath, [path.join(__dirname, t)].concat(t === 'test-corpus.js' ? extra : []), { encoding: 'utf8' });

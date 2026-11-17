@@ -12,21 +12,28 @@ files in Ogre and run them. ISXJQB and ISXADD are optional extras.
 - **Opens** OgreBot zone files, OgreBot fight files, and ISXJQB instance files; starts new zone and fight files. In
   game, **Open** and **Save as** are a file window over the folders Ogre and ISXJQB read: click a folder to go in,
   a file to open it; **New folder** makes one.
+- **Steps**: every step in order, numbered, in plain words, by named; **Jump to** goes straight to a named or the
+  way out. The picked step has Up, Down, Copy, Delete and Add a step after it.
+- **The right side**: **Add a step** (every action Ogre has, by what it is for, or found by a word), **This step**
+  (what it does, who runs it, its problems, and its settings as a form with a line on each; an op list says what
+  each op does), **File settings**.
+- **Who does it, with a backup**: pick everyone, one box, an archetype, a class or a raid group; for an archetype, a
+  class or a role, "if the group has no bard, a mage does it" is one click: the step runs only when the group has one,
+  and a copy for the other box only when it has none (a roster count, as Ogre's own files write it).
 - **Chart**: every step a box, a zone file broken into its nameds, a fight file into its rules; click to pick,
-  drag a box onto a + to move it, click or drag a chip to add a step (quick snippets included); Overview, One part
-  and Side by side views; zoom.
-- **Game icons**: EverQuest II's own spell, class and item icons on the boxes, the chips and the Words view. The
-  **Icons** button picks your class (and, if you like, the classes in your group): your class's abilities show
-  their own icon; an ability of another class shows that class's icon, with "Who: Fury" (for example) as its
-  tooltip. With no class picked every ability shows its own icon; in game the class you play counts until you pick
-  one. The chart's **Ability icons** switch turns them off.
-- **Plain English**: every step written out as a sentence.
-- **File text**: the whole file as Ogre reads it; and for the picked step its text, the keys it can take (click one to add it with
-  its default), and its problems.
-- **Map**: every spot the file walks to, from above; in game, you on it, and an ISXADD route preview.
+  drag a box onto a + to move it, click a + to add a step there; the wheel scrolls, Ctrl+wheel zooms; Overview, One
+  part and Side by side views.
+- **Game pictures**: EverQuest II's own spell, class and item icons on the steps and boxes. **Pictures** turns them
+  on or off and picks whose ability pictures show: every class's, or one class's (another class's ability then shows
+  that class's icon, with "Who: Fury", for example, as its tooltip). In game the class you play counts.
+- **File text**: the whole file as Ogre reads it, to change as text.
+- **Map**: every spot the file walks to, seen from above the way the game's map shows it; zoom and drag. In game, you
+  on it, an ISXADD route preview, and ISXJQB's saved map of the zone you stand in under the spots, floor by floor.
 - **Problems**, found as you edit: what Ogre would refuse (unknown actions, missing keys, wrong kinds of value, no way out, a
-  bare `${...}`) and what Ogre's reload misses (misspelt conditions, two steps with one `stepId`), with the key you
-  probably meant.
+  bare `${...}`) and what Ogre's reload misses (misspelt conditions, two steps with one `stepId`, who-words Ogre does
+  not have such as `scouts` for `scout`), with the key you probably meant; and tips, such as a per-box action in a
+  zone file that only the IC character runs.
+- **A- / A+**: smaller or bigger text.
 - **Undo / redo**, and Ogre's file-name rule for the file you have open.
 - **Use in game**: reload zone or fight files in Ogre, have Ogre check the open file by its own load rules, queue or run
   the zone file, start a fight setup; with ISXJQB run the file or queue the zone; with ISXADD preview a route.
@@ -74,7 +81,8 @@ same as `ogre ic reload`, and `ISXOgreEQ2.Encounter:Reload` for fight files), ha
 own checks), queues and runs the zone file, and starts a fight setup; the pills at the top show whether ISXJQB and
 ISXADD are loaded. Once the window is open the script loads the icon sheets and the ability list, in parts
 (`host/OpenIC-assets-1.js` ...); without them the window still works, with the class icons and its own symbols.
-Close the window with its X to end the script. What was tried in game, and how: see
+The Map lays ISXJQB's saved map of the zone you stand in under the spots when ISXJQB has one (its JB Map saves a zone
+the first time it is open there). Close the window with its X to end the script. What was tried in game, and how: see
 [docs/extensions.md](docs/extensions.md).
 
 ## Extensions
@@ -82,13 +90,15 @@ Close the window with its X to end the script. What was tried in game, and how: 
 | | Needed? | Adds |
 |---|---|---|
 | ISXOgreX + ISXOgreEQ2 (native OgreBot) | needed in game | The window, reloads, queue and run, fight setups. |
-| ISXJQB | optional | Run a file with ISXJQB, queue a zone, quest-pack lines, ISXJQB instance files. |
+| ISXJQB | optional | Run a file with ISXJQB, queue a zone, quest-pack lines, ISXJQB instance files, its saved zone maps under the Map. |
 | ISXADD | optional | Route preview to a spot (`u1nav path`). |
 
 Details: [docs/extensions.md](docs/extensions.md).
 
 ## Docs
 
+- [docs/ogre-files.md](docs/ogre-files.md): both formats in plain words, from Ogre's docs and its shipped files: every
+  key, every zone step and fight action with an example, conditions, values, who runs what, and the pitfalls.
 - [docs/zone-files.md](docs/zone-files.md): zone files, every action only zone files run, its keys and defaults.
 - [docs/fight-files.md](docs/fight-files.md): fight files, how the bot picks one, rules, steps, who runs what.
 - [docs/prebuff-and-raids.md](docs/prebuff-and-raids.md): buffing up before a named; raids.

@@ -98,6 +98,22 @@
       s.view = 'map'; A.refresh();
       ok(q('#openic-map circle').length >= 4, 'dots: ' + q('#openic-map circle').length);
     });
+    test('a picked step says who runs it', function () {
+      s.view = 'words'; A.refresh();
+      A.select('["steps",0]');
+      var r = document.querySelector('#openic-side .oic-runs');
+      ok(!!r && /whole group goes along/.test(r.textContent), 'a walk: ' + (r ? r.textContent : 'no line'));
+    });
+    test('the Pictures menu turns the step pictures off and on', function () {
+      var b = document.getElementById('openic-classbtn'), m = document.getElementById('openic-menu');
+      A.onClickExtra('class', b, m);
+      ok(m.style.display === 'block' && /Pictures on the steps/.test(m.textContent), 'the menu says what it is for');
+      A.onClickExtra('cls-pic:0', b, m);
+      ok(s.fv.abicons === false && /off/.test(A.classLabel()), 'off');
+      A.onClickExtra('cls-pic:1', b, m);
+      ok(s.fv.abicons === true, 'on again');
+      A.closeMenu();
+    });
     test('a fight file draws its lanes and takes a new rule', function () {
       ok(A.load(clone(A.SAMPLES.fight), { name: 'Sample Warden.json', fromDisk: true }), 'load');
       ok(s.kind === 'fight', 'kind fight');
@@ -195,11 +211,39 @@
         H.ext.check = keepCheck;
       }
     });
-    var report = out.join('\n') + '\n' + (fails ? 'SELFTEST FAILED: ' + fails + ' of ' + checks + ' checks' : 'SELFTEST OK: ' + checks + ' checks passed');
-    var el = document.getElementById('openic-selftest');
-    if (el) { el.textContent = report; el.style.display = 'block'; }
-    document.title = fails ? 'SELFTEST FAILED ' + fails : 'SELFTEST OK ' + checks;
-    return { fails: fails, checks: checks, report: report };
+    /* in the stand-in for Ogre: ISXJQB's saved map comes over the bridge a file at a time, so this one waits */
+    function mapTest(next) {
+      if (!H.inGame || !G.__openicFakeGame) { next(); return; }
+      var name = 'in game, the Map view lays ISXJQB\'s saved map of my zone under the spots, floor by floor', f0 = fails, t0 = Date.now(), stage = 0;
+      A.load(clone(A.SAMPLES.zone), { name: 'sample.json', fromDisk: true });
+      s.view = 'map'; A.refresh();
+      (function wait() {
+        try {
+          if (stage === 0) {
+            var img = document.querySelector('#openic-map image');
+            if (!img && Date.now() - t0 < 5000) { setTimeout(wait, 50); return; }
+            ok(sent.some(function (l) { return /Event\[OpenIC_Map\]:Execute/.test(l); }), 'the game was asked for the map');
+            ok(!!img && /^data:image\/png/.test(img.getAttribute('href') || ''), 'the floor picture lies under the spots');
+            ok(q('#openic-map circle').length >= 4, 'the spots are on it');
+            ok(q('#openic-map-note .oic-jump').length === 2, 'two floors to pick from');
+            A.editClick('map:floor:1');
+            stage = 1; t0 = Date.now(); setTimeout(wait, 50); return;
+          }
+          var note = document.getElementById('openic-map-note').textContent;
+          if (!/no picture of this floor/.test(note) && Date.now() - t0 < 5000) { setTimeout(wait, 50); return; }
+          ok(/no picture of this floor/.test(note), 'a floor without a picture says so: ' + note.slice(-120));
+          ok(!document.querySelector('#openic-map image'), 'and shows none');
+        } catch (e) { fails++; out.push('  FAIL ' + name + ' threw ' + (e && e.message)); }
+        out.push((fails === f0 ? '  pass ' : '  FAIL ') + name);
+        next();
+      })();
+    }
+    mapTest(function () {
+      var report = out.join('\n') + '\n' + (fails ? 'SELFTEST FAILED: ' + fails + ' of ' + checks + ' checks' : 'SELFTEST OK: ' + checks + ' checks passed');
+      var el = document.getElementById('openic-selftest');
+      if (el) { el.textContent = report; el.style.display = 'block'; }
+      document.title = fails ? 'SELFTEST FAILED ' + fails : 'SELFTEST OK ' + checks;
+    });
   };
   /* in game the icon parts arrive one at a time after the window opens: the self test waits for the last one to report
      itself in (openic-assets-got "<k>/<n>"), 10 s at most */

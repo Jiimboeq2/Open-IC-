@@ -37,7 +37,7 @@ The Creator shows the folder and file name for the file you have open (`<Expansi
 |---|---|
 | `setup` | Steps every box runs when the setup starts. |
 | `triggers` | Rules: `{ "on": ..., "match": ..., "do": [steps], "when": [...], "forwho": ..., "allowConcurrentRuns": false, "throttleMs": ... }`. |
-| `onPulse` | Checks made about twice a second: `{ "id", "when", "do", "everyPulse", "throttleMs", "forwho" }`, or the lifecycle form `{ "activeWhile", "onEnter", "do", "onExit", "abortWhen" }`. |
+| `onPulse` | Checks made on every pulse of the engine: `{ "id", "when", "do", "everyPulse", "throttleMs", "forwho" }`, or the lifecycle form `{ "activeWhile", "onEnter", "do", "onExit", "abortWhen" }`. |
 | `onKilled` | `{ "<named>": [steps] }`: when that mob dies. |
 | `routines` | `{ "<name>": { "params": [...], "steps": [...] } }`, run with the step `{ "use": "<name>", "with": { ... } }`. Inside, `{{<param>}}` reads a parameter. |
 | `initialize` | `{ "events": [custom event names], "vars": { ... } }`. |

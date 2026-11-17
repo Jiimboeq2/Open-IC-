@@ -443,12 +443,13 @@
         }
         return W('state', T, 'Auto-target' + (a.radius != null ? ' range ' + a.radius + ' m' : '') + (a.enabled != null ? (a.enabled ? ' on' : ' off') : ''));
       }
-      case 'joust': return W('move', '&#10148;', op === 'in' ? Who(fw) + ' come back in' : Who(fw) + ' run out (joust)');
+      case 'joust': return W('move', '&#10148;', op === 'in' ? Who(fw) + ' come back in' : Who(fw) + ' run out (joust)',
+        op === 'in' ? '' : (str(fw).toLowerCase() === 'all' ? 'for everyone at the start it clears a joust hold left from before' : 'to their joust spot, out of the mob\'s reach'));
       case 'movement': {
         var Mv = '&#10148;';
         switch (op) {
           case 'jump': return W('move', Mv, withWho(a, 'jump'));
-          case 'stopFollow': return W('move', Mv, withWho(a, 'stop following'));
+          case 'stopFollow': return W('move', Mv, withWho(a, 'stop following'), 'a camp spot pulls them back next pulse: stand still holds them');
           case 'block': return W('move', Mv, withWho(a, 'stand still (no moving)'), a.reason ? 'for ' + q(a.reason, 40) : '');
           case 'unblock': return W('move', Mv, withWho(a, 'may move again'));
           case 'crouch': return W('move', Mv, withWho(a, 'crouch'));
@@ -467,7 +468,7 @@
         return W('move', Mv, str(a.mode) === 'walk' ? 'Walk (not run)' : withWho(a, Wd().split(op || 'move')));
       }
       case 'move': return W('move', '&#10148;', 'Move to ' + (a.loc ? loc(a.loc) : loc(a.x, a.y, a.z)) + forTag(a), a.await ? 'and wait until there' : '');
-      case 'waypoint': return W('move', '&#10148;', withWho(a, 'walk to ' + (a.loc ? loc(a.loc) : loc(a.x, a.y, a.z))));
+      case 'waypoint': return W('move', '&#10148;', withWho(a, 'get a waypoint trail to ' + (a.loc ? loc(a.loc) : loc(a.x, a.y, a.z))), 'the game\'s on-screen trail: it moves nobody');
       case 'repositionOnCondition':
         if (op === 'exit') return W('move', '&#10148;', withWho(a, 'go back to the camp spot'));
         return W('move', '&#10148;', withWho(a, 'go to their own spot of ' + (isArr(a.spots) ? a.spots.length + ' spots' : nm(a.spots))), a.indexVar ? 'by ' + nm(a.indexVar) : '');

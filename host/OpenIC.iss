@@ -149,7 +149,10 @@ objectdef openic_bridge
 		This:Say[ext,"${E}"]
 	}
 
-	; Where I stand, my zone, my target and my class: the window's Here buttons, its Spots view and its icons.
+	; Where I stand, my zone, my target, my class and my zone's short name: the window's Here buttons, its Map view (the
+	; short name finds ISXJQB's saved map) and its icons.
+	; UNVERIFIED for this release: Zone.ShortName (ISXEQ2, not in Ogre's API reference) was not run in game by this
+	; script yet; Ogre's own OgreEffectTracker.iss reads it.
 	method SendMe()
 	{
 		variable string T=""
@@ -159,7 +162,7 @@ objectdef openic_bridge
 			return
 		if ${Target(exists)}
 			T:Set["${Target.Name.Escape}"]
-		This:Say[me,"${Me.X},${Me.Y},${Me.Z}|${Zone.Name.Escape}|${T.Escape}|${Me.SubClass}"]
+		This:Say[me,"${Me.X},${Me.Y},${Me.Z}|${Zone.Name.Escape}|${T.Escape}|${Me.SubClass}|${Zone.ShortName.Escape}"]
 	}
 }
 variable openic_bridge OpenIC
@@ -526,6 +529,35 @@ atom(script) OpenIC_OnRoute()
 	OpenIC_RouteWait:Set[40]
 }
 
+; ISXJQB's saved map of a zone, when ISXJQB has one (its map saves a zone the first time JB Map is open there): in
+; Scripts/Eq2JCommon/JB/Data, jqbmap_zone_<zone short name>.js holds the zone's floors and where each one's edges are,
+; and jqbmap_art_<floor>.js one floor's picture. The window asks for one file at a time (openic-arg-kind: zone or art,
+; openic-arg-name: the zone's short name as ISXJQB writes it, or a floor's key), this runs it in the page and says
+; "<kind>|<name>|1" on the window's map channel, or "<kind>|<name>|0" when ISXJQB has no such file. A name can not
+; climb out of that folder. The files are ISXJQB's: this only reads them.
+; UNVERIFIED as a whole: not run in game yet (no game client was up when it was written); its calls are the proven
+; ones below and in OpenIC_OnList, and the stand-in for Ogre (tests/fake-ogre.js) drives the window's side.
+atom(script) OpenIC_OnMap()
+{
+	variable string Kind="${OpenIC.Arg[kind]}"
+	variable string Name="${OpenIC.Arg[name]}"
+	variable filepath D="${OpenIC_Scripts}/Eq2JCommon/JB/Data"
+	if !${Kind.Equal[zone]} && !${Kind.Equal[art]}
+		return
+	if ${Name.Length} == 0 || ${Name.Find[/](exists)} || ${Name.Find[..](exists)} || ${Name.Find[:](exists)}
+		return
+	if !${D.FileExists[jqbmap_${Kind}_${Name}.js]}
+	{
+		OpenIC:Say[map,"${Kind}|${Name}|0"]
+		return
+	}
+	; API: isxogrex, ISXOgreX.UI:EvalFile[path] runs a .js file in the UI page (as OpenIC_SendAssetPart does).
+	; PROVEN 2026-11-17: EvalFile ran files of 256 KB to 4 MB (the icon parts); ISXJQB's map files are at most a few
+	; hundred KB.
+	ISXOgreX.UI:EvalFile["${OpenIC_Scripts}/Eq2JCommon/JB/Data/jqbmap_${Kind}_${Name}.js"]
+	OpenIC:Say[map,"${Kind}|${Name}|1"]
+}
+
 ; The route ISXADD found, as "x,y,z;x,y,z;...": at most 180 points, so the message stays one short command.
 ; UNVERIFIED (ISXADD, not in Ogre's API reference): the members U1Nav.PointCount and U1Nav.PointX / PointY /
 ; PointZ[n] (ISXADD's help), counted from 1.
@@ -633,6 +665,7 @@ function main()
 	LavishScript:RegisterEvent[OpenIC_Route]
 	LavishScript:RegisterEvent[OpenIC_List]
 	LavishScript:RegisterEvent[OpenIC_MkDir]
+	LavishScript:RegisterEvent[OpenIC_Map]
 	Event[OpenIC_Hello]:AttachAtom[OpenIC_OnHello]
 	Event[OpenIC_Reload]:AttachAtom[OpenIC_OnReload]
 	Event[OpenIC_Check]:AttachAtom[OpenIC_OnCheck]
@@ -646,6 +679,7 @@ function main()
 	Event[OpenIC_Route]:AttachAtom[OpenIC_OnRoute]
 	Event[OpenIC_List]:AttachAtom[OpenIC_OnList]
 	Event[OpenIC_MkDir]:AttachAtom[OpenIC_OnMkDir]
+	Event[OpenIC_Map]:AttachAtom[OpenIC_OnMap]
 	Event[OgreUI_Opened]:AttachAtom[OpenIC_OnOpened]
 	Event[OgreUI_Closed]:AttachAtom[OpenIC_OnClosed]
 	OpenIC_OpenWindow
@@ -696,6 +730,7 @@ atom atexit()
 	Event[OpenIC_Route]:DetachAtom[OpenIC_OnRoute]
 	Event[OpenIC_List]:DetachAtom[OpenIC_OnList]
 	Event[OpenIC_MkDir]:DetachAtom[OpenIC_OnMkDir]
+	Event[OpenIC_Map]:DetachAtom[OpenIC_OnMap]
 	Event[OgreUI_Opened]:DetachAtom[OpenIC_OnOpened]
 	Event[OgreUI_Closed]:DetachAtom[OpenIC_OnClosed]
 	; API: isxogrex, ISXOgreX.UI:Close[name].

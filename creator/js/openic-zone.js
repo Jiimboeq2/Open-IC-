@@ -26,11 +26,33 @@
   Z.ZONE_ICON = { path: 'move', named: 'named', loot: 'loot', zoneOut: 'door', teleporter: 'door', waitForCombat: 'fight', waitForLoot: 'loot',
     hunt: 'killlist', trash: 'trash', reward: 'loot', progress: 'flag', recover: 'rez' };
   Z.COMMON = { 'do': 1, stepId: 1, onFail: 1, when: 1, throttleMs: 1, forwho: 1, awaitWhen: 1, awaitTimeout: 1 };
+  /* who runs a step. A zone file runs on one box, the IC character: these steps take the group along, any other acts
+     on the IC character unless it carries sendTo (and these per-box actions cannot). A fight file runs on every box,
+     each for itself; forwho picks which. */
+  Z.GROUP_MOVES = { path: 1, named: 1, loot: 1, teleporter: 1, zoneOut: 1 };
+  Z.ONE_BOX = { castStack: 1, cancelMaintained: 1, useItem: 1, beltAdorn: 1 };
+  Z.runsOn = function (st, kind) {
+    if (!isObj(st)) return null;
+    var W = IC.words, who = function (x) { return W && W.who ? W.who(x) : str(x); }, d = str(st['do']), fw = st.forwho, to = st.sendTo;
+    var fwOn = fw != null && fw !== '' && !/^all$/i.test(str(fw)), toOn = to != null && to !== '';
+    if (kind === 'zone') {
+      var t = 'The IC character', warn = '';
+      if (Z.GROUP_MOVES[d]) t += toOn ? ', and ' + who(to) + ' go along' : ', and the whole group goes along';
+      else if (toOn) t += ' tells ' + who(to) + ' to do it';
+      else if (Z.ONE_BOX[d]) { t += ' only'; warn = 'It cannot be sent to the others. For every box, put it in the named\'s fight file.'; }
+      else if (d) t += ' only' + (has(V().fightFile.actions[d] || {}, 'keys') && has(V().fightFile.actions[d].keys, 'sendTo') ? ' (Send to adds others)' : '');
+      if (fwOn) t += ' (when the IC character is among ' + who(fw) + ')';
+      return { text: t + '.', warn: warn };
+    }
+    if (kind === 'fight') return { text: (fwOn ? 'Only ' + who(fw) + ', each box for itself' : 'Every box, each for itself') + (toOn ? '; each tells ' + who(to) + ' to do it' : '') + '.', warn: '' };
+    return null;
+  };
 
   /* ------------------------------------------------------------ which kind of file */
   Z.kindOf = function (doc) {
     if (!isObj(doc)) return '';
     if (typeof doc.base_file === 'string' && doc.base_file) return 'jb';
+    if (Z.isJbEncounter(doc)) return '';
     if (isArr(doc.named) && !isArr(doc.variants)) return 'fight';
     if (has(doc, 'triggers') || has(doc, 'onPulse') || has(doc, 'setup') || has(doc, 'teardown') || has(doc, 'onKilled') || has(doc, 'routines')) return 'fight';
     if (IC.imp && IC.imp.isZoneFile && IC.imp.isZoneFile(doc)) return 'zone';
@@ -38,6 +60,8 @@
     if (isArr(doc.steps) || isArr(doc.sequence)) return 'jb';
     return '';
   };
+  /* an ISXJQB fight mechanics file (one named as a name, a setup object, mechanics and cleanup): not an Ogre fight file */
+  Z.isJbEncounter = function (doc) { return isObj(doc) && has(doc, 'mechanics') && !isArr(doc.named) && !isArr(doc.setup) && !has(doc, 'triggers'); };
   Z.KIND_WORDS = { zone: 'OgreBot zone file', fight: 'OgreBot fight file', jb: 'ISXJQB instance file' };
 
   /* ------------------------------------------------------------ new files */
@@ -226,7 +250,7 @@
   /* every box of any graph as lines of words (the Words view): { depth, text, sub, role, ref, head } */
   Z.lines = function (g) {
     var out = [];
-    function node(n, depth, head) { if (n && n.title) out.push({ depth: depth, text: str(n.title), sub: str(n.sub), role: n.role || 'action', ref: n.ref || '', head: !!head, err: !!n.err, warn: !!n.warn, tags: n.tags || [], gi: n.gi || null }); }
+    function node(n, depth, head) { if (n && n.title) out.push({ depth: depth, text: str(n.title), sub: str(n.sub), role: n.role || 'action', ref: n.ref || '', id: n.id || '', head: !!head, err: !!n.err, warn: !!n.warn, tags: n.tags || [], gi: n.gi || null }); }
     function items(L, depth) {
       for (var i = 0; i < (L || []).length; i++) {
         var it = L[i];
@@ -340,6 +364,10 @@
       }
       if (st.onFail != null && st.onFail !== 'fail' && st.onFail !== 'proceed') say('error', path, 'onFail must be fail or proceed.');
       if (st.when != null) checkConds(st.when, path, 'when');
+      ['forwho', 'sendTo', 'responders'].forEach(function (k) {
+        var odd = IC.words && IC.words.oddWho ? IC.words.oddWho(st[k]) : [];
+        for (var o = 0; o < odd.length; o++) say('warn', path, k + ': "' + odd[o].word + '" is probably meant as "' + odd[o].meant + '". Ogre\'s word has no s; as written it matches only a character called ' + odd[o].word + '.');
+      });
       if (!shape) { say('error', path, 'A step needs one of: do, wait, repeat or forEach' + (kind === 'fight' ? ', or use' : '') + '.'); return; }
       if (shape === 'do') {
         if (typeof d !== 'string' || !d) { say('error', path, '"do" must name an action.'); return; }
@@ -361,6 +389,7 @@
         if (d === 'zoneOut' && st.op === 'door' && !has(st, 'name')) say('error', path, 'zoneOut door: name the door.');
         if (d === 'teleporter' && !has(st, 'name') && !has(st, 'walkOnto')) say('error', path, 'teleporter: give its name, or walkOnto and landing.');
         if (d === 'named' && st.stepId && !/^named\d+(\.|$)/.test(str(st.stepId))) say('info', path, 'A named\'s stepId reads best as named1, named2 ...: Skip the boss and part-way starts go by it.');
+        if (kind === 'zone' && Z.ONE_BOX[d]) say('info', path, d + ' in a zone file changes the IC character only: it cannot be sent to the others. For every box, put it in the named\'s fight file.');
         if (d !== 'template') checkKeys(st, path, kind === 'fight' ? withAwait(keys) : keys, what, 'warn');
         if (zoneVerb) checkTyped(st, path, keys, d);
         if (has(st, 'wait')) say('warn', path, 'A step has either do or wait, not both.');

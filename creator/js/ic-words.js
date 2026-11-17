@@ -6,7 +6,7 @@
   var IC = root.IC = root.IC || {};
   var W = IC.words = IC.words || {};
   function str(v) { return v == null ? '' : String(v); }
-  function q(s, n) { s = str(s); n = n || 40; return s.length > n ? s.slice(0, n - 1) + '...' : s; }
+  function q(s, n) { s = str(s); n = Math.round((n || 40) * (W.qScale || 1)); return s.length > n ? s.slice(0, n - 1) + '...' : s; }
   function unq(s) { return str(s).replace(/^\s*["']|["']\s*$/g, ''); }
   W.q = q;
   W.split = function (s) { return str(s).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_.]+/g, ' ').toLowerCase().trim(); };
@@ -220,6 +220,15 @@
   };
   function Who(fw) { var w = W.who(fw); return w === 'me' ? 'I' : w.charAt(0).toUpperCase() + w.slice(1); }
   W.Who = Who;
+  W.oddWho = function (fw) {
+    var out = [];
+    if (typeof fw !== 'string') return out;
+    fw.split(/[|+]/).forEach(function (p) {
+      var low = p.trim().replace(/^-/, '').replace(/^not/i, '').toLowerCase();
+      if (/^[a-z]+s$/.test(low) && !roleWord(low) && roleWord(low.slice(0, -1))) out.push({ word: p.trim(), meant: p.trim().slice(0, -1) });
+    });
+    return out;
+  };
 
   W.AE_BLOCKERS = [
     { name: 'Tortoise Shell', cls: 'druid', classes: ['warden', 'fury'], holdS: 30, chain: true, icon: [657, 313] },

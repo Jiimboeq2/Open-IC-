@@ -102,21 +102,23 @@
 
   /* ------------------------------------------------------------ the class picker */
   A.classLabel = function () {
-    var mine = A.myClass(), n = A.iconPref.group.length;
-    return 'Icons: ' + (mine ? cap(mine) + (A.iconPref.myClass ? '' : ' (you)') : 'every class') + (n ? ' +' + n : '');
+    var mine = A.myClass();
+    return 'Pictures: ' + (A.st.fv.abicons === false ? 'off' : (mine ? cap(mine) + (A.iconPref.myClass ? '' : ' (you)') : 'every class'));
   };
-  A.renderClassButton = function () { var b = $('openic-classbtn'); if (b) b.textContent = A.classLabel(); };
+  A.renderClassButton = function () { var b = $('openic-classbtn'); if (b) b.title = A.classLabel() + '. Click to change'; };
   A.classMenu = function (anchor) {
     var m = $('openic-menu');
     if (!m) return;
-    var mine = A.myClass(), L = H().CLASSES, S = H().shims;
+    var mine = A.myClass(), L = H().CLASSES, S = H().shims, on = A.st.fv.abicons !== false;
     function chip(kind, c, on, label) {
-      return '<span class="oic-cc' + (on ? ' oic-on' : '') + '" data-oic="cls-' + kind + ':' + c + '">' + (c ? S.jbClassIcon(c, 14) : '') + esc(label) + '</span>';
+      return '<span class="oic-cc' + (on ? ' oic-on' : '') + '" data-oic="cls-' + kind + ':' + c + '">' + (c && kind !== 'pic' ? S.jbClassIcon(c, 14) : '') + esc(label) + '</span>';
     }
-    var h = '<div class="oic-mh">My class: its abilities show their own icons ("any": every ability does)</div><div class="oic-cgrid">' +
-      chip('my', '', !A.iconPref.myClass, A._gameClass ? 'In game (' + cap(A._gameClass) + ')' : 'Any');
+    var h = '<div class="oic-mh">Pictures on the steps (they only change how the steps look, never the file)</div><div class="oic-cgrid">' +
+      chip('pic', '1', on, 'On') + chip('pic', '0', !on, 'Off') + '</div>' +
+      '<div class="oic-mh">Ability pictures for: every class, or one class (another class\'s ability then shows that class\'s picture)</div><div class="oic-cgrid">' +
+      chip('my', '', !A.iconPref.myClass, A._gameClass ? 'The class I play (' + cap(A._gameClass) + ')' : 'Every class');
     for (var i = 0; i < L.length; i++) h += chip('my', L[i].toLowerCase(), A.iconPref.myClass === L[i].toLowerCase(), L[i]);
-    h += '</div><div class="oic-mh">Also in my group: who does a job shows as their class icon</div><div class="oic-cgrid">';
+    h += '</div><div class="oic-mh">Also in my group: a step one of them does shows that class\'s picture</div><div class="oic-cgrid">';
     for (var j = 0; j < L.length; j++) h += chip('grp', L[j].toLowerCase(), A.iconPref.group.indexOf(L[j].toLowerCase()) >= 0, L[j]);
     h += '</div><div class="oic-mi" data-oic="cls-done">Done</div>';
     m.innerHTML = h;
@@ -129,8 +131,10 @@
   };
   /* clicks the app hands on: the class button and the picker's chips (the picker stays open) */
   A.onClickExtra = function (v, el, menu) {
-    if (v === 'class') { if (menu && menu.style.display === 'block' && menu.className.indexOf('oic-menu-wide') >= 0) A.closeMenu(); else A.classMenu(el); return true; }
+    if (v === 'class') { A._classAnchor = el; if (menu && menu.style.display === 'block' && menu.className.indexOf('oic-menu-wide') >= 0) A.closeMenu(); else A.classMenu(el); return true; }
     if (v === 'cls-done') { A.closeMenu(); return true; }
+    var pic = /^cls-pic:([01])$/.exec(v);
+    if (pic) { A.setAbIcons(pic[1] === '1'); A.renderClassButton(); A.classMenu($('openic-classbtn') || A._classAnchor); return true; }
     var m = /^cls-(my|grp):([a-z]*)$/.exec(v);
     if (!m) return false;
     var p = A.iconPref, st = H().store;
@@ -143,7 +147,7 @@
     A.applyIcons();
     A.renderClassButton();
     A.refresh();
-    var b = $('openic-classbtn');
+    var b = $('openic-classbtn') || A._classAnchor;
     A.classMenu(b);
     return true;
   };
