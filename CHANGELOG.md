@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.1 - 2026-11-17
+
+- No drop-down list is a `<select>` any more: in Ogre's window (Ultralight) one opened as a bare list over the whole
+  window. Every list is the page's own menu, as high as the window at most: **+ Add a condition** (the common ones,
+  then every condition with its words, and a find box), **Who does it** / **Send it to**, the backup (**Pick who does
+  it instead** adds it at once), an op list of more than five, "the group has a ...", and a Ready-made snippet's who.
+  A few choices are chips: all of these / any one of these, Repeat, a comparison, an op list of five or fewer.
+- A test fails if a `<select>` comes back into the page, and the self test checks the step form, Add a step and File
+  settings for one.
+
 ## 0.5.0 - 2026-11-17
 
 - **When and who**, at the top of This step: who does it (with the backup when the group has no such class);

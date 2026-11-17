@@ -593,6 +593,47 @@
     else { m.style.left = Math.max(4, Math.min(x, (G.innerWidth || 1200) - 280)) + 'px'; m.style.top = Math.max(4, Math.min(y, (G.innerHeight || 800) - m.offsetHeight - 4)) + 'px'; }
   };
   A.closeMenu = function () { var m = $('openic-menu'); if (m) m.style.display = 'none'; };
+  /* a list to pick from, in the page's own menu: never a <select>, whose list Ogre's window draws over the whole window.
+     items: { head } or { label, about, on, run }; o.find adds a find box; the menu is no taller than the window */
+  A.pick = function (anchor, items, o) {
+    var m = $('openic-menu');
+    if (!m) return;
+    o = o || {};
+    var h = (o.title ? '<div class="oic-mh"><b>' + esc(o.title) + '</b></div>' : '') +
+      (o.find ? '<input type="text" id="openic-pick-find" class="oic-find" placeholder="Find..." spellcheck="false">' : '') + '<div id="openic-pick-list">';
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (it.head) { h += '<div class="oic-mh oic-pick-h">' + esc(it.head) + '</div>'; continue; }
+      h += '<div class="oic-mi oic-pi' + (it.on ? ' oic-on' : '') + (it.off ? ' oic-off' : '') + '" data-oic-mi="' + i + '" data-find="' + esc((str(it.label) + ' ' + str(it.about)).toLowerCase()) + '">' +
+        esc(it.label) + (it.about ? '<small>' + esc(it.about) + '</small>' : '') + '</div>';
+    }
+    m.innerHTML = h + '</div>';
+    m._items = items;
+    m.className = 'oic-menu oic-pick';
+    var rootH = ($('openic-root') || {}).clientHeight || (G.innerHeight || 800);
+    m.style.maxHeight = Math.max(200, Math.min(520, rootH - 60)) + 'px';
+    m.style.display = 'block';
+    var r = anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : { left: 60, bottom: 60 }, x = Math.round(r.left), y = Math.round(r.bottom + 2);
+    if (typeof G.ogrePlaceFixed === 'function') G.ogrePlaceFixed(m, x, y);
+    else { m.style.left = Math.max(4, Math.min(x, (G.innerWidth || 1200) - m.offsetWidth - 8)) + 'px'; m.style.top = Math.max(4, Math.min(y, (G.innerHeight || 800) - m.offsetHeight - 4)) + 'px'; }
+    var on = m.querySelector('.oic-pi.oic-on');
+    if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest' });
+    var f = $('openic-pick-find');
+    if (f) setTimeout(function () { try { f.focus(); } catch (e) { /* a field that cannot */ } }, 20);
+  };
+  /* the find box: the rows that hold every word typed, and the headings of the groups left */
+  A.pickFind = function (q) {
+    var L = $('openic-pick-list');
+    if (!L) return;
+    var words = str(q).toLowerCase().split(/\s+/).filter(Boolean), head = null, any = false;
+    for (var n = L.firstChild; n; n = n.nextSibling) {
+      if (/oic-pick-h/.test(n.className)) { if (head) head.style.display = any ? '' : 'none'; head = n; any = false; continue; }
+      var t = n.getAttribute('data-find') || '', show = words.every(function (w) { return t.indexOf(w) >= 0; });
+      n.style.display = show ? '' : 'none';
+      any = any || show;
+    }
+    if (head) head.style.display = any ? '' : 'none';
+  };
   /* New: the two kinds of file Ogre reads, each said in a line */
   A.newMenu = function (btn) {
     A.menu(btn, [
@@ -699,6 +740,8 @@
     var menu = $('openic-menu');
     if (mi != null && menu && menu._items) { var it = menu._items[+mi]; A.closeMenu(); if (it && !it.off && it.run) it.run(); return; }
     if (v != null && A.onClickExtra && A.onClickExtra(v, t, menu)) return;
+    /* a click in the menu that picks nothing (its find box, a heading) leaves it open */
+    if (mi == null && v == null && menu && menu.style.display === 'block' && menu.contains && menu.contains(e.target)) return;
     if (menu && menu.style.display === 'block' && !(v === 'new' || v === 'game')) A.closeMenu();
     if (v == null && rf != null) { A.select(rf); return; }
     if (v == null) return;

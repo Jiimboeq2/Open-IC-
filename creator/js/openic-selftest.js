@@ -141,6 +141,21 @@
       ok(s.doc.steps[0]['do'] === 'path' && s.sel === '["steps",0]' && s.doc.steps[0].when.length === 2, 'Once: out of the block again, its own conditions kept');
       ok(Z.counts(s.probs).error === 0, 'no errors: ' + JSON.stringify(s.probs.filter(function (p) { return p.level === 'error'; }).map(function (p) { return p.msg; })));
       ok(!!document.querySelector('#openic-side .oic-testrow') === !!H.inGame, 'the Test row shows in game only');
+      /* a list to pick from is the page's own menu, never a <select> (Ogre's window draws its list over the whole window) */
+      var addBtn = document.querySelector('#openic-side [data-oic="cond:add|when"]');
+      A.condAddPick(addBtn, 'when');
+      var menu = document.getElementById('openic-menu');
+      ok(menu.style.display === 'block' && menu.querySelectorAll('.oic-pi').length > 60 && !!document.getElementById('openic-pick-find'), 'Add a condition: the page\'s own list, with a find box');
+      A.pickFind('health');
+      var shown = Array.prototype.filter.call(menu.querySelectorAll('.oic-pi'), function (n) { return n.style.display !== 'none'; });
+      ok(shown.length >= 1 && shown.length < 6, 'the find box narrows it: ' + shown.length);
+      A.closeMenu();
+      A.select('["steps",1]');
+      ok(q('#openic-root select').length === 0, 'no <select> in the step form');
+      s.side = 'add'; A.renderSide();
+      ok(q('#openic-root select').length === 0, 'none in Add a step');
+      s.side = 'file'; A.renderSide();
+      ok(q('#openic-root select').length === 0, 'none in File settings');
     });
     test('a picked step says who runs it', function () {
       s.view = 'words'; A.refresh();

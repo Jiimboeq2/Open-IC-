@@ -155,7 +155,8 @@
 #openic-root .oic-cond-w i { color: var(--text-warn); font-style: normal; }
 #openic-root .oic-cond-w .oic-x { margin-left: auto; cursor: pointer; color: var(--text-secondary); }
 #openic-root .oic-cond-f { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
-#openic-root .oic-cond-f span { min-width: 92px; color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); overflow-wrap: anywhere; }
+#openic-root .oic-cond-f > span { min-width: 92px; color: var(--text-secondary); font-size: calc(11.5px * var(--oic-txt, 1)); overflow-wrap: anywhere; }
+#openic-root .oic-cond-f .oic-chips { flex: 1; }
 #openic-root .oic-cond-f input[type=text], #openic-root .oic-cond-f input[type=number], #openic-root .oic-cond-f select { flex: 1; min-width: 0; }
 #openic-root .oic-cond-add { width: 100%; margin-top: 4px; }
 #openic-root .oic-pr-ok { background: rgba(127, 220, 154, 0.10); }
@@ -218,6 +219,20 @@
 
 /* the class picker */
 #openic-root .oic-menu-wide { width: 460px; padding: 4px 8px 6px; }
+#openic-root .oic-pick { width: 380px; padding: 4px 0 6px; }
+#openic-root .oic-pick .oic-find { width: calc(100% - 16px); margin: 2px 8px 4px; }
+#openic-root .oic-pick .oic-pi { white-space: normal; padding: 4px 12px; }
+#openic-root .oic-pick .oic-pi small { display: block; color: var(--text-secondary); font-size: calc(11px * var(--oic-txt, 1)); line-height: 1.3; }
+#openic-root .oic-pick .oic-pi.oic-on { background: var(--tint-on); color: var(--accent-cyan); }
+#openic-root .oic-pick-h { padding-top: 7px; text-transform: none; }
+/* a picker's button: shows what is picked; a few choices are chips */
+#openic-root .oic-pickbtn { display: flex; align-items: center; justify-content: space-between; width: 100%; text-align: left; padding: 4px 8px; background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-med); border-radius: var(--radius); cursor: pointer; font: inherit; }
+#openic-root .oic-pickbtn:hover { border-color: var(--border-light); }
+#openic-root .oic-pickbtn small { color: var(--text-secondary); margin-left: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#openic-root .oic-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+#openic-root .oic-chips span { padding: 2px 9px; border: 1px solid var(--border-med); border-radius: 10px; cursor: pointer; color: var(--text-secondary); }
+#openic-root .oic-chips span:hover { border-color: var(--border-light); color: var(--text-primary); }
+#openic-root .oic-chips span.oic-on { border-color: var(--accent-cyan); color: var(--accent-cyan); background: var(--tint-on); }
 #openic-root .oic-cgrid { display: flex; flex-wrap: wrap; gap: 3px; margin: 2px 0 6px; }
 #openic-root .oic-cc { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px 2px 3px; border: 1px solid var(--border-dark); border-radius: 10px; cursor: pointer; font-size: calc(11.5px * var(--oic-txt, 1)); color: var(--text-secondary); }
 #openic-root .oic-cc:hover { border-color: var(--accent-cyan); color: var(--text-primary); }

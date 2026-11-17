@@ -82,11 +82,11 @@
     h += '<div class="oic-field"><label>Only if</label>' + listHtml('when', st.when, 'No condition: it always runs.') + '</div>';
     if ((s.kind === 'zone' || s.kind === 'fight') && typeof path[path.length - 1] === 'number' && !has(st, 'on')) {
       var pp = wrapPath(path), R = pp ? IC.ogf.at(s.doc, pp) : null, mode = repeatMode(R);
-      h += '<div class="oic-field"><label>Repeat</label><select data-oic-cf="rep|@mode">';
+      h += '<div class="oic-field"><label>Repeat</label><div class="oic-chips">';
       [['once', 'Once'], ['times', 'A number of times'], ['until', 'Until something is true'], ['while', 'While something is true']].forEach(function (o) {
-        h += '<option value="' + o[0] + '"' + (o[0] === mode ? ' selected' : '') + '>' + o[1] + '</option>';
+        h += '<span class="' + (o[0] === mode ? 'oic-on' : '') + '" data-oic="cond:rep|' + o[0] + '">' + o[1] + '</span>';
       });
-      h += '</select>';
+      h += '</div>';
       if (mode === 'times') h += '<div class="oic-row"><input type="number" min="1" data-oic-cf="rep|times" value="' + esc(R.repeat.times) + '"><span class="oic-note">times</span></div>';
       if (mode === 'until' || mode === 'while') {
         h += listHtml('until', target(s.doc, path, 'until').get(R), mode === 'while' ? 'Add what must hold.' : 'Add what ends it.') +
@@ -101,17 +101,36 @@
   function listHtml(which, list, empty) {
     var R = readList(list), h = '';
     if (!R.items.length) h += '<div class="oic-note">' + esc(empty) + '</div>';
-    if (R.items.length > 1) h += '<div class="oic-row"><span class="oic-note" style="white-space:nowrap;">It needs</span><select data-oic-cf="' + which + ':-1|@mode"><option value="all"' + (R.mode === 'all' ? ' selected' : '') +
-      '>all of these</option><option value="any"' + (R.mode === 'any' ? ' selected' : '') + '>any one of these</option></select></div>';
+    if (R.items.length > 1) h += '<div class="oic-row"><span class="oic-note" style="white-space:nowrap;">It needs</span><div class="oic-chips">' +
+      '<span class="' + (R.mode === 'all' ? 'oic-on' : '') + '" data-oic="cond:mode|' + which + '|all">all of these</span>' +
+      '<span class="' + (R.mode === 'any' ? 'oic-on' : '') + '" data-oic="cond:mode|' + which + '|any">any one of these</span></div></div>';
     for (var i = 0; i < R.items.length; i++) h += condHtml(which, i, R.items[i]);
-    h += '<select class="oic-cond-add" data-oic-cf="' + which + ':-1|@add"><option value="">+ Add a condition...</option><optgroup label="Common">';
-    A.COND_PRESETS.forEach(function (p) { h += '<option value="p:' + p.key + '">' + esc(p.label) + '</option>'; });
-    h += '</optgroup><optgroup label="Every condition Ogre has">';
-    var C = V().conditions || {}, names = Object.keys(C).filter(function (k) { return !C[k].logic && k !== 'forwho'; }).sort();
-    names.forEach(function (k) { h += '<option value="c:' + k + '" title="' + esc(C[k].about || '') + '">' + esc(k) + (C[k].about ? ': ' + esc(cut(C[k].about, 60)) : '') + '</option>'; });
-    return h + '</optgroup></select>';
+    return h + '<button type="button" class="oic-btn oic-cond-add" data-oic="cond:add|' + which + '">+ Add a condition</button>';
   }
-  function cut(s, n) { s = str(s); return s.length > n ? s.slice(0, n - 3) + '...' : s; }
+  /* the conditions to add, in the page's own list (a <select>'s list covers Ogre's whole window): the common ones,
+     then every one Ogre has with its words; a find box */
+  function aboutText(s) { return str(s).replace(/\(inferred from the shipped notes/g, '(from Ogre\'s shipped notes').replace(/\(inferred/g, '(from Ogre\'s files'); }
+  A.condAddPick = function (anchor, which) {
+    var items = [{ head: 'Common' }], C = V().conditions || {};
+    A.COND_PRESETS.forEach(function (p) { items.push({ label: p.label, run: function () { A.setCondField(which + ':-1|@add', 'p:' + p.key); } }); });
+    items.push({ head: 'Every condition Ogre has' });
+    Object.keys(C).filter(function (k) { return !C[k].logic && k !== 'forwho'; }).sort().forEach(function (k) {
+      items.push({ label: k, about: aboutText(C[k].about), run: function () { A.setCondField(which + ':-1|@add', 'c:' + k); } });
+    });
+    A.pick(anchor, items, { title: 'Add a condition', find: true });
+  };
+  A.condWhoPick = function (anchor, id) {
+    var items = [];
+    (A.WHO || []).forEach(function (g) {
+      if (g[0] !== 'Archetypes' && g[0] !== 'Classes' && g[0] !== 'One class') return;
+      items.push({ head: g[0] });
+      g[1].forEach(function (x) { if (!/^not/.test(x)) items.push({ label: x, run: function () { A.setCondField(id + '|@who', x); } }); });
+    });
+    items.push({ head: 'Roles' });
+    items.push({ label: 'a tank', run: function () { A.setCondField(id + '|@who', '@tank'); } });
+    items.push({ label: 'a healer', run: function () { A.setCondField(id + '|@who', '@healer1'); } });
+    A.pick(anchor, items, { title: 'The group has a...', find: true });
+  };
   /* a condition in words, turned round when "not" is ticked ("we are not in combat"); the group ones in short */
   function words(c, neg) {
     var who = rosterWho(c);
@@ -123,16 +142,8 @@
       esc(words(c, it.not)) + ' <label class="oic-tick" title="Turn it round: true when this is not"><input type="checkbox" data-oic-cf="' + id + '|@not"' + (it.not ? ' checked' : '') + '> not</label>' +
       '<span class="oic-x" data-oic="cond:del:' + id + '" title="Take this condition away">&#10005;</span></div>';
     var who = rosterWho(c);
-    if (who !== null) {
-      h += '<div class="oic-row"><span class="oic-note">The group has a</span><select data-oic-cf="' + id + '|@who">';
-      (A.WHO || []).forEach(function (g) {
-        if (g[0] !== 'Archetypes' && g[0] !== 'Classes' && g[0] !== 'One class') return;
-        h += '<optgroup label="' + g[0] + '">';
-        g[1].forEach(function (x) { if (!/^not/.test(x)) h += '<option value="' + x + '"' + (x === who ? ' selected' : '') + '>' + esc(x) + '</option>'; });
-        h += '</optgroup>';
-      });
-      return h + '<option value="@tank"' + (who === '@tank' ? ' selected' : '') + '>a tank</option><option value="@healer1"' + (who === '@healer1' ? ' selected' : '') + '>a healer</option></select></div></div>';
-    }
+    if (who !== null) return h + '<div class="oic-row"><span class="oic-note" style="white-space:nowrap;">The group has a</span><button type="button" class="oic-pickbtn" data-oic="cond:who|' + id + '">' +
+      esc(who === '@tank' ? 'tank' : (who === '@healer1' ? 'healer' : who)) + ' <small>&#9662;</small></button></div></div>';
     if (!isObj(o)) return h + '<small>Ogre writes this one as a list (not, or, and): change it as text below.</small></div>';
     var spec = (V().conditions[k] || {}).keys || [], keys = Object.keys(o);
     spec.forEach(function (x) { if (keys.indexOf(x) < 0) keys.push(x); });
@@ -148,7 +159,7 @@
   }
   function field(id, key, label, v, type) {
     var b = 'data-oic-cf="' + id + '|' + key + '|' + type + '"', inp;
-    if (type === 'compare') { inp = '<select ' + b + '><option value=""></option>'; COMPARE.forEach(function (c) { inp += '<option' + (c === v ? ' selected' : '') + '>' + esc(c) + '</option>'; }); inp += '</select>'; }
+    if (type === 'compare') { inp = '<div class="oic-chips">'; COMPARE.forEach(function (c) { inp += '<span class="' + (c === v ? 'oic-on' : '') + '" data-oic="cond:cmp|' + id + '|' + esc(c) + '">' + esc(c) + '</span>'; }); inp += '</div>'; }
     else if (type === 'bool') inp = '<input type="checkbox" ' + b + (v === true ? ' checked' : '') + '>';
     else if (type === 'num') inp = '<input type="number" ' + b + ' value="' + esc(v == null ? '' : v) + '">';
     else if (type === 'json') inp = '<input type="text" ' + b + ' value="' + esc(v === undefined ? '' : JSON.stringify(v)) + '" spellcheck="false">';
@@ -248,11 +259,16 @@
   }
   function setAt(doc, path, v) { var parent = IC.ogf.at(doc, path.slice(0, -1)); parent[path[path.length - 1]] = v; }
 
-  /* clicks this module owns: take a condition away */
+  /* clicks this module owns: take a condition away, the chips, the lists to pick from */
   var ec0 = A.editClick;
   A.editClick = function (v, el) {
-    var m = /^cond:del:(.+)$/.exec(str(v));
-    if (m) { A.dropCond(m[1]); return true; }
+    var m, t = str(v);
+    if ((m = /^cond:del:(.+)$/.exec(t))) { A.dropCond(m[1]); return true; }
+    if ((m = /^cond:rep\|(\w+)$/.exec(t))) { A.setCondField('rep|@mode', m[1]); return true; }
+    if ((m = /^cond:mode\|(\w+)\|(\w+)$/.exec(t))) { A.setCondField(m[1] + ':-1|@mode', m[2]); return true; }
+    if ((m = /^cond:add\|(\w+)$/.exec(t))) { A.condAddPick(el, m[1]); return true; }
+    if ((m = /^cond:who\|(.+)$/.exec(t))) { A.condWhoPick(el, m[1]); return true; }
+    if ((m = /^cond:cmp\|([^|]+)\|(.+)$/.exec(t))) { A.setCondField(m[1] + '|compare|string', m[2]); return true; }
     return ec0 ? ec0(v, el) : false;
   };
 })(typeof window !== 'undefined' ? window : this);

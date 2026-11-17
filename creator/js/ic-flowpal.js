@@ -235,10 +235,9 @@
       }
       var ctl;
       if (p.type === 'forwho') {
-        var W = fmt === 'oic' ? WHO_OIC : ((IC.reg && IC.reg.WHO_JB) || [['all', 'Everyone']]);
-        ctl = '<select data-fvi="' + i + '">';
-        for (var w = 0; w < W.length; w++) ctl += '<option value="' + esc(W[w][0]) + '"' + (str(vals[p.name]) === W[w][0] ? ' selected' : '') + '>' + esc(W[w][1]) + '</option>';
-        ctl += '</select>';
+        var W = fmt === 'oic' ? WHO_OIC : ((IC.reg && IC.reg.WHO_JB) || [['all', 'Everyone']]), wl = W[0][1];
+        for (var w = 0; w < W.length; w++) if (str(vals[p.name]) === W[w][0]) wl = W[w][1];
+        ctl = '<span class="fvs-b fvs-who" data-fvs="who:' + i + '">' + esc(wl) + ' &#9662;</span>';
       } else {
         ctl = icon(p, i) + '<input type="text" data-fvi="' + i + '"' + (p.type === 'int' ? ' class="fvs-short"' : '') + ' value="' + esc(shown(p)) + '"' +
           (p.type === 'point3f' ? ' placeholder="x, y, z"' : '') + '>' + (p.unit ? '<span>' + (p.unit === 'ms' ? 's' : esc(p.unit)) + '</span>' : '') + btns(p, i);
@@ -330,6 +329,11 @@
         if (what === 'points') {
           var P = opts.points() || [];
           menu(t, P.map(function (x) { return { t: x.t, v: x.spot }; }), function (it) { set(i, it.v); }, P.length > 12);
+          return;
+        }
+        if (what === 'who') {
+          var W2 = fmt === 'oic' ? WHO_OIC : ((IC.reg && IC.reg.WHO_JB) || [['all', 'Everyone']]);
+          menu(t, W2.map(function (x) { return { t: x[1], v: x[0] }; }), function (it) { if (live) { vals[p.name] = it.v; draw(); } }, false);
           return;
         }
         if (what === 'fights') { opts.fights(t, function (v) { if (live && v) set(i, v); }); return; }

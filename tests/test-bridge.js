@@ -122,6 +122,12 @@ test('the calls run in game say what they did (PROVEN ...)', () => {
     ok(/PROVEN \d{4}-\d\d-\d\d/.test(n.notes), u + ' has a PROVEN note above it');
   }
 });
+test('no <select> anywhere in the page: Ogre\'s window draws its list over the whole window', () => {
+  const dir = path.join(ROOT, 'creator', 'js');
+  const files = fs.readdirSync(dir).filter((f) => /^openic-.*\.js$/.test(f) || f === 'ic-flowpal.js').map((f) => 'creator/js/' + f).concat(['creator/index.html']);
+  for (const f of files) ok(!/['"]\s*<select\b|^\s*<select\b/m.test(read(f)), f + ' writes no <select> (lists are the page\'s own menu: IC.app.pick, chips)');
+  ok(/if \(typeof jbDropdown === 'function'\) return jbDropdown\(/.test(read('creator/js/ic-oc-picker.js')), 'ic-oc-picker.js uses the theme\'s drop-down (its <select> is only for a page without one)');
+});
 test('the in-game window loads nothing from outside and adds one name to the shared page', () => {
   const win = read('host/OpenIC.html');
   const markup = win.replace(/<script\b[\s\S]*?<\/script>/gi, '').replace(/<style\b[\s\S]*?<\/style>/gi, '');

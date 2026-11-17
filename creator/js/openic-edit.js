@@ -220,25 +220,29 @@
     if (/^@healer/.test(lw)) return cnt('Role', 'healer');
     return null;
   };
+  /* who: a button that opens the list (never a <select>: Ogre's window draws its list over the whole window), and the
+     same as typed text */
+  function inWho(w) { for (var g = 0; g < WHO.length; g++) if (WHO[g][1].indexOf(w) >= 0) return true; return false; }
+  function whoLabel(w) { return !w ? 'Everyone (not set)' : (inWho(w) ? whoSay(w) : (IC.words && IC.words.Who ? IC.words.Who(w) : w)); }
   A.whoHtml = function (key, cur) {
-    var h = '<select data-oic-sf="' + key + '|forwho" class="oic-who">', found = false;
-    for (var g = 0; g < WHO.length; g++) {
-      h += '<optgroup label="' + WHO[g][0] + '">';
-      for (var i = 0; i < WHO[g][1].length; i++) { var w = WHO[g][1][i], on = w === cur; found = found || on; h += '<option value="' + esc(w) + '"' + (on ? ' selected' : '') + '>' + esc(whoSay(w)) + '</option>'; }
-      h += '</optgroup>';
-    }
-    if (cur && !found) h += '<option value="' + esc(cur) + '" selected>' + esc(cur) + '</option>';
-    h += '</select><input type="text" data-oic-sf="' + key + '|string" value="' + esc(cur) + '" title="Or type it: | for or, + for and, - for not" spellcheck="false">';
-    if (A.hasCond(cur)) {
-      h += '<div class="oic-row oic-backup"><span class="oic-note">If the group has no ' + esc(whoSay(cur).toLowerCase()) + ', then</span><select id="openic-backup">';
-      for (var b = 0; b < WHO.length; b++) for (var j = 0; j < WHO[b][1].length; j++) if (WHO[b][1][j] !== cur) h += '<option value="' + esc(WHO[b][1][j]) + '">' + esc(whoSay(WHO[b][1][j]).toLowerCase()) + '</option>';
-      h += '</select><span>does it</span><button class="oic-btn" data-oic="ed:backup:' + key + '" title="Adds a copy of this step for them, and a check on both: this one runs only if the group has one, the copy only if not">Add</button></div>';
-    }
+    var h = '<button type="button" class="oic-pickbtn" data-oic="ed:who:' + key + '" title="Pick who from the list, or type it below">' + esc(whoLabel(cur)) + ' <small>&#9662;</small></button>' +
+      '<input type="text" data-oic-sf="' + key + '|string" value="' + esc(cur) + '" title="Or type it: | for or, + for and, - for not" placeholder="or type it: | or, + and, - not" spellcheck="false">';
+    if (A.hasCond(cur)) h += '<div class="oic-row oic-backup"><span class="oic-note">If the group has no ' + esc(whoSay(cur).toLowerCase()) + ':</span>' +
+      '<button type="button" class="oic-btn" data-oic="ed:backup:' + key + '" title="Pick who does it then: adds a copy of this step for them, and a check on both (this one runs only if the group has one, the copy only if not)">Pick who does it instead</button></div>';
     return h;
   };
+  /* the list of who, grouped; skip leaves one out (the backup's own who) */
+  A.whoPick = function (anchor, cur, skip, title, onPick) {
+    var items = [];
+    for (var g = 0; g < WHO.length; g++) {
+      items.push({ head: WHO[g][0] });
+      for (var i = 0; i < WHO[g][1].length; i++) (function (w) { if (w !== skip) items.push({ label: whoSay(w), on: w === cur, run: function () { onPick(w); } }); })(WHO[g][1][i]);
+    }
+    A.pick(anchor, items, { title: title, find: true });
+  };
   /* the backup: this step only if the group has one; a copy right after it for the other box, only if not */
-  A.addBackup = function (key) {
-    var s = A.st, st = A.at(s.sel), sel = $('openic-backup'), alt = sel ? sel.value : '';
+  A.addBackup = function (key, alt) {
+    var s = A.st, st = A.at(s.sel);
     if (!isObj(st) || !alt) return;
     var cond = A.hasCond(st[key]);
     if (!cond) { H().toast('A backup works for an archetype, a class or a role.', 'warn'); return; }
@@ -302,10 +306,13 @@
     if (key === 'forwho' || key === 'sendTo' || t === 'forwho') input = A.whoHtml(key, str(v == null ? '' : v));
     else if (t === 'bool') input = '<input type="checkbox" data-oic-sf="' + key + '|bool"' + (v === true || str(v).toUpperCase() === 'TRUE' ? ' checked' : '') + '>';
     else if (t === 'enum') {
-      var VA = ks.valuesAbout || {}, cut = function (x) { x = about(x); return x.length > 70 ? x.slice(0, 68) + '...' : x; };
-      input = '<select data-oic-sf="' + key + '|string"><option value=""></option>';
-      (ks.values || []).forEach(function (x) { input += '<option value="' + esc(x) + '"' + (str(x) === str(v) ? ' selected' : '') + '>' + esc(x) + (VA[x] ? ': ' + esc(cut(VA[x])) : '') + '</option>'; });
-      input += '</select>' + (VA[str(v)] ? '<small class="oic-opnow">' + esc(str(v)) + ': ' + esc(about(VA[str(v)])) + '</small>' : '');
+      /* a few choices are chips; more open a list with each one's words */
+      var VA = ks.valuesAbout || {}, VL = ks.values || [];
+      if (VL.length <= 5) input = '<div class="oic-chips">' + VL.map(function (x) {
+        return '<span class="' + (str(x) === str(v) ? 'oic-on' : '') + '" data-oic="ed:sf|' + key + '|' + esc(x) + '" title="' + esc(about(VA[x] || '')) + '">' + esc(x) + '</span>';
+      }).join('') + '</div>';
+      else input = '<button type="button" class="oic-pickbtn" data-oic="ed:enum:' + key + '">' + esc(str(v) || 'Pick one') + ' <small>&#9662;</small></button>';
+      if (VA[str(v)]) input += '<small class="oic-opnow">' + esc(str(v)) + ': ' + esc(about(VA[str(v)])) + '</small>';
     } else if (/^int|^num/.test(t)) input = '<input type="number" data-oic-sf="' + key + '|num" value="' + esc(v == null ? '' : v) + '">';
     else if (t === 'loc') input = '<input type="text" data-oic-sf="' + key + '|loc" value="' + esc(isArr(v) ? v.join(', ') : str(v)) + '" placeholder="x, y, z">';
     else if (t === 'string' || t === 'row' || t === 'string|int') input = '<input type="text" data-oic-sf="' + key + '|string" value="' + esc(v == null ? '' : v) + '" spellcheck="false">';
@@ -329,13 +336,31 @@
   };
 
   /* ------------------------------------------------------------ clicks and typing this module owns */
-  A.editClick = function (v) {
+  A.editClick = function (v, el) {
     var m;
     if ((m = /^side:(\w+)$/.exec(v))) { if (m[1] !== 'step' || A.st.sel) { A.st.side = m[1]; A.renderSide(); } return true; }
     if ((m = /^ed:cat:(\w*)$/.exec(v))) { A._cat = m[1]; A.renderSide(); return true; }
     if ((m = /^ed:add:(.+)$/.exec(v))) { A.addAction(m[1]); return true; }
     if (v === 'ed:addafter') { A.st.arm = null; A.st.side = 'add'; A.renderSide(); return true; }
-    if ((m = /^ed:backup:(\w+)$/.exec(v))) { A.addBackup(m[1]); return true; }
+    if ((m = /^ed:backup:(\w+)$/.exec(v))) {
+      var bk = m[1], bs = A.at(A.st.sel), bc = isObj(bs) ? str(bs[bk]) : '';
+      A.whoPick(el, '', bc, 'If the group has no ' + whoSay(bc).toLowerCase() + ', who does it?', function (w) { A.addBackup(bk, w); });
+      return true;
+    }
+    if ((m = /^ed:who:(\w+)$/.exec(v))) {
+      var wk = m[1], ws = A.at(A.st.sel);
+      A.whoPick(el, isObj(ws) ? str(ws[wk] == null ? '' : ws[wk]) : '', null, wk === 'sendTo' ? 'Send it to' : 'Who does it', function (w) { A.setStepField(wk + '|string', w); });
+      return true;
+    }
+    if ((m = /^ed:sf\|(\w+)\|(.*)$/.exec(v))) { A.setStepField(m[1] + '|string', m[2]); return true; }
+    if ((m = /^ed:enum:(\w+)$/.exec(v))) {
+      var ek = m[1], es = A.at(A.st.sel), sp0 = A.stepSpec(es), ks0 = sp0 && sp0.keys ? sp0.keys[ek] : null;
+      if (!ks0) return true;
+      var VA0 = ks0.valuesAbout || {}, cur0 = isObj(es) ? str(es[ek]) : '';
+      A.pick(el, (ks0.values || []).map(function (x) { return { label: x, about: about(VA0[x] || ''), on: str(x) === cur0, run: function () { A.setStepField(ek + '|string', x); } }; }),
+        { title: words(ek), find: (ks0.values || []).length > 10 });
+      return true;
+    }
     if ((m = /^ed:jump:(\d+)$/.exec(v))) {
       var sec = (A._secs || [])[+m[1]];
       if (!sec) return true;
@@ -346,6 +371,7 @@
     return false;
   };
   A.onInput = function (e) {
+    if (e.target && e.target.id === 'openic-pick-find') { A.pickFind(e.target.value); return; }
     if (e.target && e.target.id === 'openic-find') {
       A._find = e.target.value;
       var pos = e.target.selectionStart;
