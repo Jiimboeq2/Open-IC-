@@ -33,8 +33,11 @@
     var items = [{ head: 'OgreBot' }];
     items.push({ label: 'Reload zone files (ogre ic reload)', run: function () { A.game('Reload', { kind: 'zone' }, L.reloadZone); } });
     items.push({ label: 'Reload fight files (ogre encounter reload)', run: function () { A.game('Reload', { kind: 'fight' }, L.reloadFight); } });
-    if (zone || fight) items.push({ label: 'Check this file by Ogre\'s own rules', tip: 'Ogre loads nothing and changes nothing: it only says whether the file would load',
-      run: A.ogreCheck });
+    var canCheck = A.ogreCanCheck();
+    if (zone || fight) items.push({ label: 'Check this file by Ogre\'s own rules' + (canCheck ? '' : ' (this Ogre has no file check yet)'),
+      tip: canCheck ? 'Ogre checks the file as saved: it loads nothing and changes nothing, it only says whether the file would load'
+        : 'ISXOgreEQ2\'s Validate is newer than the Ogre loaded: Reload lists the problems instead',
+      off: !canCheck, run: A.ogreCheck });
     if (zone) {
       items.push({ label: 'Queue this zone file', tip: L.queue('<path>'), run: function () { A.withGamePath('zone', function (p) { A.game('Queue', { path: p }, L.queue(p)); }); } });
       items.push({ label: 'Run this zone file now', tip: L.run('<path>'), run: function () { A.withGamePath('zone', function (p) { A.game('Run', { path: p }, L.run(p)); }); } });
@@ -43,7 +46,8 @@
     items.push({ head: 'ISXJQB' + (inGame && !e.jqb ? ' (not loaded)' : '') });
     items.push({ label: 'Run this file with ISXJQB (jb ic rundirect)', off: inGame && !e.jqb || fight, run: function () { A.withGamePath(s.kind, function (p) { A.game('JbRun', { path: p, kind: s.kind }, 'jb ic rundirect "' + p + '"'); }); } });
     if (zone) items.push({ label: 'Queue the zone in ISXJQB (jb ic queue)', off: inGame && !e.jqb, run: function () {
-      var z = str(s.doc.zone), v = isArr(s.doc.variants) && s.doc.variants.length ? str(s.doc.variants[0]) : '';
+      /* ISXJQB's files name a zone with "-" where the zone has ":" (jb ic queue "Oogothl Sprawl- Ver'Bohten Atoll") */
+      var z = str(s.doc.zone).replace(/:/g, '-'), v = isArr(s.doc.variants) && s.doc.variants.length ? str(s.doc.variants[0]) : '';
       var diff = v.replace(/[\[\]]/g, '').trim().toLowerCase().replace(/\s+/g, '_');
       A.game('JbQueue', { zone: z, variant: diff }, 'jb ic queue "' + z + '"' + (diff ? ' ' + diff : ''));
     } });
@@ -79,15 +83,34 @@
     A.refresh();
   };
 
-  /* ------------------------------------------------------------ Ogre's own check of the open file */
-  A.b64 = function (text) { return G.btoa(unescape(encodeURIComponent(str(text)))); };
+  /* ------------------------------------------------------------ Ogre's own check of the saved file */
+  /* where Ogre finds the open file: its default or custom folder and the path inside it; null when it is not saved in
+     one, or has changes since. In game Ogre checks the file as saved (Validate[tier,path]): the file's text as one
+     base64 argument was a single LavishScript command of 33 KB, and that took a game client down. */
+  A.tierPath = function () {
+    var s = A.st;
+    if (!s.doc || A.dirty()) return null;
+    if (s.gamePath) return { tier: 'custom', path: s.gamePath };
+    var dir = s.kind === 'fight' ? 'Encounters' : 'IC';
+    var m = new RegExp('/Scripts/(Ogre/EQ2/' + dir + '/default|OgreSave/EQ2/' + dir + '/custom)/(.+)$', 'i').exec(str(s.path).replace(/\\/g, '/'));
+    return m ? { tier: /default$/i.test(m[1]) ? 'default' : 'custom', path: m[2] } : null;
+  };
+  /* in game: only when the Ogre loaded has the check (the script reads ISXOgreEQ2's Validation(exists)); in a browser
+     the console lines are shown either way */
+  A.ogreCanCheck = function () {
+    var e = H().ext;
+    return !H().inGame || (A.st.kind === 'fight' ? e.fcheck === true : e.check === true);
+  };
   A.ogreCheck = function () {
     var s = A.st;
     if (!s.doc || (s.kind !== 'zone' && s.kind !== 'fight')) { H().toast('Ogre checks zone files and fight files.', 'warn'); return; }
+    if (!A.ogreCanCheck()) { H().toast('This Ogre has no file check yet (ISXOgreEQ2 Validate is newer): Reload lists the problems.', 'warn'); return; }
     if (H().inGame) {
+      var tp = A.tierPath();
+      if (!tp) { H().toast('Ogre checks the file as saved: save it in the custom folder first, then check it.', 'warn'); return; }
       s.ogre = { asked: Date.now(), kind: s.kind };
-      H().call('Check', { kind: s.kind, b64: A.b64(JSON.stringify(s.doc)) });
-      H().toast('Asked Ogre to check the file.');
+      H().call('Check', { kind: s.kind, tier: tp.tier, path: tp.path });
+      H().toast('Asked Ogre to check ' + tp.tier + '/' + tp.path + '.');
       return;
     }
     A.withGamePath(s.kind, function (p) {

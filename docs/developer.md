@@ -63,10 +63,13 @@ ability of my class shows its own icon; an ability of another class shows that c
 (`dets` is false). The Class button keeps my class and my group in the browser's local storage (`openic.myClass`,
 `openic.groupClasses`); the Ability icons switch is `openic.abicons`.
 
-In game, the window (`host/OpenIC.html`) carries the class icons inline as data URIs. The spell and item sheets, as
-data URIs in one style element, and the two lists are in `host/OpenIC-assets.js`, which `OpenIC.iss` runs in the
-window with `ISXOgreX.UI:EvalFile` once the window is open; it ends with `IC.app.iconsLoaded()`, which redraws. Until
-then, and if it never arrives, the window draws the class icons and its own symbols.
+In game, the window (`host/OpenIC.html`) carries the class icons inline as data URIs. The two lists (part 1) and the
+spell and item sheets as data URIs (the other parts, a style element each) are in `host/OpenIC-assets-<k>.js`, each
+under 900 KB: one `ISXOgreX.UI:EvalFile` is one message to Ogre's UI process, and a message over its limit is dropped
+whole (a single 4.8 MB pack never arrived; 4 MB did). `OpenIC.iss` runs part 1 once the window is open; each part
+reports `<k>/<n>` in the window's `openic-assets-got` field, and the script sends the next one only then (20 s without
+a word and it stops). The last part calls `IC.app.iconsLoaded()`, which redraws. Until then, and if they never
+arrive, the window draws the class icons and its own symbols.
 
 ## The flowchart graph
 
@@ -108,16 +111,27 @@ Ogre's windows share.
 
 Page to script: the page sets hidden fields `openic-arg-<name>` with `ogreUISet('openic', id, value)`, then calls
 `ogreCall('cmd', 'Event[OpenIC_<Action>]:Execute')`. Actions: `Hello`, `Reload`, `Check`, `Open`, `Save`, `Queue`,
-`Run`, `SetUp`, `JbRun`, `JbQueue`, `Route`. Fields: `kind`, `path`, `text`, `b64` (the open file's JSON as base64,
-for `Check`), `named`, `zone`, `variant`, `loc`.
+`Run`, `SetUp`, `JbRun`, `JbQueue`, `Route`. Fields: `kind`, `path`, `text` (the file's JSON in one line, for
+`Save`), `tier` (`default` or `custom`, for `Check`), `named`, `zone`, `variant`, `loc`.
 
 Script to page: `ISXOgreX.UI:Set[openic,openic-msg-<channel>,"<n>|<text>"]`, which fires the field's change event.
-Channels: `ext` (which extensions are loaded), `me` (`x,y,z|zone|target|class`), `file` (an opened file's JSON),
-`say` (`ok:` / `warn:` / `err:` and a message), `route` (`x,y,z;x,y,z;...`), `check` (Ogre's `Validation` JSON:
-`ok`, `errors`, `warnings`, `issues`).
+Channels: `ext` (which extensions are loaded, and `check` / `fcheck`: whether this Ogre has its own file check),
+`me` (`x,y,z|zone|target|class`), `file` (an opened file's JSON), `say` (`ok:` / `warn:` / `err:` and a message),
+`route` (`x,y,z;x,y,z;...`), `check` (Ogre's `Validation` JSON: `ok`, `errors`, `warnings`, `issues`).
+
+Big text crosses in pieces. A field's value reaches the game whole, but the LavishScript command that uses it
+carries every character, and one command of 33 KB took a game client down. So no command carries more than
+`OpenIC_Piece` (6,000) characters of a file: the script sends `file` and `check` as `<k>/<n>|<piece>`, which the page
+joins (`IC.host.PIECED`), and `Save` reads the window's text with `.Mid[...]` and writes it with LavishScript's
+`file:Write`, piece by piece, then reads the file back before it says saved.
+
+Ogre's own check (`ISXOgreEQ2.IC:Validate` / `ISXOgreEQ2.Encounter:Validate`) is newer than some Ogres, and calling a
+method an extension does not have ends the script that calls it. The script reads `Validation(exists)` first, tells
+the page (`check` / `fcheck` in `ext`), and calls nothing without it.
 
 `host/OpenIC.iss` notes above each Ogre call the section of Ogre's developer API reference that documents it
-(`API: ...`), and marks `UNVERIFIED` what that reference does not cover.
+(`API: ...`), marks `UNVERIFIED` what that reference does not cover, and `PROVEN` (with the date and what it did)
+what was run in game.
 
 `tests/test-bridge.js` checks that the page and `host/OpenIC.iss` agree on all of these.
 
@@ -127,7 +141,7 @@ Channels: `ext` (which extensions are loaded), `me` (`x,y,z|zone|target|class`),
 |---|---|
 | `node tools/build-vocab.js` | `data/vocabulary.json` to `creator/js/openic-vocab.js`. |
 | `node tools/build-icon-data.js [--spells <list>]` | `creator/css/openic-icons.css`; with `--spells`, `creator/data/spell-icons.js` from a tab-separated ability list. |
-| `node tools/build-window.js` | `creator/` to `host/OpenIC.html`, the in-game window, and `host/OpenIC-assets.js`, its icon sheets. Run it after any change in `creator/`. |
+| `node tools/build-window.js` | `creator/` to `host/OpenIC.html`, the in-game window, and `host/OpenIC-assets-<k>.js`, its icon sheets and lists in parts of under 900 KB. Run it after any change in `creator/`. |
 | `node tools/strip-comments.js <in.js> [out.js]` | Removes comments from a JavaScript file (literals stay as they are). |
 
 ## Tests

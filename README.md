@@ -66,12 +66,13 @@ run OpenIC/host/OpenIC
 ```
 
 The Creator opens as an Ogre window. Its **In game** menu reloads your files in Ogre (`ISXOgreEQ2.IC:Reload`, the
-same as `ogre ic reload`, and `ISXOgreEQ2.Encounter:Reload` for fight files), has Ogre check the open file
-(**Check this file by Ogre's own rules**: Ogre's answer is listed with the page's own checks), queues and runs the
-zone file, and starts a fight setup; the pills at the top show whether ISXJQB and ISXADD are loaded. Once the
-window is open the script loads the icon sheets (`host/OpenIC-assets.js`); without them the window still works,
-with the class icons and its own symbols. Close the window with its X to end the script. Opening and saving by path
-in game are new: see [docs/extensions.md](docs/extensions.md).
+same as `ogre ic reload`, and `ISXOgreEQ2.Encounter:Reload` for fight files), has Ogre check the saved file
+(**Check this file by Ogre's own rules**, with an Ogre that has that check: Ogre's answer is listed with the page's
+own checks), queues and runs the zone file, and starts a fight setup; the pills at the top show whether ISXJQB and
+ISXADD are loaded. Once the window is open the script loads the icon sheets and the ability list, in parts
+(`host/OpenIC-assets-1.js` ...); without them the window still works, with the class icons and its own symbols.
+Close the window with its X to end the script. What was tried in game, and how: see
+[docs/extensions.md](docs/extensions.md).
 
 ## Extensions
 
@@ -98,7 +99,7 @@ Details: [docs/extensions.md](docs/extensions.md).
 ## Game art
 
 The spell icons, class icons and item pictures (`creator/assets/`, and the same pictures inside
-`creator/data/`, `creator/css/openic-icons.css`, `host/OpenIC.html` and `host/OpenIC-assets.js`) are EverQuest II's
+`creator/data/`, `creator/css/openic-icons.css`, `host/OpenIC.html` and `host/OpenIC-assets-*.js`) are EverQuest II's
 own art, owned by Daybreak Game Company. They are included only so the editor can show the game's icons. The MIT
 license of this project covers its code and text, not that art.
 
@@ -117,8 +118,8 @@ repository.
 
 ```
 creator/      the page: index.html, css/, js/ (the modules), data/ (the ability and item lists), assets/ (the icons)
-host/         OpenIC.iss (the in-game launcher), OpenIC.html (the in-game window, built), OpenIC-assets.js (its
-              icon sheets, built), OpenIC.md (its help)
+host/         OpenIC.iss (the in-game launcher), OpenIC.html (the in-game window, built), OpenIC-assets-*.js
+              (its icon sheets and lists in parts, built), OpenIC.md (its help)
 data/         vocabulary.json
 docs/         the docs above
 examples/     a zone file and a fight file

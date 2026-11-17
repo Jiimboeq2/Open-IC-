@@ -17,7 +17,7 @@
 
   H.WIN = 'openic';
   H.inGame = typeof G.ogreCall === 'function';
-  H.ext = { ogrex: H.inGame ? true : null, eq2: null, ogreEq2: null, bot: null, jqb: null, add: null, note: '' };
+  H.ext = { ogrex: H.inGame ? true : null, eq2: null, ogreEq2: null, bot: null, jqb: null, add: null, check: null, fcheck: null, note: '' };
   H.me = null;
   H.lines = [];
   H.handlers = {};
@@ -100,13 +100,28 @@
     G.ogreCall('cmd', 'Event[OpenIC_' + action + ']:Execute');
     return true;
   };
-  /* script -> page: "<seq>|<payload>" in an openic-msg-<channel> field */
+  /* script -> page: "<seq>|<payload>" in an openic-msg-<channel> field. A file and Ogre's check come in pieces,
+     "<seq>|<k>/<n>|<piece>", joined here: one LavishScript command carries one piece (about 6,000 characters), never a
+     whole file -- a 33 KB argument in one command took a game client down. */
+  H.PIECED = { file: true, check: true };
+  var pieces = {};
   H.on = function (channel, fn) { (H.handlers[channel] = H.handlers[channel] || []).push(fn); };
   function deliver(channel, raw) {
     raw = str(raw);
     var bar = raw.indexOf('|'), seq = bar > 0 ? raw.slice(0, bar) : '', payload = bar > 0 ? raw.slice(bar + 1) : raw;
     if (seq && H.seen[channel] === seq) return;
     if (seq) H.seen[channel] = seq;
+    if (H.PIECED[channel]) {
+      var m = /^(\d+)\/(\d+)\|/.exec(payload);
+      if (!m) { pieces[channel] = null; H.toast('Could not read what the game sent (' + channel + ').', 'err'); return; }
+      var k = +m[1], n = +m[2], P = pieces[channel];
+      if (k === 1) P = pieces[channel] = { n: n, got: [] };
+      if (!P || P.n !== n || P.got.length !== k - 1) { pieces[channel] = null; H.toast('A piece of what the game sent (' + channel + ') went missing: try again.', 'err'); return; }
+      P.got.push(payload.slice(m[0].length));
+      if (k < n) return;
+      pieces[channel] = null;
+      payload = P.got.join('');
+    }
     var L = H.handlers[channel] || [];
     for (var i = 0; i < L.length; i++) { try { L[i](payload); } catch (e) { H.toast('Could not read what the game sent (' + channel + '): ' + e.message, 'err'); } }
   }
@@ -125,6 +140,8 @@
       p.split(';').forEach(function (kv) { var e = kv.indexOf('='); if (e > 0) o[kv.slice(0, e)] = kv.slice(e + 1); });
       H.ext.ogrex = true;
       H.ext.eq2 = o.eq2 === '1'; H.ext.ogreEq2 = o.ogreeq2 === '1'; H.ext.bot = o.bot === '1'; H.ext.jqb = o.jqb === '1'; H.ext.add = o.add === '1';
+      /* Ogre's own file check (ISXOgreEQ2 IC / Encounter Validate) is newer than some Ogres: the script says which it has */
+      H.ext.check = o.check === '1'; H.ext.fcheck = o.fcheck === '1';
       H.ext.note = o.note || '';
       if (H.onExt) H.onExt(H.ext);
     });

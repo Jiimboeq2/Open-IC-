@@ -6,7 +6,7 @@ Make and edit OgreBot zone files (the instance controller) and fight files, see 
 ### Files
 - **New zone file** and **New fight file** start a file; **Open** reads one from the custom folders.
 - **Save** writes the file through the script. A zone file goes in `Scripts\OgreSave\EQ2\IC\custom`, a fight file in `Scripts\OgreSave\EQ2\Encounters\custom`. Nothing is written under `Scripts\Ogre`.
-- Saving in game is new: if it fails, open the Creator in a browser (creator\index.html) and save from there.
+- Save writes the file, reads it back to be sure it is whole, then says saved. The folder must already exist.
 
 ### Views
 - **Flowchart** - click a box to pick it, drag a box onto a + to move it, click a chip at the bottom to add a step.
@@ -25,7 +25,7 @@ Make and edit OgreBot zone files (the instance controller) and fight files, see 
 
 ### In game menu
 - **Reload** zone or fight files in Ogre: the console lists every problem Ogre finds.
-- **Check this file by Ogre's own rules** - Ogre reads the open file as it is in the editor (nothing is saved) and its answer is listed with the checks.
+- **Check this file by Ogre's own rules** - Ogre checks the file as saved (save it first) and its answer is listed with the checks. It is off when the Ogre loaded has no file check yet: **Reload** lists the problems then.
 - **Queue** or **Run** the zone file (it must be saved in the custom folder first).
 - **ISXJQB** (when loaded) - run the file with `jb ic rundirect`, or queue the zone.
 - **ISXADD** (when loaded) - a route preview to the picked spot, drawn on the Spots view.

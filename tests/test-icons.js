@@ -127,8 +127,10 @@ test('chips get icons, and the class picker lists the 26 classes', () => {
   ok(A.chipIcon('fight', { key: 'castAbility', role: 'action' }).id === I.K.cast, 'a fight chip');
   ok(/^Class: any/.test(A.classLabel()), A.classLabel());
 });
-test('the in-game window has the class icons inline; the asset pack has the sheets and the lists', () => {
-  const win = fs.readFileSync(path.join(ROOT, 'host', 'OpenIC.html'), 'utf8'), pack = fs.readFileSync(path.join(ROOT, 'host', 'OpenIC-assets.js'), 'utf8');
+test('the in-game window has the class icons inline; the asset parts have the sheets and the lists', () => {
+  const win = fs.readFileSync(path.join(ROOT, 'host', 'OpenIC.html'), 'utf8');
+  const pack = fs.readdirSync(path.join(ROOT, 'host')).filter((f) => /^OpenIC-assets-\d+\.js$/.test(f))
+    .map((f) => fs.readFileSync(path.join(ROOT, 'host', f), 'utf8')).join('\n');
   ok((win.match(/"[A-Z][a-z]+":"data:image\/webp;base64,/g) || []).length === 26, '26 class icons in the window');
   ok((pack.match(/\.oic-sp-\d+\{background-image:url\(data:image\/png;base64,/g) || []).length === 34, '34 spell sheets in the pack');
   ok((pack.match(/\.oic-it-\d+\{background-image:url\(data:image\/png;base64,/g) || []).length === IC.iconData.itemSheets, 'the item sheets in the pack');

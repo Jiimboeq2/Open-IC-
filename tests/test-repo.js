@@ -24,7 +24,13 @@ test('the built files are up to date with their sources', () => {
   /* a checkout may turn line ends into CR LF: compare the text, not the line ends */
   const lf = (s) => String(s).replace(/\r\n/g, '\n');
   ok(lf(fs.readFileSync(w.OUT, 'utf8')) === lf(w.build().text), 'host/OpenIC.html: run node tools/build-window.js');
-  ok(lf(fs.readFileSync(w.ASSETS_OUT, 'utf8')) === lf(w.buildAssets()), 'host/OpenIC-assets.js: run node tools/build-window.js');
+  const built = w.buildAssets(), onDisk = fs.readdirSync(w.HOST).filter((f) => /^OpenIC-assets(-\d+)?\.js$/.test(f)).sort();
+  ok(JSON.stringify(onDisk) === JSON.stringify(built.map((t, i) => w.assetName(i + 1)).sort()), 'host has exactly the asset parts: ' + onDisk.join(', '));
+  built.forEach((t, i) => {
+    const f = path.join(w.HOST, w.assetName(i + 1));
+    ok(fs.existsSync(f) && lf(fs.readFileSync(f, 'utf8')) === lf(t), 'host/' + w.assetName(i + 1) + ': run node tools/build-window.js');
+    ok(Buffer.byteLength(t) <= w.PART_MAX, w.assetName(i + 1) + ' is ' + Buffer.byteLength(t) + ' bytes, at most ' + w.PART_MAX);
+  });
   ok(lf(fs.readFileSync(v.OUT, 'utf8')) === lf(v.build()), 'creator/js/openic-vocab.js: run node tools/build-vocab.js');
   ok(lf(read('creator/css/openic-icons.css')) === lf(ic.css(false)), 'creator/css/openic-icons.css: run node tools/build-icon-data.js');
 });
@@ -36,7 +42,9 @@ test('text files are plain ASCII', () => {
 });
 test('the game art is named as EverQuest II\'s own', () => {
   ok(/Daybreak Game Company/.test(read('README.md')), 'README');
-  for (const p of ['creator/css/openic-icons.css', 'creator/data/spell-icons.js', 'creator/data/item-icons.js', 'host/OpenIC-assets.js']) ok(/Daybreak Game Company/.test(read(p)), p);
+  const parts = fs.readdirSync(path.join(ROOT, 'host')).filter((f) => /^OpenIC-assets-\d+\.js$/.test(f)).map((f) => 'host/' + f);
+  ok(parts.length >= 2, 'the asset parts: ' + parts.join(', '));
+  for (const p of ['creator/css/openic-icons.css', 'creator/data/spell-icons.js', 'creator/data/item-icons.js'].concat(parts)) ok(/Daybreak Game Company/.test(read(p)), p);
 });
 test('no private paths, no notes left to do', () => {
   for (const p of all) if (TEXT.test(p) && !/test-repo\.js$/.test(p)) {

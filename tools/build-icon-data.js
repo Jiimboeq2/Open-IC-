@@ -38,16 +38,19 @@ function classIcons() {
   return fs.existsSync(d) ? fs.readdirSync(d).filter((f) => /\.webp$/.test(f)).sort().map((f) => ({ name: f.replace(/\.webp$/, ''), file: path.join(d, f) })) : [];
 }
 
-/* the stylesheet: url() paths for the browser page, data: URIs for the in-game asset pack */
-function css(asData) {
-  let out = '/* Open IC Creator - openic-icons.css\n' +
-    '   One class per icon sheet (EverQuest II\'s own art: Daybreak Game Company). Made by tools/build-icon-data.js. */\n';
-  for (const s of sheets()) {
+/* one rule per sheet: url() paths for the browser page, data: URIs for the in-game asset parts */
+function cssRules(asData) {
+  return sheets().map((s) => {
     const src = asData ? 'data:image/png;base64,' + fs.readFileSync(s.file).toString('base64')
       : '../assets/' + (s.kind === 'sp' ? 'spell_atlases' : 'item_atlases') + '/atlas-' + s.n + '.png';
-    out += '.oic-' + s.kind + '-' + s.n + '{background-image:url(' + (asData ? src : '"' + src + '"') + ');}\n';
-  }
-  return out;
+    return '.oic-' + s.kind + '-' + s.n + '{background-image:url(' + (asData ? src : '"' + src + '"') + ');}\n';
+  });
+}
+/* the stylesheet */
+function css(asData) {
+  return '/* Open IC Creator - openic-icons.css\n' +
+    '   One class per icon sheet (EverQuest II\'s own art: Daybreak Game Company). Made by tools/build-icon-data.js. */\n' +
+    cssRules(asData).join('');
 }
 
 /* the ability list as a script: the text itself, so the page needs no file read */
@@ -68,7 +71,7 @@ function spellJs(text, nSheets) {
     '})(typeof window !== \'undefined\' ? window : this);\n';
 }
 
-module.exports = { sheets, classIcons, css };
+module.exports = { sheets, classIcons, css, cssRules };
 
 if (require.main === module) {
   const args = process.argv.slice(2);

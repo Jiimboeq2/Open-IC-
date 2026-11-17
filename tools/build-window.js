@@ -2,10 +2,10 @@
 /*
  * build-window.js - builds the Creator as one native Ogre window (ISXOgreX.UI) from the same files
  * creator/index.html loads:
- *   host/OpenIC.html        the window: options, style, markup, the modules, the class icons
- *   host/OpenIC-assets.js   the icon sheets and the item and ability lists, which OpenIC.iss loads into the window's
- *                           page with ISXOgreX.UI:EvalFile once the window is open (kept out of the window file so it
- *                           stays small)
+ *   host/OpenIC.html          the window: options, style, markup, the modules, the class icons
+ *   host/OpenIC-assets-<k>.js the item and ability lists (part 1) and the icon sheets (the other parts), which
+ *                             OpenIC.iss loads into the window's page with ISXOgreX.UI:EvalFile once the window is
+ *                             open, one part at a time (kept out of the window file so it stays small)
  *
  * An Ogre window is one HTML fragment: an options block, a style block, the markup and script blocks. It loads no
  * other file (no <script src>, no <link>, no <img src> but data: URIs), and every Ogre window shares one page, so:
@@ -25,7 +25,11 @@ const icons = require('./build-icon-data.js');
 const ROOT = path.join(__dirname, '..');
 const CREATOR = path.join(ROOT, 'creator');
 const OUT = path.join(ROOT, 'host', 'OpenIC.html');
-const ASSETS_OUT = path.join(ROOT, 'host', 'OpenIC-assets.js');
+const HOST = path.join(ROOT, 'host');
+const assetName = (k) => 'OpenIC-assets-' + k + '.js';
+/* One EvalFile is one message to Ogre's UI process, and a message over its limit is dropped whole: a 4.8 MB pack never
+   arrived ("to-exe ring full ... DROPPED"), 4 MB did. Each part stays under 900 KB. */
+const PART_MAX = 900 * 1024;
 const WINDOW = { title: 'Open IC Creator', w: 1180, h: 720 };
 
 function safe(js, name) {
@@ -84,34 +88,55 @@ function build() {
   return { text: out, scripts };
 }
 
-/* the asset pack: the data scripts the page loads from creator/data, and the icon sheets as data: URIs */
+/* the asset parts: part 1 the data scripts the page loads from creator/data, then the icon sheets as data: URIs, as many
+   to a part as fit. Each part reports "<k>/<n>" in the window's openic-assets-got field (OpenIC.iss sends the next part
+   only then); the last one redraws with the icons (IC.app.iconsLoaded). Returns the parts' text, part 1 first. */
 function buildAssets() {
   const { scripts } = parts();
-  let out = '/* OpenIC-assets.js - the game icons for Open IC Creator\'s in-game window: the icon sheets as data: URIs and\n' +
-    '   the item and ability lists. OpenIC.iss loads it into the window\'s page (ISXOgreX.UI:EvalFile) once the window is\n' +
-    '   open. Built by tools/build-window.js. The icons are EverQuest II\'s own art (Daybreak Game Company). */\n' +
-    '(function () {\n' +
-    '  var L = window.OpenIC_LIB;\n' +
-    '  if (!L || !L.IC) return;\n';
+  const bodies = [];
+  let data = '';
   for (const src of scripts) {
     if (!/^data\//.test(src)) continue;
-    out += '  (function (window) {\n' + fs.readFileSync(path.join(CREATOR, src), 'utf8') + '\n  })(L);\n';
+    data += '  (function (window) {\n' + fs.readFileSync(path.join(CREATOR, src), 'utf8') + '\n  })(L);\n';
   }
-  out += '  var st = document.getElementById(\'openic-icon-sheets\');\n' +
-    '  if (!st) { st = document.createElement(\'style\'); st.id = \'openic-icon-sheets\'; (document.head || document.body).appendChild(st); }\n' +
-    '  st.textContent = ' + JSON.stringify(icons.css(true)) + ';\n' +
-    '  if (L.IC.app && L.IC.app.iconsLoaded) L.IC.app.iconsLoaded();\n' +
-    '})();\n';
-  return out;
+  bodies.push(data);
+  /* the page is shared and outlives the window: a part loaded again replaces its own style element */
+  const sheet = (rules, k) => '  var st = document.getElementById(\'openic-icon-sheets-' + k + '\');\n' +
+    '  if (!st) { st = document.createElement(\'style\'); st.id = \'openic-icon-sheets-' + k + '\'; (document.head || document.body).appendChild(st); }\n' +
+    '  st.textContent = ' + JSON.stringify(rules.join('')) + ';\n';
+  let cur = [], size = 0;
+  for (const rule of icons.cssRules(true)) {
+    if (cur.length && size + rule.length > PART_MAX - 4096) { bodies.push(sheet(cur, bodies.length + 1)); cur = []; size = 0; }
+    cur.push(rule);
+    size += rule.length;
+  }
+  if (cur.length) bodies.push(sheet(cur, bodies.length + 1));
+  const n = bodies.length;
+  return bodies.map((body, i) => {
+    const k = i + 1;
+    const text = '/* ' + assetName(k) + ' - part ' + k + ' of ' + n + ' of the game icons for Open IC Creator\'s in-game window' +
+      (k === 1 ? ': the item and\n   ability lists' : ': icon sheets as data: URIs') + '. OpenIC.iss loads the parts into the window\'s page\n' +
+      '   (ISXOgreX.UI:EvalFile) one at a time once the window is open. Built by tools/build-window.js. The icons are\n' +
+      '   EverQuest II\'s own art (Daybreak Game Company). */\n' +
+      '(function () {\n' +
+      '  var L = window.OpenIC_LIB;\n' +
+      '  if (!L || !L.IC) return;\n' + body +
+      (k === n ? '  if (L.IC.app && L.IC.app.iconsLoaded) L.IC.app.iconsLoaded();\n' : '') +
+      '  if (typeof window.ogreUISet === \'function\') window.ogreUISet(\'openic\', \'openic-assets-got\', \'' + k + '/' + n + '\');\n' +
+      '})();\n';
+    if (Buffer.byteLength(text) > PART_MAX) throw new Error(assetName(k) + ' is ' + Buffer.byteLength(text) + ' bytes, over ' + PART_MAX);
+    return text;
+  });
 }
 
-module.exports = { build, buildAssets, OUT, ASSETS_OUT };
+module.exports = { build, buildAssets, assetName, OUT, HOST, PART_MAX };
 
 if (require.main === module) {
   const b = build();
   fs.writeFileSync(OUT, b.text);
   console.log('wrote ' + path.relative(ROOT, OUT) + ' (' + b.text.length + ' bytes, ' + b.scripts.filter((s) => !/^data\//.test(s)).length + ' scripts)');
+  for (const f of fs.readdirSync(HOST)) if (/^OpenIC-assets(-\d+)?\.js$/.test(f)) fs.unlinkSync(path.join(HOST, f));
   const a = buildAssets();
-  fs.writeFileSync(ASSETS_OUT, a);
-  console.log('wrote ' + path.relative(ROOT, ASSETS_OUT) + ' (' + a.length + ' bytes)');
+  a.forEach((text, i) => fs.writeFileSync(path.join(HOST, assetName(i + 1)), text));
+  console.log('wrote ' + a.length + ' asset parts (' + a.map((t) => Math.round(Buffer.byteLength(t) / 1024) + ' KB').join(', ') + ')');
 }

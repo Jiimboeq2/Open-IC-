@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.2.1 - 2026-11-17
+
+Run in game; what that showed is fixed.
+
+- The icon sheets and the ability list load in parts of under 900 KB (`host/OpenIC-assets-1.js` ...), one after the
+  other: Ogre's UI drops a message over its limit whole, and the single 4.8 MB pack never arrived.
+- A file and Ogre's answer cross between the window and the script in pieces of 6,000 characters. **Save** writes
+  the file in pieces and reads it back before it says saved. One LavishScript command of 33 KB took a game client
+  down.
+- **Check this file by Ogre's own rules** checks the saved file (`Validate[tier,path]`), and only with an Ogre that
+  has the check: the ISXOgreEQ2 of 2026-11-16 has no `Validate`, and calling a method Ogre does not have ends the
+  script. The menu item says so.
+- The ISXJQB queue gets the zone as ISXJQB's files name it (`-` for `:`).
+- In game the self test waits for the last icon part.
+- Tried in game: the window, the bridge both ways, Open (a 46 KB zone file), Save (5 pieces, read back equal),
+  the 7 icon parts. See docs/extensions.md.
+
 ## 0.2.0 - 2026-11-17
 
 Game icons, and the in-game calls checked against Ogre's developer API reference.

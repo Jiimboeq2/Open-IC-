@@ -152,11 +152,22 @@
       if (H.inGame) ok(sent.length && /Event\[OpenIC_Reload\]:Execute/.test(sent[sent.length - 1]), 'event sent: ' + sent.join(' / '));
       else ok(H.lines.length === n0 + 1 && H.lines[0].line === 'ogre ic reload', 'line shown');
       if (H.inGame) {
+        var keepCheck = H.ext.check, n1 = sent.length;
+        H.ext.check = false;
+        s.gamePath = 'Sample/sample.json';
+        A.ogreCheck();
+        ok(sent.length === n1, 'an Ogre without the file check (ISXOgreEQ2 Validate) is never asked');
+        H.ext.check = true;
+        s.gamePath = '';
+        A.ogreCheck();
+        ok(sent.length === n1, 'a file not saved in a folder Ogre reads is not sent to Ogre\'s check');
+        s.gamePath = 'Sample/sample.json';
         A.ogreCheck();
         ok(/Event\[OpenIC_Check\]:Execute/.test(sent[sent.length - 1]), 'Ogre\'s check asked');
-        var b = document.getElementById('openic-arg-b64').value, back = null;
-        try { back = JSON.parse(decodeURIComponent(escape(G.atob(b)))); } catch (e) { back = null; }
-        ok(!!back && back.zone === s.doc.zone, 'the open file went as base64');
+        ok(document.getElementById('openic-arg-tier').value === 'custom' && document.getElementById('openic-arg-path').value === 'Sample/sample.json',
+          'the saved file went as its folder and path');
+        s.gamePath = '';
+        H.ext.check = keepCheck;
       }
     });
     var report = out.join('\n') + '\n' + (fails ? 'SELFTEST FAILED: ' + fails + ' of ' + checks + ' checks' : 'SELFTEST OK: ' + checks + ' checks passed');
@@ -165,9 +176,19 @@
     document.title = fails ? 'SELFTEST FAILED ' + fails : 'SELFTEST OK ' + checks;
     return { fails: fails, checks: checks, report: report };
   };
+  /* in game the icon parts arrive one at a time after the window opens: the self test waits for the last one to report
+     itself in (openic-assets-got "<k>/<n>"), 10 s at most */
+  A.selftestWhenReady = function () {
+    var t0 = Date.now();
+    (function wait() {
+      var got = document.getElementById('openic-assets-got'), m = got ? /^(\d+)\/(\d+)$/.exec(got.value) : null;
+      if (!IC.host.inGame || (m && +m[1] >= +m[2]) || Date.now() - t0 > 10000) A.selftest();
+      else setTimeout(wait, 50);
+    })();
+  };
   A.onStart = function () {
     var hash = '';
     try { hash = String(G.location && G.location.hash || ''); } catch (e) { hash = ''; }
-    if (hash === '#selftest' || G.__openicSelftest) setTimeout(function () { A.selftest(); }, 50);
+    if (hash === '#selftest' || G.__openicSelftest) setTimeout(function () { A.selftestWhenReady(); }, 50);
   };
 })(typeof window !== 'undefined' ? window : this);

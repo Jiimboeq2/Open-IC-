@@ -249,10 +249,11 @@
   <input type="file" id="openic-file" accept=".json,application/json" style="display:none;">
   <div style="display:none;">
     <input type="hidden" id="openic-arg-kind"><input type="hidden" id="openic-arg-path"><input type="hidden" id="openic-arg-named">
-    <input type="hidden" id="openic-arg-zone"><input type="hidden" id="openic-arg-variant"><input type="hidden" id="openic-arg-loc"><input type="hidden" id="openic-arg-b64">
+    <input type="hidden" id="openic-arg-zone"><input type="hidden" id="openic-arg-variant"><input type="hidden" id="openic-arg-loc"><input type="hidden" id="openic-arg-tier">
     <textarea id="openic-arg-text"></textarea>
     <input type="hidden" id="openic-msg-ext"><input type="hidden" id="openic-msg-me"><input type="hidden" id="openic-msg-say">
     <input type="hidden" id="openic-msg-route"><textarea id="openic-msg-check"></textarea><textarea id="openic-msg-file"></textarea>
+    <input type="hidden" id="openic-assets-got">
   </div>
 </div>
 
@@ -283,7 +284,7 @@ OpenIC_LIB.IC.iconData.classData = {"Assassin":"data:image/webp;base64,UklGRsgJA
 
   H.WIN = 'openic';
   H.inGame = typeof G.ogreCall === 'function';
-  H.ext = { ogrex: H.inGame ? true : null, eq2: null, ogreEq2: null, bot: null, jqb: null, add: null, note: '' };
+  H.ext = { ogrex: H.inGame ? true : null, eq2: null, ogreEq2: null, bot: null, jqb: null, add: null, check: null, fcheck: null, note: '' };
   H.me = null;
   H.lines = [];
   H.handlers = {};
@@ -366,13 +367,28 @@ OpenIC_LIB.IC.iconData.classData = {"Assassin":"data:image/webp;base64,UklGRsgJA
     G.ogreCall('cmd', 'Event[OpenIC_' + action + ']:Execute');
     return true;
   };
-  /* script -> page: "<seq>|<payload>" in an openic-msg-<channel> field */
+  /* script -> page: "<seq>|<payload>" in an openic-msg-<channel> field. A file and Ogre's check come in pieces,
+     "<seq>|<k>/<n>|<piece>", joined here: one LavishScript command carries one piece (about 6,000 characters), never a
+     whole file -- a 33 KB argument in one command took a game client down. */
+  H.PIECED = { file: true, check: true };
+  var pieces = {};
   H.on = function (channel, fn) { (H.handlers[channel] = H.handlers[channel] || []).push(fn); };
   function deliver(channel, raw) {
     raw = str(raw);
     var bar = raw.indexOf('|'), seq = bar > 0 ? raw.slice(0, bar) : '', payload = bar > 0 ? raw.slice(bar + 1) : raw;
     if (seq && H.seen[channel] === seq) return;
     if (seq) H.seen[channel] = seq;
+    if (H.PIECED[channel]) {
+      var m = /^(\d+)\/(\d+)\|/.exec(payload);
+      if (!m) { pieces[channel] = null; H.toast('Could not read what the game sent (' + channel + ').', 'err'); return; }
+      var k = +m[1], n = +m[2], P = pieces[channel];
+      if (k === 1) P = pieces[channel] = { n: n, got: [] };
+      if (!P || P.n !== n || P.got.length !== k - 1) { pieces[channel] = null; H.toast('A piece of what the game sent (' + channel + ') went missing: try again.', 'err'); return; }
+      P.got.push(payload.slice(m[0].length));
+      if (k < n) return;
+      pieces[channel] = null;
+      payload = P.got.join('');
+    }
     var L = H.handlers[channel] || [];
     for (var i = 0; i < L.length; i++) { try { L[i](payload); } catch (e) { H.toast('Could not read what the game sent (' + channel + '): ' + e.message, 'err'); } }
   }
@@ -391,6 +407,8 @@ OpenIC_LIB.IC.iconData.classData = {"Assassin":"data:image/webp;base64,UklGRsgJA
       p.split(';').forEach(function (kv) { var e = kv.indexOf('='); if (e > 0) o[kv.slice(0, e)] = kv.slice(e + 1); });
       H.ext.ogrex = true;
       H.ext.eq2 = o.eq2 === '1'; H.ext.ogreEq2 = o.ogreeq2 === '1'; H.ext.bot = o.bot === '1'; H.ext.jqb = o.jqb === '1'; H.ext.add = o.add === '1';
+      /* Ogre's own file check (ISXOgreEQ2 IC / Encounter Validate) is newer than some Ogres: the script says which it has */
+      H.ext.check = o.check === '1'; H.ext.fcheck = o.fcheck === '1';
       H.ext.note = o.note || '';
       if (H.onExt) H.onExt(H.ext);
     });
@@ -11588,8 +11606,11 @@ OpenIC_LIB.IC.iconData.classData = {"Assassin":"data:image/webp;base64,UklGRsgJA
     var items = [{ head: 'OgreBot' }];
     items.push({ label: 'Reload zone files (ogre ic reload)', run: function () { A.game('Reload', { kind: 'zone' }, L.reloadZone); } });
     items.push({ label: 'Reload fight files (ogre encounter reload)', run: function () { A.game('Reload', { kind: 'fight' }, L.reloadFight); } });
-    if (zone || fight) items.push({ label: 'Check this file by Ogre\'s own rules', tip: 'Ogre loads nothing and changes nothing: it only says whether the file would load',
-      run: A.ogreCheck });
+    var canCheck = A.ogreCanCheck();
+    if (zone || fight) items.push({ label: 'Check this file by Ogre\'s own rules' + (canCheck ? '' : ' (this Ogre has no file check yet)'),
+      tip: canCheck ? 'Ogre checks the file as saved: it loads nothing and changes nothing, it only says whether the file would load'
+        : 'ISXOgreEQ2\'s Validate is newer than the Ogre loaded: Reload lists the problems instead',
+      off: !canCheck, run: A.ogreCheck });
     if (zone) {
       items.push({ label: 'Queue this zone file', tip: L.queue('<path>'), run: function () { A.withGamePath('zone', function (p) { A.game('Queue', { path: p }, L.queue(p)); }); } });
       items.push({ label: 'Run this zone file now', tip: L.run('<path>'), run: function () { A.withGamePath('zone', function (p) { A.game('Run', { path: p }, L.run(p)); }); } });
@@ -11598,7 +11619,8 @@ OpenIC_LIB.IC.iconData.classData = {"Assassin":"data:image/webp;base64,UklGRsgJA
     items.push({ head: 'ISXJQB' + (inGame && !e.jqb ? ' (not loaded)' : '') });
     items.push({ label: 'Run this file with ISXJQB (jb ic rundirect)', off: inGame && !e.jqb || fight, run: function () { A.withGamePath(s.kind, function (p) { A.game('JbRun', { path: p, kind: s.kind }, 'jb ic rundirect "' + p + '"'); }); } });
     if (zone) items.push({ label: 'Queue the zone in ISXJQB (jb ic queue)', off: inGame && !e.jqb, run: function () {
-      var z = str(s.doc.zone), v = isArr(s.doc.variants) && s.doc.variants.length ? str(s.doc.variants[0]) : '';
+      /* ISXJQB's files name a zone with "-" where the zone has ":" (jb ic queue "Oogothl Sprawl- Ver'Bohten Atoll") */
+      var z = str(s.doc.zone).replace(/:/g, '-'), v = isArr(s.doc.variants) && s.doc.variants.length ? str(s.doc.variants[0]) : '';
       var diff = v.replace(/[\[\]]/g, '').trim().toLowerCase().replace(/\s+/g, '_');
       A.game('JbQueue', { zone: z, variant: diff }, 'jb ic queue "' + z + '"' + (diff ? ' ' + diff : ''));
     } });
@@ -11634,15 +11656,34 @@ OpenIC_LIB.IC.iconData.classData = {"Assassin":"data:image/webp;base64,UklGRsgJA
     A.refresh();
   };
 
-  /* ------------------------------------------------------------ Ogre's own check of the open file */
-  A.b64 = function (text) { return G.btoa(unescape(encodeURIComponent(str(text)))); };
+  /* ------------------------------------------------------------ Ogre's own check of the saved file */
+  /* where Ogre finds the open file: its default or custom folder and the path inside it; null when it is not saved in
+     one, or has changes since. In game Ogre checks the file as saved (Validate[tier,path]): the file's text as one
+     base64 argument was a single LavishScript command of 33 KB, and that took a game client down. */
+  A.tierPath = function () {
+    var s = A.st;
+    if (!s.doc || A.dirty()) return null;
+    if (s.gamePath) return { tier: 'custom', path: s.gamePath };
+    var dir = s.kind === 'fight' ? 'Encounters' : 'IC';
+    var m = new RegExp('/Scripts/(Ogre/EQ2/' + dir + '/default|OgreSave/EQ2/' + dir + '/custom)/(.+)$', 'i').exec(str(s.path).replace(/\\/g, '/'));
+    return m ? { tier: /default$/i.test(m[1]) ? 'default' : 'custom', path: m[2] } : null;
+  };
+  /* in game: only when the Ogre loaded has the check (the script reads ISXOgreEQ2's Validation(exists)); in a browser
+     the console lines are shown either way */
+  A.ogreCanCheck = function () {
+    var e = H().ext;
+    return !H().inGame || (A.st.kind === 'fight' ? e.fcheck === true : e.check === true);
+  };
   A.ogreCheck = function () {
     var s = A.st;
     if (!s.doc || (s.kind !== 'zone' && s.kind !== 'fight')) { H().toast('Ogre checks zone files and fight files.', 'warn'); return; }
+    if (!A.ogreCanCheck()) { H().toast('This Ogre has no file check yet (ISXOgreEQ2 Validate is newer): Reload lists the problems.', 'warn'); return; }
     if (H().inGame) {
+      var tp = A.tierPath();
+      if (!tp) { H().toast('Ogre checks the file as saved: save it in the custom folder first, then check it.', 'warn'); return; }
       s.ogre = { asked: Date.now(), kind: s.kind };
-      H().call('Check', { kind: s.kind, b64: A.b64(JSON.stringify(s.doc)) });
-      H().toast('Asked Ogre to check the file.');
+      H().call('Check', { kind: s.kind, tier: tp.tier, path: tp.path });
+      H().toast('Asked Ogre to check ' + tp.tier + '/' + tp.path + '.');
       return;
     }
     A.withGamePath(s.kind, function (p) {
@@ -11880,11 +11921,22 @@ OpenIC_LIB.IC.iconData.classData = {"Assassin":"data:image/webp;base64,UklGRsgJA
       if (H.inGame) ok(sent.length && /Event\[OpenIC_Reload\]:Execute/.test(sent[sent.length - 1]), 'event sent: ' + sent.join(' / '));
       else ok(H.lines.length === n0 + 1 && H.lines[0].line === 'ogre ic reload', 'line shown');
       if (H.inGame) {
+        var keepCheck = H.ext.check, n1 = sent.length;
+        H.ext.check = false;
+        s.gamePath = 'Sample/sample.json';
+        A.ogreCheck();
+        ok(sent.length === n1, 'an Ogre without the file check (ISXOgreEQ2 Validate) is never asked');
+        H.ext.check = true;
+        s.gamePath = '';
+        A.ogreCheck();
+        ok(sent.length === n1, 'a file not saved in a folder Ogre reads is not sent to Ogre\'s check');
+        s.gamePath = 'Sample/sample.json';
         A.ogreCheck();
         ok(/Event\[OpenIC_Check\]:Execute/.test(sent[sent.length - 1]), 'Ogre\'s check asked');
-        var b = document.getElementById('openic-arg-b64').value, back = null;
-        try { back = JSON.parse(decodeURIComponent(escape(G.atob(b)))); } catch (e) { back = null; }
-        ok(!!back && back.zone === s.doc.zone, 'the open file went as base64');
+        ok(document.getElementById('openic-arg-tier').value === 'custom' && document.getElementById('openic-arg-path').value === 'Sample/sample.json',
+          'the saved file went as its folder and path');
+        s.gamePath = '';
+        H.ext.check = keepCheck;
       }
     });
     var report = out.join('\n') + '\n' + (fails ? 'SELFTEST FAILED: ' + fails + ' of ' + checks + ' checks' : 'SELFTEST OK: ' + checks + ' checks passed');
@@ -11893,10 +11945,20 @@ OpenIC_LIB.IC.iconData.classData = {"Assassin":"data:image/webp;base64,UklGRsgJA
     document.title = fails ? 'SELFTEST FAILED ' + fails : 'SELFTEST OK ' + checks;
     return { fails: fails, checks: checks, report: report };
   };
+  /* in game the icon parts arrive one at a time after the window opens: the self test waits for the last one to report
+     itself in (openic-assets-got "<k>/<n>"), 10 s at most */
+  A.selftestWhenReady = function () {
+    var t0 = Date.now();
+    (function wait() {
+      var got = document.getElementById('openic-assets-got'), m = got ? /^(\d+)\/(\d+)$/.exec(got.value) : null;
+      if (!IC.host.inGame || (m && +m[1] >= +m[2]) || Date.now() - t0 > 10000) A.selftest();
+      else setTimeout(wait, 50);
+    })();
+  };
   A.onStart = function () {
     var hash = '';
     try { hash = String(G.location && G.location.hash || ''); } catch (e) { hash = ''; }
-    if (hash === '#selftest' || G.__openicSelftest) setTimeout(function () { A.selftest(); }, 50);
+    if (hash === '#selftest' || G.__openicSelftest) setTimeout(function () { A.selftestWhenReady(); }, 50);
   };
 })(typeof window !== 'undefined' ? window : this);
 

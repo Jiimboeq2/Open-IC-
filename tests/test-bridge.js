@@ -29,8 +29,12 @@ test('every action the page fires is registered and attached in the script, and 
 });
 test('every field the script reads is in the page', () => {
   const args = uniq((iss.match(/OpenIC\.Arg\[([a-z0-9]+)\]/g) || []).map((s) => s.slice(11, -1)));
-  ok(args.length >= 8, 'fields: ' + args.join(','));
+  ok(args.length >= 7, 'fields: ' + args.join(','));
   for (const a of args) ok(html.indexOf('id="openic-arg-' + a + '"') >= 0, 'openic-arg-' + a);
+  for (const id of ['openic-arg-text', 'openic-assets-got']) {
+    ok(iss.indexOf(id) >= 0, 'the script reads ' + id);
+    ok(html.indexOf('id="' + id + '"') >= 0, id + ' is in the page');
+  }
 });
 test('every channel the script answers on is one the page listens to', () => {
   const chans = uniq((iss.match(/Say\[([a-z]+),/g) || []).map((s) => s.slice(4, -1)));
@@ -41,16 +45,40 @@ test('every channel the script answers on is one the page listens to', () => {
     ok(html.indexOf('id="openic-msg-' + c + '"') >= 0, 'openic-msg-' + c + ' is in the page');
   }
 });
-test('the script uses the window name the page uses, opens the built window and loads its asset pack', () => {
+test('the script uses the window name the page uses, opens the built window and loads its asset parts', () => {
   ok(/variable string OpenIC_Win="openic"/.test(iss) && /H\.WIN = 'openic'/.test(host), 'window name openic');
   ok(/ISXOgreX\.UI:Open\[\$\{OpenIC_Win\},"\$\{OpenIC_Dir\}\/OpenIC\.html","\$\{OpenIC_Dir\}\/OpenIC\.md"\]/.test(iss), 'opens host/OpenIC.html with its help');
-  ok(/ISXOgreX\.UI:EvalFile\["\$\{OpenIC_Dir\}\/OpenIC-assets\.js"\]/.test(iss), 'loads host/OpenIC-assets.js once the window is open');
-  for (const f of ['OpenIC.html', 'OpenIC.md', 'OpenIC-assets.js']) ok(fs.existsSync(path.join(ROOT, 'host', f)), f + ' is there');
+  ok(/ISXOgreX\.UI:EvalFile\["\$\{OpenIC_Dir\}\/OpenIC-assets-\$\{OpenIC_AssetSent\}\.js"\]/.test(iss), 'loads host/OpenIC-assets-<k>.js, one part at a time');
+  ok(/OpenIC_AssetSent:Set\[1\]\s+OpenIC_SendAssetPart/.test(iss), 'part 1 goes once the window is open');
+  ok(/openic-assets-got\]/.test(iss) && /OpenIC_AssetSent:Inc\s+OpenIC_SendAssetPart/.test(iss), 'the next part goes when the window reports the last one in');
+  for (const f of ['OpenIC.html', 'OpenIC.md', 'OpenIC-assets-1.js', 'OpenIC-assets-2.js']) ok(fs.existsSync(path.join(ROOT, 'host', f)), f + ' is there');
+  ok(!fs.existsSync(path.join(ROOT, 'host', 'OpenIC-assets.js')), 'no single asset pack (Ogre\'s UI dropped it whole at 4.8 MB)');
+});
+test('a big text crosses in pieces: no LavishScript command carries a whole file', () => {
+  const code = lines.filter((l) => !/^\s*;/.test(l)).join('\n');
+  const after = (re) => (code.match(re) || []).map((m) => m.replace(/^[\s\S]*\]/, '').slice(0, 5));
+  ok(!/OpenIC\.Arg\[(text|b64)\]/.test(code), 'the file\'s text is never read whole through Arg');
+  for (const u of after(/openic-arg-text\]\.[A-Za-z]+/g)) ok(/^\.(Leng|Mid)/.test(u), 'openic-arg-text is read as .Length or .Mid: ' + u);
+  for (const m of code.match(/\.AsJSON\.[A-Za-z]+/g) || []) ok(/\.AsJSON\.(Length|Mid)/.test(m), 'AsJSON is read as .Length or .Mid: ' + m);
+  for (const m of code.match(/\.Validation\.[A-Za-z]+/g) || []) ok(/\.Validation\.(Length|Mid)/.test(m), 'Validation is read as .Length or .Mid: ' + m);
+  for (const m of code.match(/Say\[(file|check),"[^"]*/g) || []) ok(/Say\[(file|check),"\$\{K\}\/\$\{N\}\|/.test(m), 'a pieced message: ' + m.slice(0, 40));
+  ok(/variable int OpenIC_Piece=(\d+)/.test(iss) && +/variable int OpenIC_Piece=(\d+)/.exec(iss)[1] <= 8000, 'a piece is at most 8,000 characters');
+  ok(!/Validate\[\$\{OpenIC\.Arg/.test(code), 'Ogre\'s check never gets the file as one base64 argument');
+  ok(/PIECED = \{ file: true, check: true \}/.test(host), 'the page joins the file and the check from pieces');
+});
+test('Ogre\'s file check is asked only of an Ogre that has it', () => {
+  const at = iss.indexOf('atom(script) OpenIC_OnCheck()'), end = iss.indexOf('\n}', at), body = iss.slice(at, end);
+  const guard = body.indexOf('if !${Can}'), call = body.indexOf(':Validate[');
+  ok(/IC\.Validation\(exists\)/.test(body) && /Encounter\.Validation\(exists\)/.test(body), 'the script asks whether Ogre has Validation, for both kinds');
+  ok(guard > 0 && call > guard, 'the guard comes before the first Validate call');
+  ok(/;check=1/.test(iss) && /;fcheck=1/.test(iss), 'the page is told which checks this Ogre has');
+  ok(/H\.ext\.check = o\.check === '1'/.test(host), 'the page reads it');
+  ok(/A\.ogreCanCheck/.test(page) && /off: !canCheck/.test(page), 'the menu item is off without it');
 });
 test('the script never writes under Scripts/Ogre and refuses paths that climb out', () => {
   ok(/Full\.Find\[\/Scripts\/Ogre\/\]\(exists\)/.test(iss), 'the Scripts/Ogre guard');
   ok(/Rel\.Find\[\.\.\]\(exists\)/.test(iss), 'the .. guard');
-  const saveAt = iss.indexOf('atom(script) OpenIC_OnSave()'), writeAt = iss.indexOf(':WriteFile[', saveAt), guardAt = iss.indexOf('/Scripts/Ogre/', saveAt);
+  const saveAt = iss.indexOf('atom(script) OpenIC_OnSave()'), writeAt = iss.indexOf('F:Open[writeover]', saveAt), guardAt = iss.indexOf('/Scripts/Ogre/', saveAt);
   ok(guardAt > saveAt && guardAt < writeAt, 'the guard comes before the write');
 });
 test('the calls Ogre\'s developer API reference documents say where (API: ...)', () => {
@@ -66,10 +94,17 @@ test('the calls Ogre\'s developer API reference documents say where (API: ...)',
   ok(!/-SetUpFor/.test(iss.split('\n').filter((l) => !/^\s*;/.test(l)).join('\n')), 'the setup is the documented OgreBotAPI.Bot:SetUpFor');
 });
 test('every call the reference does not cover is marked UNVERIFIED', () => {
-  for (const u of [':WriteFile[', 'jb ic rundirect', 'jb ic queue', 'u1nav path', 'U1Nav.PointCount', 'ISXOgreX.UI:EvalFile[', 'IC:Validate[${']) {
+  for (const u of ['jb ic rundirect', 'jb ic queue', 'u1nav path', 'U1Nav.PointCount']) {
     const n = notesFor(u);
     ok(n.at >= 0, u + ' is used in the script');
     ok(/UNVERIFIED/.test(n.notes), u + ' is marked UNVERIFIED in the note above it');
+  }
+});
+test('the calls run in game say what they did (PROVEN ...)', () => {
+  for (const u of ['ISXOgreX.UI:Set[', 'ISXOgreX.UI:EvalFile[', 'Doc:ParseFile[', 'F:Open[writeover]', 'Doc:WriteFile[']) {
+    const n = notesFor(u);
+    ok(n.at >= 0, u + ' is used in the script');
+    ok(/PROVEN \d{4}-\d\d-\d\d/.test(n.notes), u + ' has a PROVEN note above it');
   }
 });
 test('the in-game window loads nothing from outside and adds one name to the shared page', () => {
@@ -84,8 +119,10 @@ test('the in-game window loads nothing from outside and adds one name to the sha
   ok(/class="oic-ingame"/.test(win), 'the in-game layout');
   ok(/classData = \{"Assassin":"data:image\/webp;base64,/.test(win), 'the class icons are inline');
   ok(!/D\.spellText = "/.test(win) && !/data:image\/png;base64,/.test(win), 'the sheets and the ability list are in the asset pack, not the window');
-  const pack = read('host/OpenIC-assets.js');
-  ok(/data:image\/png;base64,/.test(pack) && /D\.spellText = /.test(pack) && /D\.items = /.test(pack) && /iconsLoaded\(\)/.test(pack), 'the asset pack holds the sheets and the lists');
-  ok(!/window\.[A-Za-z_$][\w$]*\s*=/.test(pack), 'the asset pack adds nothing to the shared page');
+  const names = fs.readdirSync(path.join(ROOT, 'host')).filter((f) => /^OpenIC-assets-\d+\.js$/.test(f)).sort((a, b) => parseInt(a.slice(14), 10) - parseInt(b.slice(14), 10));
+  const parts = names.map((f) => read('host/' + f)), pack = parts.join('\n');
+  ok(/data:image\/png;base64,/.test(pack) && /D\.spellText = /.test(pack) && /D\.items = /.test(pack) && /iconsLoaded\(\)/.test(parts[parts.length - 1]), 'the asset parts hold the sheets and the lists; the last one redraws');
+  ok(!/window\.[A-Za-z_$][\w$]*\s*=(?!=)/.test(pack), 'the asset parts add nothing to the shared page');
+  parts.forEach((p, i) => ok(p.indexOf("ogreUISet('openic', 'openic-assets-got', '" + (i + 1) + '/' + parts.length + "')") >= 0, names[i] + ' reports itself in'));
 });
 done('test-bridge');
