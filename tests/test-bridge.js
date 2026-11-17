@@ -84,7 +84,13 @@ test('the file browser lists only its own folders and makes folders only in mine
 test('Ogre\'s file check is asked only of an Ogre that has it', () => {
   const at = iss.indexOf('atom(script) OpenIC_OnCheck()'), end = iss.indexOf('\n}', at), body = iss.slice(at, end);
   const guard = body.indexOf('if !${Can}'), call = body.indexOf(':Validate[');
-  ok(/IC\.Validation\(exists\)/.test(body) && /Encounter\.Validation\(exists\)/.test(body), 'the script asks whether Ogre has Validation, for both kinds');
+  ok(/OpenIC_HasCheck/.test(body) && /OpenIC_HasFCheck/.test(body), 'the script knows whether Ogre has Validation, for both kinds');
+  const rt = iss.slice(iss.indexOf('function OpenIC_ReadTypes()'), iss.indexOf('function main()'));
+  ok(/lstype ogreeq2ic/.test(rt) && /lstype ogreeq2encounter/.test(rt) && /Find\[Validation\]/.test(rt), 'it reads the types\' member lists (lstype prints no error)');
+  ok(/call OpenIC_ReadTypes/.test(iss.slice(iss.indexOf('function main()'))), 'once, when the script starts');
+  /* asking for a member a type lacks prints "No such '<type>' member" on the console, (exists) or not: the owner saw it */
+  const code = iss.split('\n').filter((l) => !/^\s*;/.test(l)).join('\n');
+  ok(!/ISXOgreEQ2\.(IC|Encounter)\.[A-Za-z]+(\[[^\]]*\])?\(exists\)/.test(code), 'no (exists) on an Ogre member: the flags instead');
   ok(guard > 0 && call > guard, 'the guard comes before the first Validate call');
   ok(/;check=1/.test(iss) && /;fcheck=1/.test(iss), 'the page is told which checks this Ogre has');
   ok(/H\.ext\.check = o\.check === '1'/.test(host), 'the page reads it');
@@ -121,6 +127,13 @@ test('the calls run in game say what they did (PROVEN ...)', () => {
     ok(n.at >= 0, u + ' is used in the script');
     ok(/PROVEN \d{4}-\d\d-\d\d/.test(n.notes), u + ' has a PROVEN note above it');
   }
+});
+test('no variable is named after a top-level object (the script ends: a "Zone" variable ended it in game)', () => {
+  const TLO = ['Zone', 'Me', 'Target', 'Actor', 'Group', 'Raid', 'Script', 'Session', 'Event', 'Math', 'Time', 'Display', 'Mouse', 'Keyboard', 'Item', 'Ability',
+    'EQ2', 'EQ2UIPage', 'Window', 'InnerSpace', 'LavishScript', 'ISXOgreX', 'ISXOgreEQ2', 'OgreBotAPI', 'ISXJQB', 'ADD', 'U1Nav', 'String', 'Int', 'Float', 'Bool', 'Type'];
+  const vars = (iss.match(/variable [a-z0-9]+ [A-Za-z_][A-Za-z0-9_]*/g) || []).map((s) => s.split(' ')[2]);
+  ok(vars.length > 20, 'variables found: ' + vars.length);
+  for (const v of vars) ok(TLO.indexOf(v) < 0, 'variable ' + v + ' is not a top-level object\'s name');
 });
 test('no <select> anywhere in the page: Ogre\'s window draws its list over the whole window', () => {
   const dir = path.join(ROOT, 'creator', 'js');

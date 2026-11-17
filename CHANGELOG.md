@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.3 - 2026-11-17
+
+Run in game (is1); what that showed is fixed.
+
+- No more "No such 'ogreeq2ic' member 'Validation'" lines on the console each time the window opened: asking for a
+  member Ogre lacks prints that even inside `(exists)`. The script now reads which members Ogre's IC and Encounter
+  have once, from `lstype`, which prints nothing wrong.
+- **Ask Ogre** ended the script: a variable named `Zone` (a top-level object's name). Renamed, and a test now fails on
+  any variable named after one. Ogre's file list (`IC:List`) also matched nothing with quote marks or an apostrophe in
+  its filter, so the file always read as not loaded: it now gets one plain word of the zone's name, unquoted. Proven:
+  a DTV file loaded with Ogre's line about it; the converted Gerion file shown claiming the same zone and difficulty
+  as Ogre's own.
+- **Map** with no file open fits the floor's picture (it was zoomed to the 20 m around you). Proven in game: ISXJQB's
+  saved map of the guild hall, four floors.
+- The chart's scroll layer is proven in Ogre's window: a scroll moves the chart.
+
 ## 0.5.2 - 2026-11-17
 
 - **Swap the belt rune (immunity)** (Ogre's `beltAdorn`): the kind is five chips, stun, stifle, mez, fear and medic, each

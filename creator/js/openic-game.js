@@ -146,7 +146,10 @@
     var tp = A.tierPath();
     if (!tp) { H().toast('Ogre reads the file as saved: save it first (My zone files), then ask.', 'warn'); return; }
     s.verify = { busy: true, kind: s.kind, file: tp.tier + '/' + tp.path, at: Date.now() };
-    H().call('Verify', { tier: tp.tier, path: tp.path, zone: str(s.doc.zone) });
+    /* IC:List's filter is the zone's longest plain word: with an apostrophe in it, it matched nothing (PROVEN 2026-11-17:
+       "Puppeteer's Playground" 0 files, "Playground" the file); the verdict picks this file out of what it lists */
+    var word = (str(s.doc.zone).match(/[A-Za-z0-9]+/g) || []).sort(function (a, b) { return b.length - a.length; })[0] || '';
+    H().call('Verify', { tier: tp.tier, path: tp.path, zone: word });
     H().toast('Ogre is reloading your zone files; its answer about this one comes in a moment.');
     A.renderProblems();
   };

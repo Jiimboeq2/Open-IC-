@@ -61,6 +61,13 @@ variable bool OpenIC_TestSeen=FALSE
 variable string OpenIC_FightNamed=""
 variable int OpenIC_FightWait=0
 variable int OpenIC_FightTicks=0
+; which of Ogre's members this Ogre has (OpenIC_ReadTypes, once at the start)
+variable bool OpenIC_HasCheck=FALSE
+variable bool OpenIC_HasFCheck=FALSE
+variable bool OpenIC_HasRunState=FALSE
+variable bool OpenIC_HasVerdict=FALSE
+variable bool OpenIC_HasNote=FALSE
+variable bool OpenIC_HasIsActive=FALSE
 
 objectdef openic_bridge
 {
@@ -152,12 +159,12 @@ objectdef openic_bridge
 			E:Concat[";add=1"]
 		else
 			E:Concat[";add=0"]
-		; Ogre's own check of a zone file / a fight file: only an Ogre that has it (OpenIC_OnCheck)
-		if ${ISXOgreEQ2.IC.Validation(exists)}
+		; Ogre's own check of a zone file / a fight file: only an Ogre that has it (OpenIC_OnCheck; OpenIC_ReadTypes)
+		if ${OpenIC_HasCheck}
 			E:Concat[";check=1"]
 		else
 			E:Concat[";check=0"]
-		if ${ISXOgreEQ2.Encounter.Validation(exists)}
+		if ${OpenIC_HasFCheck}
 			E:Concat[";fcheck=1"]
 		else
 			E:Concat[";fcheck=0"]
@@ -166,8 +173,8 @@ objectdef openic_bridge
 
 	; Where I stand, my zone, my target, my class and my zone's short name: the window's Here buttons, its Map view (the
 	; short name finds ISXJQB's saved map) and its icons.
-	; UNVERIFIED for this release: Zone.ShortName (ISXEQ2, not in Ogre's API reference) was not run in game by this
-	; script yet; Ogre's own OgreEffectTracker.iss reads it.
+	; PROVEN 2026-11-17 (is1): Zone.ShortName (ISXEQ2, not in Ogre's API reference) reached the window as
+	; fprt_guildhall_tier3, and the Map found ISXJQB's saved map by it.
 	method SendMe()
 	{
 		variable string T=""
@@ -235,12 +242,12 @@ atom(script) OpenIC_OnCheck()
 	}
 	if ${OpenIC.Arg[kind].Equal[fight]}
 	{
-		if ${ISXOgreEQ2.Encounter.Validation(exists)}
+		if ${OpenIC_HasFCheck}
 			Can:Set[TRUE]
 	}
 	else
 	{
-		if ${ISXOgreEQ2.IC.Validation(exists)}
+		if ${OpenIC_HasCheck}
 			Can:Set[TRUE]
 	}
 	if !${Can}
@@ -550,8 +557,8 @@ atom(script) OpenIC_OnRoute()
 ; openic-arg-name: the zone's short name as ISXJQB writes it, or a floor's key), this runs it in the page and says
 ; "<kind>|<name>|1" on the window's map channel, or "<kind>|<name>|0" when ISXJQB has no such file. A name can not
 ; climb out of that folder. The files are ISXJQB's: this only reads them.
-; UNVERIFIED as a whole: not run in game yet (no game client was up when it was written); its calls are the proven
-; ones below and in OpenIC_OnList, and the stand-in for Ogre (tests/fake-ogre.js) drives the window's side.
+; PROVEN 2026-11-17 (is1, a guild hall): the zone file (4 floors) and the floor's picture ran in the page, the Map drew
+; the picture under the spots in about 0.25 s, the floors were offered.
 atom(script) OpenIC_OnMap()
 {
 	variable string Kind="${OpenIC.Arg[kind]}"
@@ -578,13 +585,18 @@ atom(script) OpenIC_OnMap()
 ; its count line on the console; each problem goes to Ogre's log as "<tier>/<path>: <message>", so the log is read from
 ; where it stood before the reload. IC:List then prints the loaded files that claim the zone: this file among them
 ; means it loaded, and another one there for the same difficulty is the one a queue by name may pick. The window's
-; fields: path (inside the tier's folder), tier (custom or default), zone (the zone's name, no difficulty).
+; fields: path (inside the tier's folder), tier (custom or default), zone (one plain word of the zone's name: List's
+; filter matches the zone name only, and nothing with an apostrophe in it -- PROVEN 2026-11-17, is1).
 ; Not used: IC:Check, which also starts Ogre's zone-reset flow (it opens the game's zone reset window to read timers).
+; PROVEN 2026-11-17 (is1), end to end from the window: a DTV zone file "loaded as Val'Zyroth Ness: Puppeteer's
+; Playground [Solo]" with Ogre's one line about it (no entrance) out of the log; the converted Gerion file loaded and
+; was shown claiming the same zone and difficulty as Ogre's own Rage of Cthurath/_09_Gerion_Realm_of_Conquest.json.
 atom(script) OpenIC_OnVerify()
 {
 	variable string Rel="${OpenIC.Arg[path]}"
 	variable string Tier="${OpenIC.Arg[tier]}"
-	variable string Zone="${OpenIC.Arg[zone]}"
+	; never a variable named after a top-level object (Zone, Me, Target ...): the script ends (it did, here, 2026-11-17)
+	variable string ZoneName="${OpenIC.Arg[zone]}"
 	variable file L
 	if !${ISXOgreEQ2(exists)}
 	{
@@ -610,7 +622,8 @@ atom(script) OpenIC_OnVerify()
 	; PROVEN 2026-11-17 (ISXOgreEQ2 of 2026-11-16): redirect caught IC:Reload's count line and IC:List's
 	; "[custom] <path>  ->  <zone> [<difficulty>]" and "1 of 63 zone file(s) matching" lines, each with colour codes.
 	redirect "${OpenIC_Dir}/openic-verify-r.txt" ISXOgreEQ2.IC:Reload
-	redirect "${OpenIC_Dir}/openic-verify-l.txt" ISXOgreEQ2.IC:List["${Zone}"]
+	; unquoted: List takes quote marks as part of its filter (PROVEN 2026-11-17: List["Playground"] 0 files, List[Playground] 1)
+	redirect "${OpenIC_Dir}/openic-verify-l.txt" ISXOgreEQ2.IC:List[${ZoneName}]
 	OpenIC_VerifyWait:Set[2]
 }
 
@@ -680,7 +693,8 @@ function OpenIC_SendVerify()
 ; API: isxogreeq2 IC, Run[tier,relPath] (it refuses with a console line when you are not in the world, a run is under
 ; way, IC is paused, no profile is loaded, or the file will not load; it travels to the file's zone first, so the
 ; window only offers a test while you stand in it), Stop, and the members Running, RunState, Verdict and Note.
-; UNVERIFIED for this release: written when no game client was up; the members are read only when they exist.
+; UNVERIFIED for this release: no test run yet (the box was in a guild hall); the members are read only when this Ogre
+; has them (OpenIC_ReadTypes: the Ogre of 2026-11-16 has Running, RunState, Verdict and Note).
 atom(script) OpenIC_OnTest()
 {
 	variable string Rel="${OpenIC.Arg[path]}"
@@ -738,11 +752,11 @@ function OpenIC_TestTick()
 	variable bool Busy=FALSE
 	variable bool Over=FALSE
 	OpenIC_TestTicks:Inc
-	if ${ISXOgreEQ2.IC.RunState(exists)}
+	if ${OpenIC_HasRunState}
 		RunNow:Set["${ISXOgreEQ2.IC.RunState}"]
-	if ${ISXOgreEQ2.IC.Verdict(exists)}
+	if ${OpenIC_HasVerdict}
 		Vd:Set["${ISXOgreEQ2.IC.Verdict}"]
-	if ${ISXOgreEQ2.IC.Note(exists)}
+	if ${OpenIC_HasNote}
 		Nt:Set["${ISXOgreEQ2.IC.Note.Escape}"]
 	if ${RunNow.Equal[running]} || ${RunNow.Equal[launching]} || ${RunNow.Equal[zoning in]}
 		Busy:Set[TRUE]
@@ -770,7 +784,8 @@ function OpenIC_TestTick()
 ; that named is setting up or running ("fight|<TRUE or FALSE>").
 ; API: isxogreeq2 Encounter, Reload (in the background: it ends every setup in progress) and the member IsActive[mob];
 ; ogrebotapi Bot, SetUpFor (the named must be up in this zone, and Enable Heroic or Raid Setups ticked).
-; UNVERIFIED for this release: written when no game client was up; IsActive is read only when it exists.
+; UNVERIFIED for this release: no fight test run yet (no named up); IsActive is read only when this Ogre has it
+; (OpenIC_ReadTypes: the Ogre of 2026-11-16 does).
 atom(script) OpenIC_OnFightTest()
 {
 	if !${ISXOgreEQ2(exists)}
@@ -791,7 +806,7 @@ function OpenIC_FightTick()
 	variable string Act="unknown"
 	variable bool Over=FALSE
 	OpenIC_FightTicks:Inc
-	if ${ISXOgreEQ2.Encounter.IsActive["${OpenIC_FightNamed}"](exists)}
+	if ${OpenIC_HasIsActive}
 		Act:Set["${ISXOgreEQ2.Encounter.IsActive["${OpenIC_FightNamed}"]}"]
 	OpenIC:Say[test,"fight|${Act}"]
 	if ${OpenIC_FightTicks} > 120
@@ -891,6 +906,55 @@ atom(script) OpenIC_OnClosed(string name, string reason)
 		Script:End
 }
 
+; Which of Ogre's members this Ogre has, read once: `lstype` lists a type's members and methods and prints no error, while
+; asking for a member the type lacks prints one on the console every time, (exists) or not ("No such 'ogreeq2ic' member
+; 'Validation'": the owner saw four of them each time the window opened).
+; PROVEN 2026-11-17 (is1, ISXOgreEQ2 of 2026-11-16): redirect caught "Members of type ogreeq2ic" (Loaded RunId RunState
+; Value State MaxWait FileOptionLabel ZoneEnd Running Zone Note Paused Verdict FileOption FileArgs), then "Methods of type
+; ogreeq2ic", and the same for ogreeq2encounter (Loaded ActiveCount IsActive Current Sequences): no Validation in either.
+function OpenIC_ReadTypes()
+{
+	variable file F
+	variable string T
+	variable string Kind=""
+	variable int G=0
+	redirect "${OpenIC_Dir}/openic-types.txt" lstype ogreeq2ic
+	redirect -append "${OpenIC_Dir}/openic-types.txt" lstype ogreeq2encounter
+	F:SetFilename["${OpenIC_Dir}/openic-types.txt"]
+	F:Open[readonly]
+	if !${F.Open}
+		return
+	while !${F.EOF} && ${G:Inc} <= 200
+	{
+		T:Set["${F.Read.Escape}"]
+		if ${T.Find[Members of type ogreeq2ic](exists)}
+			Kind:Set[ic]
+		elseif ${T.Find[Members of type ogreeq2encounter](exists)}
+			Kind:Set[enc]
+		elseif ${T.Find[Methods of type](exists)}
+			Kind:Set[""]
+		elseif ${Kind.Equal[ic]}
+		{
+			if ${T.Find[Validation](exists)}
+				OpenIC_HasCheck:Set[TRUE]
+			if ${T.Find[RunState](exists)}
+				OpenIC_HasRunState:Set[TRUE]
+			if ${T.Find[Verdict](exists)}
+				OpenIC_HasVerdict:Set[TRUE]
+			if ${T.Find[Note](exists)}
+				OpenIC_HasNote:Set[TRUE]
+		}
+		elseif ${Kind.Equal[enc]}
+		{
+			if ${T.Find[Validation](exists)}
+				OpenIC_HasFCheck:Set[TRUE]
+			if ${T.Find[IsActive](exists)}
+				OpenIC_HasIsActive:Set[TRUE]
+		}
+	}
+	F:Close
+}
+
 function main()
 {
 	variable int MeTick=0
@@ -899,6 +963,8 @@ function main()
 		echo "Open IC Creator: ISXOgreX is not loaded. Load it first: ext ISXOgreX"
 		return
 	}
+	if ${ISXOgreEQ2(exists)}
+		call OpenIC_ReadTypes
 	LavishScript:RegisterEvent[OpenIC_Hello]
 	LavishScript:RegisterEvent[OpenIC_Reload]
 	LavishScript:RegisterEvent[OpenIC_Check]

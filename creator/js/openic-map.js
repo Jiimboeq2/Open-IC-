@@ -169,7 +169,8 @@
       return;
     }
     var W = svg.clientWidth || 600, Hh = svg.clientHeight || 400, x0 = 1e9, x1 = -1e9, zA = 1e9, zB = -1e9;
-    (all.length ? all : [[F.minx, 0, F.minz], [F.maxx, 0, F.maxz]]).forEach(function (p) { x0 = Math.min(x0, +p[0]); x1 = Math.max(x1, +p[0]); zA = Math.min(zA, +p[2]); zB = Math.max(zB, +p[2]); });
+    /* the file's spots (and the route) fill the view; with none, the floor's picture does (you alone would be a 20 m view) */
+    ((pts.length || route.length || !F) ? all : [[F.minx, 0, F.minz], [F.maxx, 0, F.maxz]]).forEach(function (p) { x0 = Math.min(x0, +p[0]); x1 = Math.max(x1, +p[0]); zA = Math.min(zA, +p[2]); zB = Math.max(zB, +p[2]); });
     var V = A.mapView, span = Math.max(x1 - x0, zB - zA, 20), sc = Math.min((W - 40) / span, (Hh - 40) / span) * V.k, cx = (x0 + x1) / 2, cz = (zA + zB) / 2;
     var X = function (x) { return W / 2 + V.ox - (+x - cx) * sc; }, Y = function (z) { return Hh / 2 + V.oy + (+z - cz) * sc; };
     var gArt = svg.querySelector('#openic-map-art'), gDots = svg.querySelector('#openic-map-dots');
