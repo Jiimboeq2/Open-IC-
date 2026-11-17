@@ -61,16 +61,12 @@
     H().showLine(line, 'type it in the InnerSpace console (the page is not in game)');
     H().toast('In a browser: the console line is under the checks.');
   };
+  /* an action that needs the file where Ogre or ISXJQB reads it (queue, run): the place it was saved; never typed */
   A.withGamePath = function (kind, cb) {
-    var s = A.st, def = s.gamePath || (kind === 'fight' ? Z().fightFolder(s.doc) + '/' + Z().fileName(s.doc) : (kind === 'jb' ? 'JB/Instances/' + s.name : Z().fileName(s.doc)));
-    var where = kind === 'zone' ? 'inside Scripts\\OgreSave\\EQ2\\IC\\custom, with / between folders' : (kind === 'fight' ? 'inside Scripts\\OgreSave\\EQ2\\Encounters\\custom' : 'inside Scripts\\Eq2JCommon, or a full path');
-    H().prompt('The file in game', 'Its path ' + where + ':', def, function (v) {
-      if (v == null || !str(v).trim()) return;
-      if (str(v).indexOf('..') >= 0) { H().toast('A path cannot climb out of its folder (..).', 'warn'); return; }
-      s.gamePath = str(v).trim().replace(/\\/g, '/');
-      A.renderHead();
-      cb(s.gamePath);
-    });
+    var s = A.st;
+    if (s.gamePath && !A.dirty()) { cb(s.gamePath); return; }
+    H().toast(s.gamePath ? 'Save it first: Ogre reads the file as saved.' : 'Save it in ' + (kind === 'fight' ? 'My fight files' : (kind === 'jb' ? 'ISXJQB instance files' : 'My zone files')) +
+      ' first (Save as), then try again.', 'warn');
   };
   A.routePreview = function () {
     var s = A.st, st = s.sel ? A.at(s.sel) : null, p = null;
@@ -90,6 +86,8 @@
   A.tierPath = function () {
     var s = A.st;
     if (!s.doc || A.dirty()) return null;
+    var R = s.where && A.rootOf ? A.rootOf(s.where.root) : null;
+    if (R && R.kind === s.kind && R.kind !== 'jb') return { tier: R.write ? 'custom' : 'default', path: s.where.rel };
     if (s.gamePath) return { tier: 'custom', path: s.gamePath };
     var dir = s.kind === 'fight' ? 'Encounters' : 'IC';
     var m = new RegExp('/Scripts/(Ogre/EQ2/' + dir + '/default|OgreSave/EQ2/' + dir + '/custom)/(.+)$', 'i').exec(str(s.path).replace(/\\/g, '/'));
@@ -156,24 +154,45 @@
       H().call('Open', { kind: kind, path: A._opening.path });
     });
   };
+  /* Save goes back where the file came from when that is one of my folders; Save as, or a file of Ogre's own, picks
+     the place in the file browser (openic-browse.js) */
   A.saveGame = function (as) {
-    var s = A.st, go = function (p) {
-      H().set('openic-arg-text', JSON.stringify(s.doc));
-      A._saving = JSON.stringify(s.doc);
-      H().call('Save', { kind: s.kind === 'jb' ? 'jb' : s.kind, path: p });
-    };
-    if (s.gamePath && !as) go(s.gamePath); else A.withGamePath(s.kind, go);
+    var s = A.st;
+    if (s.gamePath && !as) A.saveTo(s.gamePath, s.where || null);
+    else A.browse('save');
+  };
+  /* gamePath: the script's path for the file's kind; where: the browser's folder and path, kept once it is saved */
+  A.saveTo = function (gamePath, where) {
+    var s = A.st;
+    H().set('openic-arg-text', JSON.stringify(s.doc));
+    A._saving = JSON.stringify(s.doc);
+    A._savingTo = { gamePath: gamePath, where: where };
+    H().call('Save', { kind: s.kind === 'jb' ? 'jb' : s.kind, path: gamePath });
   };
 
   /* ------------------------------------------------------------ messages from the game */
   A.bindGame = function () {
     var h = H();
     h.on('file', function (p) {
-      var o = A._opening || {};
+      var o = A._opening || {}, R = o.root && A.rootOf ? A.rootOf(o.root) : null;
       A._opening = null;
-      if (A.loadText(p, { name: str(o.path).split('/').pop(), gamePath: o.kind === 'full' ? '' : o.path, path: o.path, fromDisk: true })) H().toast('Opened ' + (o.path || 'the file') + '.');
+      /* from the file browser: Save goes back there only for my own folders (Ogre's are read only) */
+      var gamePath = o.kind === 'full' ? '' : (R ? (R.write ? o.path : '') : o.path);
+      if (A.loadText(p, { name: str(o.path).split('/').pop(), gamePath: gamePath, path: R ? R.label + '/' + o.rel : o.path, fromDisk: true })) {
+        A.st.where = R ? { root: R.id, rel: o.rel } : null;
+        A.renderHead();
+        H().toast('Opened ' + (R ? R.label + ': ' + o.rel : (o.path || 'the file')) + (R && !R.write ? ' (Ogre\'s own: Save as makes your copy)' : '') + '.');
+      }
     });
-    h.on('say', function (p) { if (/^ok:saved/.test(p) && A._saving) { A.st.saved = A._saving; A._saving = null; A.renderHead(); } });
+    h.on('say', function (p) {
+      if (/^ok:saved/.test(p) && A._saving) {
+        A.st.saved = A._saving; A._saving = null;
+        if (A._savingTo) { A.st.gamePath = A._savingTo.gamePath; if (A._savingTo.where) A.st.where = A._savingTo.where; A._savingTo = null; }
+        A.renderHead();
+      }
+      if (A._afterMkdir && /^(ok:folder made|err:)/.test(p) && A.onMkdirSaid) A.onMkdirSaid(/^ok:/.test(p));
+    });
+    h.on('list', function (p) { if (A.onList) A.onList(p); });
     h.on('check', function (p) { A.ogreResult(p); });
     h.on('route', function (p) {
       var pts = str(p).split(';').map(function (t) { return t.split(',').map(Number); }).filter(function (q) { return q.length === 3 && q.every(isFinite); });

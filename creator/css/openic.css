@@ -156,6 +156,22 @@
 #openic-root .oic-dialog .oic-dt { font-weight: bold; color: var(--accent-cyan); margin-bottom: 6px; font-size: 13px; }
 #openic-root .oic-dialog .oic-dm { white-space: pre-line; margin-bottom: 10px; }
 #openic-root .oic-dialog input { width: 100%; padding: 4px 6px; margin-bottom: 10px; }
+/* the file browser (openic-browse.js) */
+#openic-root .oic-dialog.oic-browse { width: 640px; }
+#openic-root .oic-br-roots { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 8px; }
+#openic-root .oic-br-root { padding: 3px 10px; border: 1px solid var(--border-med); border-radius: 12px; cursor: pointer; color: var(--text-secondary); }
+#openic-root .oic-br-root:hover { background: var(--tint-hover); color: var(--text-primary); }
+#openic-root .oic-br-root.oic-on { border-color: var(--accent-cyan); background: var(--tint-on); color: var(--accent-cyan); }
+#openic-root .oic-br-crumbs { margin: 0 0 6px; color: var(--text-secondary); }
+#openic-root .oic-br-gt { color: var(--text-secondary); }
+#openic-root .oic-br-list { height: 300px; overflow-y: auto; border: 1px solid var(--border-dark); border-radius: var(--radius); background: var(--bg-input); margin-bottom: 6px; }
+#openic-root .oic-br-item { display: flex; justify-content: space-between; gap: 10px; padding: 4px 10px; cursor: pointer; white-space: nowrap; }
+#openic-root .oic-br-item:hover { background: var(--tint-on); color: var(--accent-cyan); }
+#openic-root .oic-br-up { color: var(--text-secondary); }
+#openic-root .oic-br-size { color: var(--text-secondary); font-size: 11px; }
+#openic-root .oic-br-note { padding: 10px; color: var(--text-secondary); }
+#openic-root #openic-br-saverow input { margin-bottom: 0; flex: 1; }
+#openic-root .oic-br-typed { color: var(--text-secondary); margin-left: 12px; }
 #openic-toasts { position: absolute; right: 12px; bottom: 12px; z-index: 90; display: flex; flex-direction: column; gap: 6px; max-width: 420px; }
 #openic-toasts .oic-toast { padding: 8px 14px; border-radius: 4px; color: #fff; font: 12px "Segoe UI", Tahoma, Arial, sans-serif; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5); }
 #openic-toasts .oic-toast-ok { background: #123a5a; border: 1px solid #3b8fc4; }

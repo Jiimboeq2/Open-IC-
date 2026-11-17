@@ -25,11 +25,18 @@ const prelude = `
   }
   function say(ch, v) { seq++; setField('openic-msg-' + ch, seq + '|' + v); }
   window.ogreUISet = function (name, id, value) { if (name === 'openic') setField(id, value); };
+  /* a folder's listing as OpenIC.iss sends it, at once (the self test reads it straight after) */
+  function listAnswer() {
+    var r = (document.getElementById('openic-arg-root') || {}).value || '', p = (document.getElementById('openic-arg-path') || {}).value || '';
+    var body = p === '' ? '>D|Sample Expansion>F|sample.json|2048' : (p === 'Sample Expansion' ? '>F|inner.json|1024' : '');
+    say('list', '1/1|' + r + '|' + p + '|1' + body);
+  }
   window.ogreCall = function (kind, line) {
     if (kind !== 'cmd') return;
     log.push(line);
     var fake = window.__openicFakeGame.log;
     if (fake !== log) fake.push(line);
+    if (/OpenIC_List/.test(line)) { listAnswer(); return; }
     setTimeout(function () {
       if (/OpenIC_Hello/.test(line)) { say('ext', 'ogrex=1;eq2=1;ogreeq2=1;bot=1;jqb=0;add=1;check=1;fcheck=1'); say('me', '10.5,2,-30.25|Sample Zone: The Test Halls [Heroic]|A Target|fury'); }
       if (/OpenIC_Check/.test(line)) {

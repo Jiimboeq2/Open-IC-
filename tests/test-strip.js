@@ -56,7 +56,8 @@ test('every Creator module: one header comment, nothing else to strip', () => {
     new vm.Script(src, { filename: f });
     const end = src.indexOf('*/');
     ok(src.slice(0, 2) === '/*' && end > 0, f + ': starts with its header');
-    const body = src.slice(end + 2).replace(/^\r?\n/, '');
+    /* a Windows checkout turns line ends into CR LF: compare the text, not the line ends */
+    const body = src.slice(end + 2).replace(/^\r?\n/, '').replace(/\r\n/g, '\n');
     if (/^ic-/.test(f)) ok(strip(body) === body, f + ': no comment left but the header');
     n++;
   }

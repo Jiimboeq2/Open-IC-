@@ -103,7 +103,7 @@
   /* ------------------------------------------------------------ the class picker */
   A.classLabel = function () {
     var mine = A.myClass(), n = A.iconPref.group.length;
-    return 'Class: ' + (mine ? cap(mine) + (A.iconPref.myClass ? '' : ' (in game)') : 'any') + (n ? ' +' + n : '');
+    return 'Icons: ' + (mine ? cap(mine) + (A.iconPref.myClass ? '' : ' (you)') : 'every class') + (n ? ' +' + n : '');
   };
   A.renderClassButton = function () { var b = $('openic-classbtn'); if (b) b.textContent = A.classLabel(); };
   A.classMenu = function (anchor) {

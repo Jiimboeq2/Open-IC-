@@ -145,6 +145,31 @@
       ok(A.dirty(), 'a new file is not saved');
       ok(Z.fileName(s.doc) === 'Another_Zone_Solo.json', 'file name: ' + Z.fileName(s.doc));
     });
+    test('in game, Open and Save as use the file browser', function () {
+      if (!H.inGame) { ok(typeof A.openLocal === 'function', 'a browser: the PC\'s own file window'); return; }
+      A.load(clone(A.SAMPLES.zone), { name: 'sample.json', fromDisk: true });
+      var $ = function (id) { return document.getElementById(id); };
+      A.browse('open');
+      ok(/Event\[OpenIC_List\]:Execute/.test(sent[sent.length - 1]) && $('openic-arg-root').value === 'zone', 'it asks for My zone files');
+      ok($('openic-browse').style.display === 'flex', 'the browser shows');
+      ok(/Sample Expansion/.test($('openic-br-list').textContent) && /sample\.json/.test($('openic-br-list').textContent), 'the folders and files are listed');
+      A.browseClick('dir:Sample Expansion');
+      ok($('openic-arg-path').value === 'Sample Expansion' && /inner\.json/.test($('openic-br-list').textContent), 'a folder click lists that folder');
+      ok(/Up one folder/.test($('openic-br-list').textContent), 'with a way back up');
+      A.browseClick('file:inner.json');
+      ok(/Event\[OpenIC_Open\]:Execute/.test(sent[sent.length - 1]) && $('openic-arg-kind').value === 'zone' && $('openic-arg-path').value === 'Sample Expansion/inner.json',
+        'a file click opens it from My zone files');
+      ok($('openic-browse').style.display === 'none', 'and the browser closes');
+      A.browse('open');
+      A.browseClick('root:ofight');
+      ok($('openic-arg-root').value === 'ofight' && !$('openic-br-newfolder').offsetParent, 'Ogre\'s fight files are listed, read only (no New folder)');
+      A.closeBrowse();
+      A.load(clone(A.SAMPLES.zone), { name: 'sample.json', fromDisk: false });
+      A.save(true);
+      ok($('openic-browse').style.display === 'flex' && $('openic-br-title').textContent === 'Save as' && $('openic-br-name').value !== '', 'Save as picks the folder and the name');
+      ok(/My zone files/.test($('openic-br-roots').textContent) && !/Ogre's/.test($('openic-br-roots').textContent), 'only my own folders take a save');
+      A.closeBrowse();
+    });
     test('game actions: the bridge in game, the console line in a browser', function () {
       A.load(clone(A.SAMPLES.zone), { name: 'sample.json', fromDisk: true });
       var n0 = H.lines.length;

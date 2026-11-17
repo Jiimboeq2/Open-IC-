@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 - 2026-11-17
+
+- In game, **Open** and **Save as** are a file window, no typed paths: My zone files, My fight files, Ogre's zone
+  files and Ogre's fight files (read only), ISXJQB instance files. Click a folder to go in, a file to open it; Save as
+  picks the folder and takes a name, and **New folder** makes one. A file of Ogre's own opens read only and Save as
+  puts your copy in your folder (a fight file at the same path, where Ogre lays it over the shipped one). Queue and
+  Run use the place the file was saved.
+- The bar says what each button does: **New** (a zone file or a fight file, each said in a line), **Open**,
+  **Save**, **Save as**; the views **Chart**, **Plain English**, **File text** and **Map**; **Problems** with the
+  count; **Use in game**; **Icons**. The in-game help page is written around them.
+- The tests read a Windows checkout too (CR LF line ends).
+
 ## 0.2.2 - 2026-11-17
 
 - In game, the buttons work after the window is closed and opened again. Ogre's windows share one page that outlives

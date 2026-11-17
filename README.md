@@ -9,24 +9,26 @@ files in Ogre and run them. ISXJQB and ISXADD are optional extras.
 
 ## What it does
 
-- **Opens** OgreBot zone files, OgreBot fight files, and ISXJQB instance files; starts new zone and fight files.
-- **Flowchart**: every step a box, a zone file broken into its nameds, a fight file into its rules; click to pick,
+- **Opens** OgreBot zone files, OgreBot fight files, and ISXJQB instance files; starts new zone and fight files. In
+  game, **Open** and **Save as** are a file window over the folders Ogre and ISXJQB read: click a folder to go in,
+  a file to open it; **New folder** makes one.
+- **Chart**: every step a box, a zone file broken into its nameds, a fight file into its rules; click to pick,
   drag a box onto a + to move it, click or drag a chip to add a step (quick snippets included); Overview, One part
   and Side by side views; zoom.
 - **Game icons**: EverQuest II's own spell, class and item icons on the boxes, the chips and the Words view. The
-  **Class** button picks your class (and, if you like, the classes in your group): your class's abilities show
+  **Icons** button picks your class (and, if you like, the classes in your group): your class's abilities show
   their own icon; an ability of another class shows that class's icon, with "Who: Fury" (for example) as its
   tooltip. With no class picked every ability shows its own icon; in game the class you play counts until you pick
-  one. The flowchart's **Ability icons** switch turns them off.
-- **Words**: the whole file in plain English.
-- **JSON**: the whole file as text; and for the picked step its text, the keys it can take (click one to add it with
+  one. The chart's **Ability icons** switch turns them off.
+- **Plain English**: every step written out as a sentence.
+- **File text**: the whole file as Ogre reads it; and for the picked step its text, the keys it can take (click one to add it with
   its default), and its problems.
-- **Spots**: every spot the file names, from above; in game, you on it, and an ISXADD route preview.
-- **Checks** as you edit: what Ogre would refuse (unknown actions, missing keys, wrong kinds of value, no way out, a
+- **Map**: every spot the file walks to, from above; in game, you on it, and an ISXADD route preview.
+- **Problems**, found as you edit: what Ogre would refuse (unknown actions, missing keys, wrong kinds of value, no way out, a
   bare `${...}`) and what Ogre's reload misses (misspelt conditions, two steps with one `stepId`), with the key you
   probably meant.
 - **Undo / redo**, and Ogre's file-name rule for the file you have open.
-- **In game**: reload zone or fight files in Ogre, have Ogre check the open file by its own load rules, queue or run
+- **Use in game**: reload zone or fight files in Ogre, have Ogre check the open file by its own load rules, queue or run
   the zone file, start a fight setup; with ISXJQB run the file or queue the zone; with ISXADD preview a route.
 - **ISXJQB quests**: the quest-pack steps (`TeamRunIC` / `RunIC`) that run this file from a quest.
 
@@ -50,12 +52,12 @@ folders from there.
 
 ## Use it in a browser
 
-Open `creator\index.html` (double-click it). Then **Open...** a zone or fight file, or drop one on the page, or
-start a **New zone file** / **New fight file**. **Save** writes it back (or downloads it); put zone files in
+Open `creator\index.html` (double-click it). Then **Open** a zone or fight file, or drop one on the page, or
+start one with **New**. **Save** writes it back (or downloads it); put zone files in
 `Scripts\OgreSave\EQ2\IC\custom\` and fight files in `Scripts\OgreSave\EQ2\Encounters\custom\` (the right side of
 the page shows the exact folder and file name).
 
-The **In game** menu works in a browser too: it shows the console line to type in InnerSpace instead.
+The **Use in game** menu works in a browser too: it shows the console line to type in InnerSpace instead.
 
 ## Use it in game
 
@@ -65,7 +67,8 @@ With ISXOgreX loaded, type in the InnerSpace console:
 run OpenIC/host/OpenIC
 ```
 
-The Creator opens as an Ogre window. Its **In game** menu reloads your files in Ogre (`ISXOgreEQ2.IC:Reload`, the
+The Creator opens as an Ogre window. **Open** and **Save as** show the folders Ogre and ISXJQB read (yours, and
+Ogre's own read only). Its **Use in game** menu reloads your files in Ogre (`ISXOgreEQ2.IC:Reload`, the
 same as `ogre ic reload`, and `ISXOgreEQ2.Encounter:Reload` for fight files), has Ogre check the saved file
 (**Check this file by Ogre's own rules**, with an Ogre that has that check: Ogre's answer is listed with the page's
 own checks), queues and runs the zone file, and starts a fight setup; the pills at the top show whether ISXJQB and

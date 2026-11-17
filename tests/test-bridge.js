@@ -9,7 +9,7 @@ const { ROOT, ok, test, done } = require('./lib.js');
 
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const iss = read('host/OpenIC.iss'), host = read('creator/js/openic-host.js'), html = read('creator/index.html');
-const page = read('creator/js/openic-app.js') + read('creator/js/openic-game.js') + host;
+const page = read('creator/js/openic-app.js') + read('creator/js/openic-game.js') + read('creator/js/openic-browse.js') + host;
 const uniq = (a) => Array.from(new Set(a)).sort();
 const lines = iss.split(/\r?\n/);
 /* the comment lines just above the first line that uses this call (not a comment itself) */
@@ -61,10 +61,24 @@ test('a big text crosses in pieces: no LavishScript command carries a whole file
   for (const u of after(/openic-arg-text\]\.[A-Za-z]+/g)) ok(/^\.(Leng|Mid)/.test(u), 'openic-arg-text is read as .Length or .Mid: ' + u);
   for (const m of code.match(/\.AsJSON\.[A-Za-z]+/g) || []) ok(/\.AsJSON\.(Length|Mid)/.test(m), 'AsJSON is read as .Length or .Mid: ' + m);
   for (const m of code.match(/\.Validation\.[A-Za-z]+/g) || []) ok(/\.Validation\.(Length|Mid)/.test(m), 'Validation is read as .Length or .Mid: ' + m);
-  for (const m of code.match(/Say\[(file|check),"[^"]*/g) || []) ok(/Say\[(file|check),"\$\{K\}\/\$\{N\}\|/.test(m), 'a pieced message: ' + m.slice(0, 40));
+  for (const m of code.match(/Say\[(file|check|list),"[^"]*/g) || []) ok(/Say\[(file|check|list),"\$\{K\}\/\$\{N\}\|/.test(m), 'a pieced message: ' + m.slice(0, 40));
   ok(/variable int OpenIC_Piece=(\d+)/.test(iss) && +/variable int OpenIC_Piece=(\d+)/.exec(iss)[1] <= 8000, 'a piece is at most 8,000 characters');
   ok(!/Validate\[\$\{OpenIC\.Arg/.test(code), 'Ogre\'s check never gets the file as one base64 argument');
-  ok(/PIECED = \{ file: true, check: true \}/.test(host), 'the page joins the file and the check from pieces');
+  ok(/PIECED = \{ file: true, check: true, list: true \}/.test(host), 'the page joins the file, the check and a folder\'s listing from pieces');
+});
+test('no slash and star together in the script: LavishScript reads that as a comment, even inside quotes', () => {
+  ok(iss.indexOf('/' + '*') < 0, 'host/OpenIC.iss has no slash-star');
+  ok(/GetDirectories\["\$\{Folder\}\/\\\*"\]/.test(iss) && /GetFiles\["\$\{Folder\}\/\\\*\.json"\]/.test(iss), 'a folder\'s contents are written <folder>/\\*');
+});
+test('the file browser lists only its own folders and makes folders only in mine', () => {
+  const list = iss.slice(iss.indexOf('atom(script) OpenIC_OnList()'), iss.indexOf('atom(script) OpenIC_OnMkDir()'));
+  ok(/Rel\.Find\[\.\.\]\(exists\)/.test(list) && /Rel\.Find\[:\]\(exists\)/.test(list), 'a path that climbs out or names a drive is refused');
+  ok(/OpenIC\.RootDir\[/.test(list), 'the folder is one of RootDir\'s');
+  const mk = iss.slice(iss.indexOf('atom(script) OpenIC_OnMkDir()'), iss.indexOf('function OpenIC_MakeDirs()'));
+  ok(/RootId\.Equal\[zone\]/.test(mk) && /RootId\.Equal\[fight\]/.test(mk) && /RootId\.Equal\[jb\]/.test(mk) && !/ozone|ofight/.test(mk), 'New folder only in my folders, never Ogre\'s');
+  const browse = read('creator/js/openic-browse.js');
+  for (const r of ['zone', 'fight', 'ozone', 'ofight', 'jb']) ok(new RegExp("id: '" + r + "'").test(browse) && new RegExp('Equal\\[' + r + '\\]').test(iss), 'the page and the script both know the folder ' + r);
+  ok(/write: false/.test(browse) && /Scripts\/Ogre\//.test(iss), 'Ogre\'s folders are read only in the page, and Save refuses Scripts/Ogre in the script');
 });
 test('Ogre\'s file check is asked only of an Ogre that has it', () => {
   const at = iss.indexOf('atom(script) OpenIC_OnCheck()'), end = iss.indexOf('\n}', at), body = iss.slice(at, end);

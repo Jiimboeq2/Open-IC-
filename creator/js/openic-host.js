@@ -100,10 +100,10 @@
     G.ogreCall('cmd', 'Event[OpenIC_' + action + ']:Execute');
     return true;
   };
-  /* script -> page: "<seq>|<payload>" in an openic-msg-<channel> field. A file and Ogre's check come in pieces,
-     "<seq>|<k>/<n>|<piece>", joined here: one LavishScript command carries one piece (about 6,000 characters), never a
-     whole file -- a 33 KB argument in one command took a game client down. */
-  H.PIECED = { file: true, check: true };
+  /* script -> page: "<seq>|<payload>" in an openic-msg-<channel> field. A file, Ogre's check and a folder's listing
+     come in pieces, "<seq>|<k>/<n>|<piece>", joined here: one LavishScript command carries one piece (about 6,000
+     characters), never a whole file -- a 33 KB argument in one command took a game client down. */
+  H.PIECED = { file: true, check: true, list: true };
   var pieces = {};
   H.on = function (channel, fn) { (H.handlers[channel] = H.handlers[channel] || []).push(fn); };
   function deliver(channel, raw) {
@@ -125,7 +125,7 @@
     var L = H.handlers[channel] || [];
     for (var i = 0; i < L.length; i++) { try { L[i](payload); } catch (e) { H.toast('Could not read what the game sent (' + channel + '): ' + e.message, 'err'); } }
   }
-  H.CHANNELS = ['ext', 'me', 'file', 'say', 'route', 'check'];
+  H.CHANNELS = ['ext', 'me', 'file', 'say', 'route', 'check', 'list'];
   H.bind = function () {
     for (var i = 0; i < H.CHANNELS.length; i++) (function (ch) {
       var el = $('openic-msg-' + ch);

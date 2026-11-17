@@ -28,10 +28,16 @@
 ; what it did. Lines marked UNVERIFIED use commands or members that reference does not cover and that were not run in
 ; game for this release.
 
-; This file is Scripts/OpenIC/host/OpenIC.iss, so the Scripts folder is two folders up. ${Script.CurrentDirectory}
-; is written with forward slashes (Ogre's docs), so the paths built from it need no escaping.
+; This file's own folder holds the window; the Scripts folder is InnerSpace's. Both are written with forward slashes
+; (PROVEN 2026-11-17: ${LavishScript.HomeDirectory} read "C:/Program Files (x86)/InnerSpace"), so the paths built from
+; them need no escaping.
+; Never write a slash and a star together in this file, not even inside quotes: LavishScript reads it as the start of
+; a comment and drops the rest of the script. A folder's contents are "<folder>/\*".
 variable string OpenIC_Dir="${Script.CurrentDirectory}"
-variable string OpenIC_Scripts="${Script.CurrentDirectory}/../.."
+variable string OpenIC_Scripts="${LavishScript.HomeDirectory}/Scripts"
+; a folder to make, asked for by the window (OpenIC_OnMkDir); main() makes it
+variable string OpenIC_MkBase=""
+variable string OpenIC_MkRel=""
 variable string OpenIC_Win="openic"
 variable int OpenIC_Seq=0
 variable int OpenIC_RouteWait=0
@@ -65,7 +71,37 @@ objectdef openic_bridge
 			return "${OpenIC_Scripts}/OgreSave/EQ2/Encounters/custom/${Rel.Escape}"
 		if ${Kind.Equal[jb]}
 			return "${OpenIC_Scripts}/Eq2JCommon/${Rel.Escape}"
+		if ${Kind.Equal[ozone]}
+			return "${OpenIC_Scripts}/Ogre/EQ2/IC/default/${Rel.Escape}"
+		if ${Kind.Equal[ofight]}
+			return "${OpenIC_Scripts}/Ogre/EQ2/Encounters/default/${Rel.Escape}"
 		return "${Rel.Escape}"
+	}
+
+	; Is this folder there? A function's variables are set up when it starts, so a filepath declared below a line that
+	; changes the path still holds the path from before (the file browser saw every folder as missing): the finished
+	; path comes in here as the argument.
+	member:bool DirThere(string Path)
+	{
+		variable filepath P="${Path}"
+		return ${P.PathExists}
+	}
+
+	; The folders the window's file browser shows, inside InnerSpace's Scripts folder: my zone files, my fight files,
+	; Ogre's own (read only: Ogre's updates replace them), ISXJQB's instance files. "" for any other name.
+	member:string RootDir(string Root)
+	{
+		if ${Root.Equal[zone]}
+			return "OgreSave/EQ2/IC/custom"
+		if ${Root.Equal[fight]}
+			return "OgreSave/EQ2/Encounters/custom"
+		if ${Root.Equal[ozone]}
+			return "Ogre/EQ2/IC/default"
+		if ${Root.Equal[ofight]}
+			return "Ogre/EQ2/Encounters/default"
+		if ${Root.Equal[jb]}
+			return "Eq2JCommon/JB/Instances"
+		return ""
 	}
 
 	; One short message to the window: "<number>|<text>" in its openic-msg-<channel> field.
@@ -309,6 +345,109 @@ atom(script) OpenIC_OnSave()
 	OpenIC:Say[say,"ok:saved ${Full}"]
 }
 
+; The window's file browser: the folders and .json files in one folder (one of RootDir's, and a path inside it), as
+; "<root>|<path>|<1 = the folder is there>" then ">D|<folder>" and ">F|<file>|<bytes>" for each (a Windows name holds
+; neither | nor >), in pieces on the list channel.
+; PROVEN 2026-11-17: filelist's GetDirectories and GetFiles listed Ogre's IC folder and a folder of .json files
+; (.File[n] is the name, .File[n].Filename too, .File[n].Size the bytes).
+atom(script) OpenIC_OnList()
+{
+	variable string RootId="${OpenIC.Arg[root]}"
+	variable string Rel="${OpenIC.Arg[path]}"
+	variable string Folder="${OpenIC.RootDir[${RootId}]}"
+	variable string S
+	variable filelist D
+	variable filelist F
+	variable int i
+	variable int Len
+	variable int N
+	variable int K
+	if ${Folder.Length} == 0 || ${Rel.Find[..](exists)} || ${Rel.Find[:](exists)}
+	{
+		OpenIC:Say[say,"err:Not a folder the file browser shows."]
+		return
+	}
+	Folder:Set["${OpenIC_Scripts}/${Folder}"]
+	if ${Rel.Length} > 0
+		Folder:Concat["/${Rel}"]
+	S:Set["${RootId}|${Rel}|"]
+	if !${OpenIC.DirThere["${Folder}"]}
+		S:Concat["0"]
+	else
+	{
+		S:Concat["1"]
+		D:GetDirectories["${Folder}/\*"]
+		for (i:Set[1] ; ${i} <= ${D.Files} && ${i} <= 500 ; i:Inc)
+			S:Concat[">D|${D.File[${i}]}"]
+		F:GetFiles["${Folder}/\*.json"]
+		for (i:Set[1] ; ${i} <= ${F.Files} && ${i} <= 500 ; i:Inc)
+			S:Concat[">F|${F.File[${i}].Filename}|${F.File[${i}].Size}"]
+	}
+	Len:Set[${S.Length}]
+	N:Set[${Math.Calc[(${Len}+${OpenIC_Piece}-1)/${OpenIC_Piece}].Int}]
+	if ${N} < 1
+		N:Set[1]
+	for (K:Set[1] ; ${K} <= ${N} ; K:Inc)
+		OpenIC:Say[list,"${K}/${N}|${S.Mid[${Math.Calc[(${K}-1)*${OpenIC_Piece}+1].Int},${OpenIC_Piece}].Escape}"]
+}
+
+; The window's New folder: a folder inside one of the browser's own folders (never Ogre's), made by main() on its next
+; turn, one folder at a time, each one that is missing (OpenIC_MakeDirs).
+; PROVEN 2026-11-17: filepath:MakeSubdirectory made a folder, and FileExists[<its name>] read TRUE after.
+atom(script) OpenIC_OnMkDir()
+{
+	variable string RootId="${OpenIC.Arg[root]}"
+	variable string Rel="${OpenIC.Arg[path]}"
+	variable string NewName="${OpenIC.Arg[name]}"
+	if !${RootId.Equal[zone]} && !${RootId.Equal[fight]} && !${RootId.Equal[jb]}
+	{
+		OpenIC:Say[say,"err:Ogre's own folders are read only: make the folder in your own."]
+		return
+	}
+	if ${Rel.Find[..](exists)} || ${Rel.Find[:](exists)} || ${NewName.Find[..](exists)} || ${NewName.Find[/](exists)} || ${NewName.Find[:](exists)}
+	{
+		OpenIC:Say[say,"err:That folder name cannot be used."]
+		return
+	}
+	OpenIC_MkBase:Set["${OpenIC_Scripts}"]
+	OpenIC_MkRel:Set["${OpenIC.RootDir[${RootId}]}"]
+	if ${Rel.Length} > 0
+		OpenIC_MkRel:Concat["/${Rel}"]
+	if ${NewName.Length} > 0
+		OpenIC_MkRel:Concat["/${NewName}"]
+}
+
+; Makes OpenIC_MkRel inside OpenIC_MkBase one folder at a time, then says how it went (the window lists again).
+function OpenIC_MakeDirs()
+{
+	variable string At="${OpenIC_MkBase}"
+	variable string Rel="${OpenIC_MkRel}"
+	variable string Seg
+	variable int N=1
+	OpenIC_MkRel:Set[""]
+	do
+	{
+		Seg:Set["${Rel.Token[${N},/]}"]
+		if ${Seg.Length} == 0 || ${Seg.Equal[NULL]}
+			break
+		call OpenIC_MakeOne "${At}" "${Seg}"
+		At:Concat["/${Seg}"]
+		N:Inc
+	}
+	while ${N} <= 16
+	if ${OpenIC.DirThere["${At}"]}
+		OpenIC:Say[say,"ok:folder made: ${Rel}"]
+	else
+		OpenIC:Say[say,"err:Could not make the folder ${Rel}"]
+}
+
+function OpenIC_MakeOne(string Base, string Sub)
+{
+	variable filepath P="${Base}"
+	if !${P.FileExists["${Sub}"]}
+		P:MakeSubdirectory["${Sub}"]
+}
+
 atom(script) OpenIC_OnQueue()
 {
 	if !${ISXOgreEQ2(exists)}
@@ -492,6 +631,8 @@ function main()
 	LavishScript:RegisterEvent[OpenIC_JbRun]
 	LavishScript:RegisterEvent[OpenIC_JbQueue]
 	LavishScript:RegisterEvent[OpenIC_Route]
+	LavishScript:RegisterEvent[OpenIC_List]
+	LavishScript:RegisterEvent[OpenIC_MkDir]
 	Event[OpenIC_Hello]:AttachAtom[OpenIC_OnHello]
 	Event[OpenIC_Reload]:AttachAtom[OpenIC_OnReload]
 	Event[OpenIC_Check]:AttachAtom[OpenIC_OnCheck]
@@ -503,17 +644,21 @@ function main()
 	Event[OpenIC_JbRun]:AttachAtom[OpenIC_OnJbRun]
 	Event[OpenIC_JbQueue]:AttachAtom[OpenIC_OnJbQueue]
 	Event[OpenIC_Route]:AttachAtom[OpenIC_OnRoute]
+	Event[OpenIC_List]:AttachAtom[OpenIC_OnList]
+	Event[OpenIC_MkDir]:AttachAtom[OpenIC_OnMkDir]
 	Event[OgreUI_Opened]:AttachAtom[OpenIC_OnOpened]
 	Event[OgreUI_Closed]:AttachAtom[OpenIC_OnClosed]
 	OpenIC_OpenWindow
 
-	; Twice a second: the icon parts on the way; once a second: where I stand (the window's Here buttons), and a
+	; Twice a second: the icon parts on the way and a folder the window asked for; once a second: where I stand (the window's Here buttons), and a
 	; route preview when one was asked for.
 	; API: isxogrex, ISXOgreX.UI.Window[name] (NULL when no window by that name is open).
 	while TRUE
 	{
 		if ${OpenIC_AssetSent} > 0
 			call OpenIC_AssetTick
+		if ${OpenIC_MkRel.Length} > 0
+			call OpenIC_MakeDirs
 		MeTick:Inc
 		if ${MeTick} >= 2
 		{
@@ -549,6 +694,8 @@ atom atexit()
 	Event[OpenIC_JbRun]:DetachAtom[OpenIC_OnJbRun]
 	Event[OpenIC_JbQueue]:DetachAtom[OpenIC_OnJbQueue]
 	Event[OpenIC_Route]:DetachAtom[OpenIC_OnRoute]
+	Event[OpenIC_List]:DetachAtom[OpenIC_OnList]
+	Event[OpenIC_MkDir]:DetachAtom[OpenIC_OnMkDir]
 	Event[OgreUI_Opened]:DetachAtom[OpenIC_OnOpened]
 	Event[OgreUI_Closed]:DetachAtom[OpenIC_OnClosed]
 	; API: isxogrex, ISXOgreX.UI:Close[name].

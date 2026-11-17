@@ -8,7 +8,7 @@ ISXADD is loaded. The in-game window shows which of them it found.
 | **ISXOgreX** (native OgreBot's core) | needed in game | The window itself (`ISXOgreX.UI`). |
 | **ISXOgreEQ2** (native OgreBot for EverQuest II) | needed in game | Reload zone and fight files, check a file by Ogre's own rules (an Ogre that has that check), queue and run a zone file, start a fight setup. It is also what runs the files. |
 | **ISXJQB** | optional | Run a file with ISXJQB, queue a zone in ISXJQB, and the quest-pack lines that run an instance from a quest. Opens ISXJQB's own instance files. |
-| **ISXADD** | optional | A route preview: the path to a spot, drawn on the Spots view, without moving anyone. |
+| **ISXADD** | optional | A route preview: the path to a spot, drawn on the Map, without moving anyone. |
 
 Nothing in the Creator needs the game to open, edit, check or save a file.
 
@@ -83,7 +83,7 @@ file in ISXJQB before you rely on it there.
 ## ISXADD (optional)
 
 When `${ADD.Ready}` is `TRUE`, **Route preview to the picked spot** sends `u1nav path <x,y,z>` and reads the route
-back (`${U1Nav.PointCount}`, `${U1Nav.PointX[n]}`, `.PointY[n]`, `.PointZ[n]`). The Spots view draws it as a dashed
+back (`${U1Nav.PointCount}`, `${U1Nav.PointX[n]}`, `.PointY[n]`, `.PointZ[n]`). The Map draws it as a dashed
 line. Nobody moves. ISXADD uses its own meshes, not Ogre's.
 
 These members come from ISXADD's own help and have not been tried with the Creator in game for this release.
@@ -101,6 +101,11 @@ On 2026-11-17, with the ISXOgreEQ2 and ISXOgreX of 2026-11-16 (`host/OpenIC.iss`
   backslash, brackets, braces and a semicolon unchanged.
 - **Check**: that Ogre has no `Validate`: `IC.Validation(exists)` read FALSE, the script went on, and nothing was
   called.
+- **The file window** (0.3.0): My zone files listed its folders, a folder its files (a folder name with an
+  apostrophe too), Ogre's fight files their 18 expansion folders; a click on a file opened it; Save as with **New
+  folder** made the folder and saved into it, and the file read back.
+- **Buttons after the window is closed and opened again** (0.2.2): a click on Plain English switched the view and New
+  opened its question, both before and after a close and open.
 
 Two lessons for anyone extending the script: one LavishScript command carrying 33 KB took a game client down, so keep
 any text in a command to a few KB; and calling a method an extension does not have ends the script that calls it.

@@ -59,6 +59,7 @@
     var s = A.st;
     s.kind = kind; s.doc = doc; s.name = str(meta.name) || Z().fileName(doc); s.path = str(meta.path); s.gamePath = str(meta.gamePath);
     s.handle = meta.handle || null; s.saved = meta.fromDisk ? JSON.stringify(doc) : ''; s.undo = []; s.redo = []; s.sel = ''; s.route = null;
+    s.where = meta.where || null;
     s.fv = { z: 0.9, x: 10, y: 34, abicons: A.iconPref ? A.iconPref.abicons : true };
     s.ogre = null;
     if (kind === 'jb') { M().loadObj(doc, { path: s.path, fromDisk: !!meta.fromDisk }); M().select(null); }
@@ -359,7 +360,7 @@
     if (u) u.disabled = !s.undo.length;
     if (r) r.disabled = !s.redo.length;
     var c = Z().counts(s.probs), b = $('openic-checkbtn');
-    if (b) { b.textContent = s.doc ? (c.error ? c.error + ' problem' + (c.error === 1 ? '' : 's') : 'No problems') + (c.warn ? ', ' + c.warn + ' to check' : '') : 'Check'; b.className = 'oic-btn' + (c.error ? ' oic-bad' : (c.warn ? ' oic-warnb' : '')); }
+    if (b) { b.textContent = s.doc ? (c.error ? c.error + ' problem' + (c.error === 1 ? '' : 's') : 'No problems') + (c.warn ? ', ' + c.warn + ' to check' : '') : 'Problems'; b.className = 'oic-btn' + (c.error ? ' oic-bad' : (c.warn ? ' oic-warnb' : '')); }
     var segs = document.querySelectorAll('#openic-views [data-oic-view]');
     for (var i = 0; i < segs.length; i++) segs[i].className = segs[i].getAttribute('data-oic-view') === s.view ? 'oic-on' : '';
     var views = ['flow', 'words', 'json', 'map'];
@@ -673,17 +674,15 @@
     var at = A._lastMouse || null;
     setTimeout(function () { A.menu(at, items); }, 0);
   };
-  A.openMenu = function (btn) {
-    var items = [];
-    if (!H().inGame) {
-      items.push({ label: 'Open a file from this PC...', run: A.openLocal });
-    } else {
-      items.push({ label: 'Open a zone file (from IC\\custom)...', run: function () { A.openGame('zone'); } });
-      items.push({ label: 'Open a fight file (from Encounters\\custom)...', run: function () { A.openGame('fight'); } });
-      items.push({ label: 'Open an ISXJQB file (from Eq2JCommon)...', run: function () { A.openGame('jb'); } });
-      items.push({ label: 'Open by full path...', run: function () { A.openGame('full'); } });
-    }
-    A.menu(btn, items);
+  /* New: the two kinds of file Ogre reads, each said in a line */
+  A.newMenu = function (btn) {
+    A.menu(btn, [
+      { head: 'A new file' },
+      { label: 'Zone file - a whole run through one zone: walk, fight the nameds, loot, leave', run: A.newZone,
+        tip: 'Ogre\'s Instance Controller runs it, step by step; it goes in My zone files' },
+      { label: 'Fight file - what the group does during one named\'s fight', run: A.newFight,
+        tip: 'Ogre starts it by itself when the named is in range; it goes in My fight files' }
+    ]);
   };
 
   /* ------------------------------------------------------------ open and save */
@@ -781,14 +780,16 @@
     var menu = $('openic-menu');
     if (mi != null && menu && menu._items) { var it = menu._items[+mi]; A.closeMenu(); if (it && !it.off && it.run) it.run(); return; }
     if (v != null && A.onClickExtra && A.onClickExtra(v, t, menu)) return;
-    if (menu && menu.style.display === 'block' && !(v === 'open' || v === 'game')) A.closeMenu();
+    if (menu && menu.style.display === 'block' && !(v === 'new' || v === 'game')) A.closeMenu();
     if (v == null && rf != null) { A.select(rf); return; }
     if (v == null) return;
     var anchor = t;
     if (v === 'modal-ok' || v === 'modal-cancel') { H().modalDone(v === 'modal-ok'); return; }
-    if (v === 'new-zone') A.newZone();
+    if (v.indexOf('br:') === 0) { if (A.browseClick) A.browseClick(v.slice(3)); return; }
+    if (v === 'new') { if (menu && menu.style.display === 'block') A.closeMenu(); else A.newMenu(anchor); }
+    else if (v === 'new-zone') A.newZone();
     else if (v === 'new-fight') A.newFight();
-    else if (v === 'open') { if (menu && menu.style.display === 'block') A.closeMenu(); else A.openMenu(anchor); }
+    else if (v === 'open') { if (H().inGame) A.browse('open'); else A.openLocal(); }
     else if (v === 'save') A.save(false);
     else if (v === 'save-as') A.save(true);
     else if (v === 'undo') A.undo();
@@ -829,6 +830,7 @@
     });
     document.addEventListener('keydown', function (e) {
       if (e.target && e.target.id === 'openic-modal-input' && (e.key === 'Enter' || e.key === 'Escape')) { e.preventDefault(); H().modalDone(e.key === 'Enter'); return; }
+      if (e.target && e.target.id === 'openic-br-name' && (e.key === 'Enter' || e.key === 'Escape')) { e.preventDefault(); A.browseClick(e.key === 'Enter' ? 'save' : 'cancel'); return; }
       if (!(e.ctrlKey || e.metaKey)) return;
       var tag = e.target && e.target.tagName, inText = tag === 'TEXTAREA' || tag === 'INPUT';
       var k = String(e.key || '').toLowerCase();

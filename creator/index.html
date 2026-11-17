@@ -20,20 +20,19 @@
     <span class="oic-ext" id="openic-ext"></span>
   </div>
   <div class="oic-bar">
-    <button class="oic-btn" data-oic="new-zone" title="A new OgreBot zone file: the steps the instance controller runs">New zone file</button>
-    <button class="oic-btn" data-oic="new-fight" title="A new OgreBot fight file: what the group does during one named's fight">New fight file</button>
-    <button class="oic-btn" data-oic="open" title="Open a zone file, a fight file or an ISXJQB instance file">Open...</button>
-    <button class="oic-btn oic-primary" data-oic="save" title="Save (Ctrl+S)">Save</button>
-    <button class="oic-btn" data-oic="save-as" title="Save under another name">Save as...</button>
+    <button class="oic-btn" data-oic="new" title="Start a new zone file (a whole run through one zone) or fight file (what the group does on one named)">New &#9662;</button>
+    <button class="oic-btn" data-oic="open" title="Open a zone file, a fight file or an ISXJQB instance file">Open</button>
+    <button class="oic-btn oic-primary" data-oic="save" title="Save the file where it came from (Ctrl+S)">Save</button>
+    <button class="oic-btn" data-oic="save-as" title="Save a copy: pick the folder and the name">Save as</button>
     <span class="oic-sep"></span>
-    <span class="oic-seg" id="openic-views"><span data-oic-view="flow" title="The file as a flowchart: drag boxes onto a + to move them">Flowchart</span><span data-oic-view="words" title="Every step in plain words">Words</span><span data-oic-view="json" title="The whole file as text">JSON</span><span data-oic-view="map" title="Every spot the file names, seen from above">Spots</span></span>
+    <span class="oic-seg" id="openic-views"><span data-oic-view="flow" title="The steps as boxes, in the order they run: click a box to change it, drag one onto a + to move it">Chart</span><span data-oic-view="words" title="Every step written out as a sentence">Plain English</span><span data-oic-view="json" title="The file exactly as Ogre reads it: change it here, then press Apply">File text</span><span data-oic-view="map" title="Every spot the file walks to, seen from above (in game, you are the square)">Map</span></span>
     <span class="oic-sep"></span>
-    <button class="oic-btn" id="openic-undo" data-oic="undo" title="Undo (Ctrl+Z)">Undo</button>
+    <button class="oic-btn" id="openic-undo" data-oic="undo" title="Undo the last change (Ctrl+Z)">Undo</button>
     <button class="oic-btn" id="openic-redo" data-oic="redo" title="Redo (Ctrl+Y)">Redo</button>
-    <button class="oic-btn" id="openic-checkbtn" data-oic="check" title="Check the file now; the list is under the chart">Check</button>
+    <button class="oic-btn" id="openic-checkbtn" data-oic="check" title="What would stop Ogre loading this file: click to see the list under the chart">Problems</button>
     <span class="oic-sep"></span>
-    <button class="oic-btn" data-oic="game" title="Reload in Ogre, run this zone file, and the ISXJQB and ISXADD extras">In game &#9662;</button>
-    <button class="oic-btn" id="openic-classbtn" data-oic="class" title="Your class and your group: your abilities show their own icons, another class shows its class icon">Class: any</button>
+    <button class="oic-btn" data-oic="game" title="Reload your files in Ogre, run or queue this zone file, start a fight's setup; ISXJQB and ISXADD extras">Use in game &#9662;</button>
+    <button class="oic-btn" id="openic-classbtn" data-oic="class" title="Whose ability icons to show: your class's abilities show their own icon, another class's show that class's icon">Icons: every class</button>
   </div>
   <div class="oic-main">
     <div class="oic-left">
@@ -53,6 +52,22 @@
     <pre id="openic-selftest"></pre>
   </div>
   <div class="oic-menu" id="openic-menu"></div>
+  <div class="oic-modal" id="openic-browse">
+    <div class="oic-dialog oic-browse">
+      <div class="oic-dt" id="openic-br-title">Open a file</div>
+      <div class="oic-br-roots" id="openic-br-roots"></div>
+      <div class="oic-br-crumbs" id="openic-br-crumbs"></div>
+      <div class="oic-br-list" id="openic-br-list"></div>
+      <div class="oic-row" id="openic-br-saverow"><span class="oic-note">Name</span><input type="text" id="openic-br-name" spellcheck="false"></div>
+      <div class="oic-row">
+        <span class="oic-link" data-oic="br:newfolder" id="openic-br-newfolder" title="Make a folder inside this one">New folder</span>
+        <span class="oic-link oic-br-typed" data-oic="br:typed" id="openic-br-typed" title="For a file outside these folders">Type a full path instead</span>
+        <span style="flex:1;"></span>
+        <button class="oic-btn" data-oic="br:cancel">Cancel</button>
+        <button class="oic-btn oic-primary" data-oic="br:save" id="openic-br-save">Save here</button>
+      </div>
+    </div>
+  </div>
   <div class="oic-modal" id="openic-modal">
     <div class="oic-dialog">
       <div class="oic-dt" id="openic-modal-title"></div>
@@ -68,9 +83,10 @@
   <div style="display:none;">
     <input type="hidden" id="openic-arg-kind"><input type="hidden" id="openic-arg-path"><input type="hidden" id="openic-arg-named">
     <input type="hidden" id="openic-arg-zone"><input type="hidden" id="openic-arg-variant"><input type="hidden" id="openic-arg-loc"><input type="hidden" id="openic-arg-tier">
+    <input type="hidden" id="openic-arg-root"><input type="hidden" id="openic-arg-name">
     <textarea id="openic-arg-text"></textarea>
     <input type="hidden" id="openic-msg-ext"><input type="hidden" id="openic-msg-me"><input type="hidden" id="openic-msg-say">
-    <input type="hidden" id="openic-msg-route"><textarea id="openic-msg-check"></textarea><textarea id="openic-msg-file"></textarea>
+    <input type="hidden" id="openic-msg-route"><textarea id="openic-msg-check"></textarea><textarea id="openic-msg-file"></textarea><textarea id="openic-msg-list"></textarea>
     <input type="hidden" id="openic-assets-got">
   </div>
 </div>
@@ -102,6 +118,7 @@
 <script src="js/openic-app.js"></script>
 <script src="js/openic-icons.js"></script>
 <script src="js/openic-game.js"></script>
+<script src="js/openic-browse.js"></script>
 <script src="data/spell-icons.js"></script>
 <script src="data/item-icons.js"></script>
 <script src="js/openic-selftest.js"></script>

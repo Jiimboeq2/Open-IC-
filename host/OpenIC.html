@@ -162,6 +162,22 @@
 #openic-root .oic-dialog .oic-dt { font-weight: bold; color: var(--accent-cyan); margin-bottom: 6px; font-size: 13px; }
 #openic-root .oic-dialog .oic-dm { white-space: pre-line; margin-bottom: 10px; }
 #openic-root .oic-dialog input { width: 100%; padding: 4px 6px; margin-bottom: 10px; }
+/* the file browser (openic-browse.js) */
+#openic-root .oic-dialog.oic-browse { width: 640px; }
+#openic-root .oic-br-roots { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 8px; }
+#openic-root .oic-br-root { padding: 3px 10px; border: 1px solid var(--border-med); border-radius: 12px; cursor: pointer; color: var(--text-secondary); }
+#openic-root .oic-br-root:hover { background: var(--tint-hover); color: var(--text-primary); }
+#openic-root .oic-br-root.oic-on { border-color: var(--accent-cyan); background: var(--tint-on); color: var(--accent-cyan); }
+#openic-root .oic-br-crumbs { margin: 0 0 6px; color: var(--text-secondary); }
+#openic-root .oic-br-gt { color: var(--text-secondary); }
+#openic-root .oic-br-list { height: 300px; overflow-y: auto; border: 1px solid var(--border-dark); border-radius: var(--radius); background: var(--bg-input); margin-bottom: 6px; }
+#openic-root .oic-br-item { display: flex; justify-content: space-between; gap: 10px; padding: 4px 10px; cursor: pointer; white-space: nowrap; }
+#openic-root .oic-br-item:hover { background: var(--tint-on); color: var(--accent-cyan); }
+#openic-root .oic-br-up { color: var(--text-secondary); }
+#openic-root .oic-br-size { color: var(--text-secondary); font-size: 11px; }
+#openic-root .oic-br-note { padding: 10px; color: var(--text-secondary); }
+#openic-root #openic-br-saverow input { margin-bottom: 0; flex: 1; }
+#openic-root .oic-br-typed { color: var(--text-secondary); margin-left: 12px; }
 #openic-toasts { position: absolute; right: 12px; bottom: 12px; z-index: 90; display: flex; flex-direction: column; gap: 6px; max-width: 420px; }
 #openic-toasts .oic-toast { padding: 8px 14px; border-radius: 4px; color: #fff; font: 12px "Segoe UI", Tahoma, Arial, sans-serif; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5); }
 #openic-toasts .oic-toast-ok { background: #123a5a; border: 1px solid #3b8fc4; }
@@ -202,20 +218,19 @@
     <span class="oic-ext" id="openic-ext"></span>
   </div>
   <div class="oic-bar">
-    <button class="oic-btn" data-oic="new-zone" title="A new OgreBot zone file: the steps the instance controller runs">New zone file</button>
-    <button class="oic-btn" data-oic="new-fight" title="A new OgreBot fight file: what the group does during one named's fight">New fight file</button>
-    <button class="oic-btn" data-oic="open" title="Open a zone file, a fight file or an ISXJQB instance file">Open...</button>
-    <button class="oic-btn oic-primary" data-oic="save" title="Save (Ctrl+S)">Save</button>
-    <button class="oic-btn" data-oic="save-as" title="Save under another name">Save as...</button>
+    <button class="oic-btn" data-oic="new" title="Start a new zone file (a whole run through one zone) or fight file (what the group does on one named)">New &#9662;</button>
+    <button class="oic-btn" data-oic="open" title="Open a zone file, a fight file or an ISXJQB instance file">Open</button>
+    <button class="oic-btn oic-primary" data-oic="save" title="Save the file where it came from (Ctrl+S)">Save</button>
+    <button class="oic-btn" data-oic="save-as" title="Save a copy: pick the folder and the name">Save as</button>
     <span class="oic-sep"></span>
-    <span class="oic-seg" id="openic-views"><span data-oic-view="flow" title="The file as a flowchart: drag boxes onto a + to move them">Flowchart</span><span data-oic-view="words" title="Every step in plain words">Words</span><span data-oic-view="json" title="The whole file as text">JSON</span><span data-oic-view="map" title="Every spot the file names, seen from above">Spots</span></span>
+    <span class="oic-seg" id="openic-views"><span data-oic-view="flow" title="The steps as boxes, in the order they run: click a box to change it, drag one onto a + to move it">Chart</span><span data-oic-view="words" title="Every step written out as a sentence">Plain English</span><span data-oic-view="json" title="The file exactly as Ogre reads it: change it here, then press Apply">File text</span><span data-oic-view="map" title="Every spot the file walks to, seen from above (in game, you are the square)">Map</span></span>
     <span class="oic-sep"></span>
-    <button class="oic-btn" id="openic-undo" data-oic="undo" title="Undo (Ctrl+Z)">Undo</button>
+    <button class="oic-btn" id="openic-undo" data-oic="undo" title="Undo the last change (Ctrl+Z)">Undo</button>
     <button class="oic-btn" id="openic-redo" data-oic="redo" title="Redo (Ctrl+Y)">Redo</button>
-    <button class="oic-btn" id="openic-checkbtn" data-oic="check" title="Check the file now; the list is under the chart">Check</button>
+    <button class="oic-btn" id="openic-checkbtn" data-oic="check" title="What would stop Ogre loading this file: click to see the list under the chart">Problems</button>
     <span class="oic-sep"></span>
-    <button class="oic-btn" data-oic="game" title="Reload in Ogre, run this zone file, and the ISXJQB and ISXADD extras">In game &#9662;</button>
-    <button class="oic-btn" id="openic-classbtn" data-oic="class" title="Your class and your group: your abilities show their own icons, another class shows its class icon">Class: any</button>
+    <button class="oic-btn" data-oic="game" title="Reload your files in Ogre, run or queue this zone file, start a fight's setup; ISXJQB and ISXADD extras">Use in game &#9662;</button>
+    <button class="oic-btn" id="openic-classbtn" data-oic="class" title="Whose ability icons to show: your class's abilities show their own icon, another class's show that class's icon">Icons: every class</button>
   </div>
   <div class="oic-main">
     <div class="oic-left">
@@ -235,6 +250,22 @@
     <pre id="openic-selftest"></pre>
   </div>
   <div class="oic-menu" id="openic-menu"></div>
+  <div class="oic-modal" id="openic-browse">
+    <div class="oic-dialog oic-browse">
+      <div class="oic-dt" id="openic-br-title">Open a file</div>
+      <div class="oic-br-roots" id="openic-br-roots"></div>
+      <div class="oic-br-crumbs" id="openic-br-crumbs"></div>
+      <div class="oic-br-list" id="openic-br-list"></div>
+      <div class="oic-row" id="openic-br-saverow"><span class="oic-note">Name</span><input type="text" id="openic-br-name" spellcheck="false"></div>
+      <div class="oic-row">
+        <span class="oic-link" data-oic="br:newfolder" id="openic-br-newfolder" title="Make a folder inside this one">New folder</span>
+        <span class="oic-link oic-br-typed" data-oic="br:typed" id="openic-br-typed" title="For a file outside these folders">Type a full path instead</span>
+        <span style="flex:1;"></span>
+        <button class="oic-btn" data-oic="br:cancel">Cancel</button>
+        <button class="oic-btn oic-primary" data-oic="br:save" id="openic-br-save">Save here</button>
+      </div>
+    </div>
+  </div>
   <div class="oic-modal" id="openic-modal">
     <div class="oic-dialog">
       <div class="oic-dt" id="openic-modal-title"></div>
@@ -250,9 +281,10 @@
   <div style="display:none;">
     <input type="hidden" id="openic-arg-kind"><input type="hidden" id="openic-arg-path"><input type="hidden" id="openic-arg-named">
     <input type="hidden" id="openic-arg-zone"><input type="hidden" id="openic-arg-variant"><input type="hidden" id="openic-arg-loc"><input type="hidden" id="openic-arg-tier">
+    <input type="hidden" id="openic-arg-root"><input type="hidden" id="openic-arg-name">
     <textarea id="openic-arg-text"></textarea>
     <input type="hidden" id="openic-msg-ext"><input type="hidden" id="openic-msg-me"><input type="hidden" id="openic-msg-say">
-    <input type="hidden" id="openic-msg-route"><textarea id="openic-msg-check"></textarea><textarea id="openic-msg-file"></textarea>
+    <input type="hidden" id="openic-msg-route"><textarea id="openic-msg-check"></textarea><textarea id="openic-msg-file"></textarea><textarea id="openic-msg-list"></textarea>
     <input type="hidden" id="openic-assets-got">
   </div>
 </div>
@@ -385,10 +417,10 @@
     G.ogreCall('cmd', 'Event[OpenIC_' + action + ']:Execute');
     return true;
   };
-  /* script -> page: "<seq>|<payload>" in an openic-msg-<channel> field. A file and Ogre's check come in pieces,
-     "<seq>|<k>/<n>|<piece>", joined here: one LavishScript command carries one piece (about 6,000 characters), never a
-     whole file -- a 33 KB argument in one command took a game client down. */
-  H.PIECED = { file: true, check: true };
+  /* script -> page: "<seq>|<payload>" in an openic-msg-<channel> field. A file, Ogre's check and a folder's listing
+     come in pieces, "<seq>|<k>/<n>|<piece>", joined here: one LavishScript command carries one piece (about 6,000
+     characters), never a whole file -- a 33 KB argument in one command took a game client down. */
+  H.PIECED = { file: true, check: true, list: true };
   var pieces = {};
   H.on = function (channel, fn) { (H.handlers[channel] = H.handlers[channel] || []).push(fn); };
   function deliver(channel, raw) {
@@ -410,7 +442,7 @@
     var L = H.handlers[channel] || [];
     for (var i = 0; i < L.length; i++) { try { L[i](payload); } catch (e) { H.toast('Could not read what the game sent (' + channel + '): ' + e.message, 'err'); } }
   }
-  H.CHANNELS = ['ext', 'me', 'file', 'say', 'route', 'check'];
+  H.CHANNELS = ['ext', 'me', 'file', 'say', 'route', 'check', 'list'];
   H.bind = function () {
     for (var i = 0; i < H.CHANNELS.length; i++) (function (ch) {
       var el = $('openic-msg-' + ch);
@@ -10638,6 +10670,7 @@
     var s = A.st;
     s.kind = kind; s.doc = doc; s.name = str(meta.name) || Z().fileName(doc); s.path = str(meta.path); s.gamePath = str(meta.gamePath);
     s.handle = meta.handle || null; s.saved = meta.fromDisk ? JSON.stringify(doc) : ''; s.undo = []; s.redo = []; s.sel = ''; s.route = null;
+    s.where = meta.where || null;
     s.fv = { z: 0.9, x: 10, y: 34, abicons: A.iconPref ? A.iconPref.abicons : true };
     s.ogre = null;
     if (kind === 'jb') { M().loadObj(doc, { path: s.path, fromDisk: !!meta.fromDisk }); M().select(null); }
@@ -10938,7 +10971,7 @@
     if (u) u.disabled = !s.undo.length;
     if (r) r.disabled = !s.redo.length;
     var c = Z().counts(s.probs), b = $('openic-checkbtn');
-    if (b) { b.textContent = s.doc ? (c.error ? c.error + ' problem' + (c.error === 1 ? '' : 's') : 'No problems') + (c.warn ? ', ' + c.warn + ' to check' : '') : 'Check'; b.className = 'oic-btn' + (c.error ? ' oic-bad' : (c.warn ? ' oic-warnb' : '')); }
+    if (b) { b.textContent = s.doc ? (c.error ? c.error + ' problem' + (c.error === 1 ? '' : 's') : 'No problems') + (c.warn ? ', ' + c.warn + ' to check' : '') : 'Problems'; b.className = 'oic-btn' + (c.error ? ' oic-bad' : (c.warn ? ' oic-warnb' : '')); }
     var segs = document.querySelectorAll('#openic-views [data-oic-view]');
     for (var i = 0; i < segs.length; i++) segs[i].className = segs[i].getAttribute('data-oic-view') === s.view ? 'oic-on' : '';
     var views = ['flow', 'words', 'json', 'map'];
@@ -11252,17 +11285,15 @@
     var at = A._lastMouse || null;
     setTimeout(function () { A.menu(at, items); }, 0);
   };
-  A.openMenu = function (btn) {
-    var items = [];
-    if (!H().inGame) {
-      items.push({ label: 'Open a file from this PC...', run: A.openLocal });
-    } else {
-      items.push({ label: 'Open a zone file (from IC\\custom)...', run: function () { A.openGame('zone'); } });
-      items.push({ label: 'Open a fight file (from Encounters\\custom)...', run: function () { A.openGame('fight'); } });
-      items.push({ label: 'Open an ISXJQB file (from Eq2JCommon)...', run: function () { A.openGame('jb'); } });
-      items.push({ label: 'Open by full path...', run: function () { A.openGame('full'); } });
-    }
-    A.menu(btn, items);
+  /* New: the two kinds of file Ogre reads, each said in a line */
+  A.newMenu = function (btn) {
+    A.menu(btn, [
+      { head: 'A new file' },
+      { label: 'Zone file - a whole run through one zone: walk, fight the nameds, loot, leave', run: A.newZone,
+        tip: 'Ogre\'s Instance Controller runs it, step by step; it goes in My zone files' },
+      { label: 'Fight file - what the group does during one named\'s fight', run: A.newFight,
+        tip: 'Ogre starts it by itself when the named is in range; it goes in My fight files' }
+    ]);
   };
 
   /* ------------------------------------------------------------ open and save */
@@ -11360,14 +11391,16 @@
     var menu = $('openic-menu');
     if (mi != null && menu && menu._items) { var it = menu._items[+mi]; A.closeMenu(); if (it && !it.off && it.run) it.run(); return; }
     if (v != null && A.onClickExtra && A.onClickExtra(v, t, menu)) return;
-    if (menu && menu.style.display === 'block' && !(v === 'open' || v === 'game')) A.closeMenu();
+    if (menu && menu.style.display === 'block' && !(v === 'new' || v === 'game')) A.closeMenu();
     if (v == null && rf != null) { A.select(rf); return; }
     if (v == null) return;
     var anchor = t;
     if (v === 'modal-ok' || v === 'modal-cancel') { H().modalDone(v === 'modal-ok'); return; }
-    if (v === 'new-zone') A.newZone();
+    if (v.indexOf('br:') === 0) { if (A.browseClick) A.browseClick(v.slice(3)); return; }
+    if (v === 'new') { if (menu && menu.style.display === 'block') A.closeMenu(); else A.newMenu(anchor); }
+    else if (v === 'new-zone') A.newZone();
     else if (v === 'new-fight') A.newFight();
-    else if (v === 'open') { if (menu && menu.style.display === 'block') A.closeMenu(); else A.openMenu(anchor); }
+    else if (v === 'open') { if (H().inGame) A.browse('open'); else A.openLocal(); }
     else if (v === 'save') A.save(false);
     else if (v === 'save-as') A.save(true);
     else if (v === 'undo') A.undo();
@@ -11408,6 +11441,7 @@
     });
     document.addEventListener('keydown', function (e) {
       if (e.target && e.target.id === 'openic-modal-input' && (e.key === 'Enter' || e.key === 'Escape')) { e.preventDefault(); H().modalDone(e.key === 'Enter'); return; }
+      if (e.target && e.target.id === 'openic-br-name' && (e.key === 'Enter' || e.key === 'Escape')) { e.preventDefault(); A.browseClick(e.key === 'Enter' ? 'save' : 'cancel'); return; }
       if (!(e.ctrlKey || e.metaKey)) return;
       var tag = e.target && e.target.tagName, inText = tag === 'TEXTAREA' || tag === 'INPUT';
       var k = String(e.key || '').toLowerCase();
@@ -11539,7 +11573,7 @@
   /* ------------------------------------------------------------ the class picker */
   A.classLabel = function () {
     var mine = A.myClass(), n = A.iconPref.group.length;
-    return 'Class: ' + (mine ? cap(mine) + (A.iconPref.myClass ? '' : ' (in game)') : 'any') + (n ? ' +' + n : '');
+    return 'Icons: ' + (mine ? cap(mine) + (A.iconPref.myClass ? '' : ' (you)') : 'every class') + (n ? ' +' + n : '');
   };
   A.renderClassButton = function () { var b = $('openic-classbtn'); if (b) b.textContent = A.classLabel(); };
   A.classMenu = function (anchor) {
@@ -11652,16 +11686,12 @@
     H().showLine(line, 'type it in the InnerSpace console (the page is not in game)');
     H().toast('In a browser: the console line is under the checks.');
   };
+  /* an action that needs the file where Ogre or ISXJQB reads it (queue, run): the place it was saved; never typed */
   A.withGamePath = function (kind, cb) {
-    var s = A.st, def = s.gamePath || (kind === 'fight' ? Z().fightFolder(s.doc) + '/' + Z().fileName(s.doc) : (kind === 'jb' ? 'JB/Instances/' + s.name : Z().fileName(s.doc)));
-    var where = kind === 'zone' ? 'inside Scripts\\OgreSave\\EQ2\\IC\\custom, with / between folders' : (kind === 'fight' ? 'inside Scripts\\OgreSave\\EQ2\\Encounters\\custom' : 'inside Scripts\\Eq2JCommon, or a full path');
-    H().prompt('The file in game', 'Its path ' + where + ':', def, function (v) {
-      if (v == null || !str(v).trim()) return;
-      if (str(v).indexOf('..') >= 0) { H().toast('A path cannot climb out of its folder (..).', 'warn'); return; }
-      s.gamePath = str(v).trim().replace(/\\/g, '/');
-      A.renderHead();
-      cb(s.gamePath);
-    });
+    var s = A.st;
+    if (s.gamePath && !A.dirty()) { cb(s.gamePath); return; }
+    H().toast(s.gamePath ? 'Save it first: Ogre reads the file as saved.' : 'Save it in ' + (kind === 'fight' ? 'My fight files' : (kind === 'jb' ? 'ISXJQB instance files' : 'My zone files')) +
+      ' first (Save as), then try again.', 'warn');
   };
   A.routePreview = function () {
     var s = A.st, st = s.sel ? A.at(s.sel) : null, p = null;
@@ -11681,6 +11711,8 @@
   A.tierPath = function () {
     var s = A.st;
     if (!s.doc || A.dirty()) return null;
+    var R = s.where && A.rootOf ? A.rootOf(s.where.root) : null;
+    if (R && R.kind === s.kind && R.kind !== 'jb') return { tier: R.write ? 'custom' : 'default', path: s.where.rel };
     if (s.gamePath) return { tier: 'custom', path: s.gamePath };
     var dir = s.kind === 'fight' ? 'Encounters' : 'IC';
     var m = new RegExp('/Scripts/(Ogre/EQ2/' + dir + '/default|OgreSave/EQ2/' + dir + '/custom)/(.+)$', 'i').exec(str(s.path).replace(/\\/g, '/'));
@@ -11747,24 +11779,45 @@
       H().call('Open', { kind: kind, path: A._opening.path });
     });
   };
+  /* Save goes back where the file came from when that is one of my folders; Save as, or a file of Ogre's own, picks
+     the place in the file browser (openic-browse.js) */
   A.saveGame = function (as) {
-    var s = A.st, go = function (p) {
-      H().set('openic-arg-text', JSON.stringify(s.doc));
-      A._saving = JSON.stringify(s.doc);
-      H().call('Save', { kind: s.kind === 'jb' ? 'jb' : s.kind, path: p });
-    };
-    if (s.gamePath && !as) go(s.gamePath); else A.withGamePath(s.kind, go);
+    var s = A.st;
+    if (s.gamePath && !as) A.saveTo(s.gamePath, s.where || null);
+    else A.browse('save');
+  };
+  /* gamePath: the script's path for the file's kind; where: the browser's folder and path, kept once it is saved */
+  A.saveTo = function (gamePath, where) {
+    var s = A.st;
+    H().set('openic-arg-text', JSON.stringify(s.doc));
+    A._saving = JSON.stringify(s.doc);
+    A._savingTo = { gamePath: gamePath, where: where };
+    H().call('Save', { kind: s.kind === 'jb' ? 'jb' : s.kind, path: gamePath });
   };
 
   /* ------------------------------------------------------------ messages from the game */
   A.bindGame = function () {
     var h = H();
     h.on('file', function (p) {
-      var o = A._opening || {};
+      var o = A._opening || {}, R = o.root && A.rootOf ? A.rootOf(o.root) : null;
       A._opening = null;
-      if (A.loadText(p, { name: str(o.path).split('/').pop(), gamePath: o.kind === 'full' ? '' : o.path, path: o.path, fromDisk: true })) H().toast('Opened ' + (o.path || 'the file') + '.');
+      /* from the file browser: Save goes back there only for my own folders (Ogre's are read only) */
+      var gamePath = o.kind === 'full' ? '' : (R ? (R.write ? o.path : '') : o.path);
+      if (A.loadText(p, { name: str(o.path).split('/').pop(), gamePath: gamePath, path: R ? R.label + '/' + o.rel : o.path, fromDisk: true })) {
+        A.st.where = R ? { root: R.id, rel: o.rel } : null;
+        A.renderHead();
+        H().toast('Opened ' + (R ? R.label + ': ' + o.rel : (o.path || 'the file')) + (R && !R.write ? ' (Ogre\'s own: Save as makes your copy)' : '') + '.');
+      }
     });
-    h.on('say', function (p) { if (/^ok:saved/.test(p) && A._saving) { A.st.saved = A._saving; A._saving = null; A.renderHead(); } });
+    h.on('say', function (p) {
+      if (/^ok:saved/.test(p) && A._saving) {
+        A.st.saved = A._saving; A._saving = null;
+        if (A._savingTo) { A.st.gamePath = A._savingTo.gamePath; if (A._savingTo.where) A.st.where = A._savingTo.where; A._savingTo = null; }
+        A.renderHead();
+      }
+      if (A._afterMkdir && /^(ok:folder made|err:)/.test(p) && A.onMkdirSaid) A.onMkdirSaid(/^ok:/.test(p));
+    });
+    h.on('list', function (p) { if (A.onList) A.onList(p); });
     h.on('check', function (p) { A.ogreResult(p); });
     h.on('route', function (p) {
       var pts = str(p).split(';').map(function (t) { return t.split(',').map(Number); }).filter(function (q) { return q.length === 3 && q.every(isFinite); });
@@ -11778,6 +11831,199 @@
       if (A.gameClass && me && me.subclass) A.gameClass(me.subclass);
       if (A.st.view === 'map') A.renderMap();
     };
+  };
+})(typeof window !== 'undefined' ? window : this);
+
+})(OpenIC_LIB, OpenIC_LIB.document, OpenIC_LIB.setInterval, OpenIC_LIB.IC.host.shims.sendCommand, OpenIC_LIB.IC.host.shims.requestFileWith, OpenIC_LIB.IC.host.shims.requestDirWith, OpenIC_LIB.IC.host.shims.lazyLoadJS, OpenIC_LIB.IC.host.shims.colToast, OpenIC_LIB.IC.host.shims.jbAlert, OpenIC_LIB.IC.host.shims.jbConfirm, OpenIC_LIB.IC.host.shims.jbPrompt, OpenIC_LIB.IC.host.shims.invItemIcon, OpenIC_LIB.IC.host.shims.jbClassIcon, OpenIC_LIB.IC.host.shims.escHtml, OpenIC_LIB.IC.host.shims.escJs, OpenIC_LIB.IC.host.shims.unescJs, OpenIC_LIB.IC.host.shims.jbTipAttr, OpenIC_LIB.IC.host.shims.jbDispName, OpenIC_LIB.IC.host.shims._getPos, OpenIC_LIB.IC.host.shims._getTarget, OpenIC_LIB.IC.host.shims.jbDropdown, OpenIC_LIB.IC.host.shims.jbVal, OpenIC_LIB.IC.host.shims.jbSetVal, OpenIC_LIB.IC.host.shims.jbSetOptions);
+</script>
+<script>
+(function (window, document, setInterval, sendCommand, requestFileWith, requestDirWith, lazyLoadJS, colToast, jbAlert, jbConfirm, jbPrompt, invItemIcon, jbClassIcon, escHtml, escJs, unescJs, jbTipAttr, jbDispName, _getPos, _getTarget, jbDropdown, jbVal, jbSetVal, jbSetOptions) {
+/* Open IC Creator - openic-browse.js
+   In game, Open and Save as work like a file window: the folders Ogre and ISXJQB read (my zone files, my fight files,
+   Ogre's own, ISXJQB's instance files), their sub-folders and .json files, listed by host/OpenIC.iss (List). A click
+   goes into a folder or opens a file; Save as picks the folder and takes a name; New folder makes one (MkDir). In a
+   browser the PC's own file window is used instead (openic-app.js).
+   MIT License, see LICENSE. */
+(function (root) {
+  var IC = root.IC = root.IC || {};
+  var A = IC.app = IC.app || {};
+
+  function H() { return IC.host; }
+  function Z() { return IC.oic; }
+  function str(v) { return v == null ? '' : String(v); }
+  function esc(s) { return str(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function $(id) { return typeof document !== 'undefined' ? document.getElementById(id) : null; }
+
+  /* the folders, inside InnerSpace's Scripts folder. script: the kind OpenIC.iss opens and saves with; prefix: what the
+     script's path for that kind starts with (ISXJQB's files are found from Eq2JCommon) */
+  A.ROOTS = [
+    { id: 'zone', label: 'My zone files', dir: 'OgreSave\\EQ2\\IC\\custom', kind: 'zone', script: 'zone', prefix: '', write: true,
+      tip: 'Your own zone files: Ogre reads every .json in here, in any folder' },
+    { id: 'fight', label: 'My fight files', dir: 'OgreSave\\EQ2\\Encounters\\custom', kind: 'fight', script: 'fight', prefix: '', write: true,
+      tip: 'Your own fight files. One at the same path as a shipped one (<Expansion>\\<Zone>\\<Named>.json) is laid over it' },
+    { id: 'ozone', label: 'Ogre\'s zone files', dir: 'Ogre\\EQ2\\IC\\default', kind: 'zone', script: 'ozone', prefix: '', write: false,
+      tip: 'The zone files Ogre ships: read only, Ogre\'s updates replace them. Save as puts your copy in My zone files' },
+    { id: 'ofight', label: 'Ogre\'s fight files', dir: 'Ogre\\EQ2\\Encounters\\default', kind: 'fight', script: 'ofight', prefix: '', write: false,
+      tip: 'The fight files Ogre ships: read only. Save as puts your copy at the same path in My fight files, where Ogre lays it over the shipped one' },
+    { id: 'jb', label: 'ISXJQB instance files', dir: 'Eq2JCommon\\JB\\Instances', kind: 'jb', script: 'jb', prefix: 'JB/Instances/', write: true,
+      tip: 'ISXJQB\'s own instance files' }
+  ];
+  A.rootOf = function (id) {
+    for (var i = 0; i < A.ROOTS.length; i++) if (A.ROOTS[i].id === id) return A.ROOTS[i];
+    return null;
+  };
+  /* the browser's state: mode open | save, the folder shown, what the script sent for it */
+  A.br = { mode: 'open', root: 'zone', path: '', list: null, waiting: false };
+
+  /* a Windows file or folder name: no path parts, none of \ / : * ? " < > |, not . or .. */
+  A.okName = function (n) { n = str(n).trim(); return !!n && n !== '.' && n !== '..' && !/[\\\/:*?"<>|]/.test(n); };
+
+  /* open the browser. Save: the folders of the open file's kind, starting where the file is, or for Ogre's own file at
+     the same path in my folder (Ogre's override place for a fight file) */
+  A.browse = function (mode) {
+    var b = A.br, s = A.st;
+    b.mode = mode === 'save' ? 'save' : 'open';
+    b.list = null;
+    if (b.mode === 'save') {
+      var w = s.where || null, R = w ? A.rootOf(w.root) : null;
+      if (R && R.write && R.kind === s.kind) { b.root = R.id; b.path = A.dirOf(w.rel); }
+      else if (R && !R.write) { b.root = R.kind === 'fight' ? 'fight' : 'zone'; b.path = A.dirOf(w.rel); }
+      else { b.root = s.kind === 'fight' ? 'fight' : (s.kind === 'jb' ? 'jb' : 'zone'); b.path = ''; }
+      var nm = $('openic-br-name');
+      if (nm) nm.value = (w && w.rel ? w.rel.split('/').pop() : '') || s.name || Z().fileName(s.doc);
+    } else if (!A.rootOf(b.root)) { b.root = 'zone'; b.path = ''; }
+    var m = $('openic-browse');
+    if (m) m.style.display = 'flex';
+    A.browseList(b.root, b.path);
+  };
+  A.closeBrowse = function () { var m = $('openic-browse'); if (m) m.style.display = 'none'; A.br.waiting = false; };
+  A.dirOf = function (rel) { var p = str(rel).split('/'); p.pop(); return p.join('/'); };
+
+  /* ask the script for one folder; its answer comes on the list channel (A.onList) */
+  A.browseList = function (rootId, path) {
+    var b = A.br;
+    b.root = rootId; b.path = str(path).replace(/^\/+|\/+$/g, ''); b.list = null; b.waiting = true;
+    A.renderBrowse();
+    H().call('List', { root: b.root, path: b.path });
+  };
+  /* "<root>|<path>|<1|0>" then ">D|<folder>" and ">F|<file>|<bytes>" */
+  A.onList = function (payload) {
+    var parts = str(payload).split('>'), head = parts[0].split('|'), b = A.br;
+    if (head[0] !== b.root || head[1] !== b.path) return;
+    var dirs = [], files = [];
+    for (var i = 1; i < parts.length; i++) {
+      var f = parts[i].split('|');
+      if (f[0] === 'D' && f[1]) dirs.push(f[1]);
+      else if (f[0] === 'F' && f[1]) files.push({ name: f[1], size: +f[2] || 0 });
+    }
+    var by = function (a, c) { a = str(a.name || a).toLowerCase(); c = str(c.name || c).toLowerCase(); return a < c ? -1 : (a > c ? 1 : 0); };
+    dirs.sort(by); files.sort(by);
+    b.list = { exists: head[2] === '1', dirs: dirs, files: files };
+    b.waiting = false;
+    A.renderBrowse();
+  };
+
+  A.renderBrowse = function () {
+    var b = A.br, R = A.rootOf(b.root), save = b.mode === 'save', s = A.st;
+    var t = $('openic-br-title');
+    if (t) t.textContent = save ? 'Save as' : 'Open a file';
+    var rh = '';
+    for (var i = 0; i < A.ROOTS.length; i++) {
+      var r = A.ROOTS[i];
+      if (save && (!r.write || r.kind !== (s.kind === 'jb' ? 'jb' : s.kind))) continue;
+      rh += '<span class="oic-br-root' + (r.id === b.root ? ' oic-on' : '') + '" data-oic="br:root:' + r.id + '" title="' + esc(r.tip) + '">' + esc(r.label) + '</span>';
+    }
+    var roots = $('openic-br-roots');
+    if (roots) roots.innerHTML = rh;
+    var segs = b.path ? b.path.split('/') : [], ch = '<span class="oic-link" data-oic="br:crumb:0" title="' + esc('Scripts\\' + (R ? R.dir : '')) + '">' + esc(R ? R.label : '') + '</span>';
+    for (var j = 0; j < segs.length; j++) ch += ' <span class="oic-br-gt">&#8250;</span> <span class="oic-link" data-oic="br:crumb:' + (j + 1) + '">' + esc(segs[j]) + '</span>';
+    var crumbs = $('openic-br-crumbs');
+    if (crumbs) crumbs.innerHTML = ch;
+    var h = '';
+    if (b.path) h += '<div class="oic-br-item oic-br-up" data-oic="br:up"><span>&#8593; Up one folder</span></div>';
+    if (b.waiting) h += '<div class="oic-br-note">Reading the folder...</div>';
+    else if (!b.list) h += '<div class="oic-br-note">No answer from the game.</div>';
+    else if (!b.list.exists) h += '<div class="oic-br-note">This folder is not there yet.' + (save && R && R.write ? ' <span class="oic-link" data-oic="br:makehere">Make it</span>' : '') + '</div>';
+    else {
+      for (var d = 0; d < b.list.dirs.length; d++) {
+        h += '<div class="oic-br-item" data-oic="br:dir:' + esc(b.list.dirs[d]) + '"><span>&#128193; ' + esc(b.list.dirs[d]) + '</span></div>';
+      }
+      for (var f = 0; f < b.list.files.length; f++) {
+        var fl = b.list.files[f];
+        h += '<div class="oic-br-item oic-br-file" data-oic="br:file:' + esc(fl.name) + '" title="' + (save ? 'Use this name (it will be replaced)' : 'Open it') + '">' +
+          '<span>&#128196; ' + esc(fl.name) + '</span><span class="oic-br-size">' + Math.max(1, Math.round(fl.size / 1024)) + ' KB</span></div>';
+      }
+      if (!b.list.dirs.length && !b.list.files.length) h += '<div class="oic-br-note">No folders or .json files here.</div>';
+    }
+    var list = $('openic-br-list');
+    if (list) list.innerHTML = h;
+    var sr = $('openic-br-saverow'), sb = $('openic-br-save'), nf = $('openic-br-newfolder'), ty = $('openic-br-typed');
+    if (sr) sr.style.display = save ? '' : 'none';
+    if (sb) sb.style.display = save ? '' : 'none';
+    if (nf) nf.style.display = R && R.write && b.list && b.list.exists ? '' : 'none';
+    if (ty) ty.style.display = save ? 'none' : '';
+  };
+
+  /* the browser's clicks: br:<what> (openic-app.js A.onClick hands them here) */
+  A.browseClick = function (v) {
+    var b = A.br, m;
+    if (v === 'cancel') { A.closeBrowse(); return; }
+    if (v === 'up') { A.browseList(b.root, A.dirOf(b.path)); return; }
+    if ((m = /^root:(\w+)$/.exec(v))) { A.browseList(m[1], ''); return; }
+    if ((m = /^crumb:(\d+)$/.exec(v))) { A.browseList(b.root, (b.path ? b.path.split('/') : []).slice(0, +m[1]).join('/')); return; }
+    if ((m = /^dir:(.+)$/.exec(v))) { A.browseList(b.root, (b.path ? b.path + '/' : '') + m[1]); return; }
+    if ((m = /^file:(.+)$/.exec(v))) {
+      if (b.mode === 'save') { var nm = $('openic-br-name'); if (nm) nm.value = m[1]; return; }
+      A.browseOpen(m[1]);
+      return;
+    }
+    if (v === 'save') { A.browseSave(); return; }
+    if (v === 'newfolder') {
+      H().prompt('New folder', 'The new folder\'s name (inside ' + (b.path || A.rootOf(b.root).label) + '):', '', function (n) {
+        if (n == null) return;
+        if (!A.okName(n)) { H().toast('A folder name cannot hold \\ / : * ? " < > |', 'warn'); return; }
+        A.br.waiting = 'mkdir';
+        H().call('MkDir', { root: b.root, path: b.path, name: str(n).trim() });
+        A._afterMkdir = { root: b.root, path: (b.path ? b.path + '/' : '') + str(n).trim() };
+      });
+      return;
+    }
+    if (v === 'makehere') {
+      A.br.waiting = 'mkdir';
+      H().call('MkDir', { root: b.root, path: b.path, name: '' });
+      A._afterMkdir = { root: b.root, path: b.path };
+      return;
+    }
+    if (v === 'typed') { A.closeBrowse(); A.openGame('full'); return; }
+  };
+  /* after New folder: the script said how it went; show the new folder */
+  A.onMkdirSaid = function (ok) {
+    var to = A._afterMkdir;
+    A._afterMkdir = null;
+    if (!to) return;
+    if (ok) A.browseList(to.root, to.path); else A.browseList(A.br.root, A.br.path);
+  };
+
+  A.browseOpen = function (name) {
+    var b = A.br, R = A.rootOf(b.root), rel = (b.path ? b.path + '/' : '') + name;
+    var go = function () {
+      A.closeBrowse();
+      A._opening = { kind: R.script, path: R.prefix + rel, root: R.id, rel: rel };
+      H().call('Open', { kind: R.script, path: R.prefix + rel });
+    };
+    if (A.dirty()) H().confirm('Leave this file?', 'It has changes that are not saved.', function (y) { if (y) go(); }); else go();
+  };
+  A.browseSave = function () {
+    var b = A.br, R = A.rootOf(b.root), nm = $('openic-br-name'), name = str(nm && nm.value).trim();
+    if (!R || !R.write) { H().toast('Ogre\'s own folders are read only: pick one of yours.', 'warn'); return; }
+    if (!b.list || !b.list.exists) { H().toast('This folder is not there yet: make it first.', 'warn'); return; }
+    if (!/\.json$/i.test(name)) name += '.json';
+    if (!A.okName(name)) { H().toast('A file name cannot hold \\ / : * ? " < > |', 'warn'); return; }
+    var rel = (b.path ? b.path + '/' : '') + name, there = false;
+    for (var i = 0; i < b.list.files.length; i++) if (b.list.files[i].name.toLowerCase() === name.toLowerCase()) there = true;
+    var go = function () { A.closeBrowse(); A.saveTo(R.prefix + rel, { root: R.id, rel: rel }); };
+    if (there) H().confirm('Replace it?', name + ' is already in this folder. Replace it with this file?', function (y) { if (y) go(); });
+    else go();
   };
 })(typeof window !== 'undefined' ? window : this);
 
@@ -11931,6 +12177,31 @@
       ok(s.doc.steps.length === 1 && s.doc.steps[0]['do'] === 'zoneOut', 'zoneOut');
       ok(A.dirty(), 'a new file is not saved');
       ok(Z.fileName(s.doc) === 'Another_Zone_Solo.json', 'file name: ' + Z.fileName(s.doc));
+    });
+    test('in game, Open and Save as use the file browser', function () {
+      if (!H.inGame) { ok(typeof A.openLocal === 'function', 'a browser: the PC\'s own file window'); return; }
+      A.load(clone(A.SAMPLES.zone), { name: 'sample.json', fromDisk: true });
+      var $ = function (id) { return document.getElementById(id); };
+      A.browse('open');
+      ok(/Event\[OpenIC_List\]:Execute/.test(sent[sent.length - 1]) && $('openic-arg-root').value === 'zone', 'it asks for My zone files');
+      ok($('openic-browse').style.display === 'flex', 'the browser shows');
+      ok(/Sample Expansion/.test($('openic-br-list').textContent) && /sample\.json/.test($('openic-br-list').textContent), 'the folders and files are listed');
+      A.browseClick('dir:Sample Expansion');
+      ok($('openic-arg-path').value === 'Sample Expansion' && /inner\.json/.test($('openic-br-list').textContent), 'a folder click lists that folder');
+      ok(/Up one folder/.test($('openic-br-list').textContent), 'with a way back up');
+      A.browseClick('file:inner.json');
+      ok(/Event\[OpenIC_Open\]:Execute/.test(sent[sent.length - 1]) && $('openic-arg-kind').value === 'zone' && $('openic-arg-path').value === 'Sample Expansion/inner.json',
+        'a file click opens it from My zone files');
+      ok($('openic-browse').style.display === 'none', 'and the browser closes');
+      A.browse('open');
+      A.browseClick('root:ofight');
+      ok($('openic-arg-root').value === 'ofight' && !$('openic-br-newfolder').offsetParent, 'Ogre\'s fight files are listed, read only (no New folder)');
+      A.closeBrowse();
+      A.load(clone(A.SAMPLES.zone), { name: 'sample.json', fromDisk: false });
+      A.save(true);
+      ok($('openic-browse').style.display === 'flex' && $('openic-br-title').textContent === 'Save as' && $('openic-br-name').value !== '', 'Save as picks the folder and the name');
+      ok(/My zone files/.test($('openic-br-roots').textContent) && !/Ogre's/.test($('openic-br-roots').textContent), 'only my own folders take a save');
+      A.closeBrowse();
     });
     test('game actions: the bridge in game, the console line in a browser', function () {
       A.load(clone(A.SAMPLES.zone), { name: 'sample.json', fromDisk: true });

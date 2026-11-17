@@ -27,7 +27,8 @@ Loaded by the page (`creator/index.html`, in this order; in `creator/js` unless 
 | `openic-zone.js` | `IC.oic` | Native files: kind, new files, the zone graph, words, the checks, the palette, file names, quest lines. |
 | `openic-app.js` | `IC.app` | The page itself. |
 | `openic-icons.js` | `IC.app` | Game icons: the Class button, my class and my group, the Ability icons switch, the picture a box or chip gets. |
-| `openic-game.js` | `IC.app` | The In game menu: the console line in a browser, the bridge in game, Ogre's own check. |
+| `openic-game.js` | `IC.app` | The Use in game menu: the console line in a browser, the bridge in game, Ogre's own check. |
+| `openic-browse.js` | `IC.app` | In game, the file window of Open and Save as: the folders Ogre and ISXJQB read, their folders and files, New folder. |
 | `creator/data/spell-icons.js` | `IC.iconData` | The ability list: name, icon, backdrop, classes (built by `tools/build-icon-data.js`). |
 | `creator/data/item-icons.js` | `IC.iconData` | Item names to their pictures in `creator/assets/item_atlases`. |
 | `openic-selftest.js` | `IC.app.selftest` | The self test (`index.html#selftest`). |
@@ -111,13 +112,24 @@ Ogre's windows share.
 
 Page to script: the page sets hidden fields `openic-arg-<name>` with `ogreUISet('openic', id, value)`, then calls
 `ogreCall('cmd', 'Event[OpenIC_<Action>]:Execute')`. Actions: `Hello`, `Reload`, `Check`, `Open`, `Save`, `Queue`,
-`Run`, `SetUp`, `JbRun`, `JbQueue`, `Route`. Fields: `kind`, `path`, `text` (the file's JSON in one line, for
-`Save`), `tier` (`default` or `custom`, for `Check`), `named`, `zone`, `variant`, `loc`.
+`Run`, `SetUp`, `JbRun`, `JbQueue`, `Route`, `List`, `MkDir`. Fields: `kind`, `path`, `text` (the file's JSON in one
+line, for `Save`), `tier` (`default` or `custom`, for `Check`), `root` and `name` (the file window's folder and a new
+folder's name, for `List` and `MkDir`), `named`, `zone`, `variant`, `loc`.
 
 Script to page: `ISXOgreX.UI:Set[openic,openic-msg-<channel>,"<n>|<text>"]`, which fires the field's change event.
 Channels: `ext` (which extensions are loaded, and `check` / `fcheck`: whether this Ogre has its own file check),
 `me` (`x,y,z|zone|target|class`), `file` (an opened file's JSON), `say` (`ok:` / `warn:` / `err:` and a message),
-`route` (`x,y,z;x,y,z;...`), `check` (Ogre's `Validation` JSON: `ok`, `errors`, `warnings`, `issues`).
+`route` (`x,y,z;x,y,z;...`), `check` (Ogre's `Validation` JSON: `ok`, `errors`, `warnings`, `issues`), `list` (one
+folder: `<root>|<path>|<1 = there>` then `>D|<folder>` and `>F|<file>|<bytes>`; a Windows name holds neither `|` nor
+`>`).
+
+The file window's folders (`root`), inside InnerSpace's Scripts folder: `zone` OgreSave\EQ2\IC\custom, `fight`
+OgreSave\EQ2\Encounters\custom, `ozone` Ogre\EQ2\IC\default and `ofight` Ogre\EQ2\Encounters\default (Ogre's own:
+read only, never written, no New folder), `jb` Eq2JCommon\JB\Instances. The script lists with LavishScript's
+`filelist` (`GetDirectories["<folder>/\*"]`, `GetFiles["<folder>/\*.json"]`) and makes folders with
+`filepath:MakeSubdirectory`. Two LavishScript traps, both met here: a slash and a star together start a comment even
+inside quotes (so `/\*`), and a function's variables are set up when it starts (a `filepath` declared below a line
+that changes its path keeps the old path: `OpenIC.DirThere` takes the finished path as an argument).
 
 Big text crosses in pieces. A field's value reaches the game whole, but the LavishScript command that uses it
 carries every character, and one command of 33 KB took a game client down. So no command carries more than
