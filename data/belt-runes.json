@@ -1,0 +1,1472 @@
+{
+ "about": "Belt immunity runes: the type each one gives (OgreBot swaps by type: Stun, Stifle, Mez, Fear, Medic), from the isxjhub census and the Descent to Val'Zyroth beta list. A rune's type is the end of its name.",
+ "gen": "2026-11-17T20:20:35Z",
+ "source": "isxjhub census (items, dtv_beta_items)",
+ "types": [
+  {
+   "type": "Stun",
+   "rune": "Adamant Defiance"
+  },
+  {
+   "type": "Stifle",
+   "rune": "Adamant Resolve"
+  },
+  {
+   "type": "Mez",
+   "rune": "Astral Dominion"
+  },
+  {
+   "type": "Fear",
+   "rune": "Blinding Gleam"
+  },
+  {
+   "type": "Medic",
+   "rune": "Field Medic"
+  }
+ ],
+ "runes": [
+  {
+   "name": "Corathus Immunity Rune: Blinding Gleam [Tier 1]",
+   "type": "Fear",
+   "family": "Corathus",
+   "tier": 1,
+   "level": null,
+   "rarity": null,
+   "ids": [],
+   "icon": null,
+   "src": "dtv-beta"
+  },
+  {
+   "name": "Corathus Rune: Genesis Field Medic",
+   "type": "Medic",
+   "family": "Corathus",
+   "tier": null,
+   "level": null,
+   "rarity": null,
+   "ids": [],
+   "icon": null,
+   "src": "dtv-beta"
+  },
+  {
+   "name": "Corathus Immunity Rune: Astral Dominion [Tier 1]",
+   "type": "Mez",
+   "family": "Corathus",
+   "tier": 1,
+   "level": null,
+   "rarity": null,
+   "ids": [],
+   "icon": null,
+   "src": "dtv-beta"
+  },
+  {
+   "name": "Corathus Immunity Rune: Adamant Resolve [Tier 1]",
+   "type": "Stifle",
+   "family": "Corathus",
+   "tier": 1,
+   "level": null,
+   "rarity": null,
+   "ids": [],
+   "icon": null,
+   "src": "dtv-beta"
+  },
+  {
+   "name": "Corathus Immunity Rune: Adamant Defiance [Tier 1]",
+   "type": "Stun",
+   "family": "Corathus",
+   "tier": 1,
+   "level": null,
+   "rarity": null,
+   "ids": [],
+   "icon": null,
+   "src": "dtv-beta"
+  },
+  {
+   "name": "Tishan's Corathus Rune: Blinding Gleam [Tier 0]",
+   "type": "Fear",
+   "family": "Tishan's Corathus",
+   "tier": 0,
+   "level": null,
+   "rarity": null,
+   "ids": [],
+   "icon": null,
+   "src": "dtv-beta"
+  },
+  {
+   "name": "Tishan's Corathus Rune: Astral Dominion [Tier 0]",
+   "type": "Mez",
+   "family": "Tishan's Corathus",
+   "tier": 0,
+   "level": null,
+   "rarity": null,
+   "ids": [],
+   "icon": null,
+   "src": "dtv-beta"
+  },
+  {
+   "name": "Tishan's Corathus Rune: Adamant Resolve [Tier 0]",
+   "type": "Stifle",
+   "family": "Tishan's Corathus",
+   "tier": 0,
+   "level": null,
+   "rarity": null,
+   "ids": [],
+   "icon": null,
+   "src": "dtv-beta"
+  },
+  {
+   "name": "Formless Immunity Rune: Blinding Gleam [Tier 2]",
+   "type": "Fear",
+   "family": "Formless",
+   "tier": 2,
+   "level": 135,
+   "rarity": "Legendary",
+   "ids": [
+    196846249,
+    4154341017
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Formless Immunity Rune: Blinding Gleam [Tier 3]",
+   "type": "Fear",
+   "family": "Formless",
+   "tier": 3,
+   "level": 135,
+   "rarity": "Legendary",
+   "ids": [
+    1353454524
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Formless Rune: Moraine Field Medic",
+   "type": "Medic",
+   "family": "Formless",
+   "tier": null,
+   "level": 135,
+   "rarity": "Mastercrafted Fabled",
+   "ids": [
+    1531613514
+   ],
+   "icon": 3884,
+   "src": "census"
+  },
+  {
+   "name": "Formless Rune: Unbearable Field Medic",
+   "type": "Medic",
+   "family": "Formless",
+   "tier": null,
+   "level": 135,
+   "rarity": "Mastercrafted Legendary",
+   "ids": [
+    1526688855
+   ],
+   "icon": 3884,
+   "src": "census"
+  },
+  {
+   "name": "Formless Rune: Unfeeling Field Medic",
+   "type": "Medic",
+   "family": "Formless",
+   "tier": null,
+   "level": 135,
+   "rarity": "Mastercrafted Legendary",
+   "ids": [
+    1478585200
+   ],
+   "icon": 3884,
+   "src": "census"
+  },
+  {
+   "name": "Formless Rune: Unthinkable Field Medic",
+   "type": "Medic",
+   "family": "Formless",
+   "tier": null,
+   "level": 135,
+   "rarity": "Treasured",
+   "ids": [
+    1502910061
+   ],
+   "icon": 3884,
+   "src": "census"
+  },
+  {
+   "name": "Formless Immunity Rune: Astral Dominion [Tier 2]",
+   "type": "Mez",
+   "family": "Formless",
+   "tier": 2,
+   "level": 135,
+   "rarity": "Legendary",
+   "ids": [
+    265560841,
+    442025926
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Formless Immunity Rune: Astral Dominion [Tier 3]",
+   "type": "Mez",
+   "family": "Formless",
+   "tier": 3,
+   "level": 135,
+   "rarity": "Legendary",
+   "ids": [
+    1111237486
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Formless Immunity Rune: Adamant Resolve [Tier 2]",
+   "type": "Stifle",
+   "family": "Formless",
+   "tier": 2,
+   "level": 135,
+   "rarity": "Legendary",
+   "ids": [
+    1670214138,
+    1269427313
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Formless Immunity Rune: Adamant Resolve [Tier 3]",
+   "type": "Stifle",
+   "family": "Formless",
+   "tier": 3,
+   "level": 135,
+   "rarity": "Legendary",
+   "ids": [
+    3898494947
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Formless Immunity Rune: Adamant Defiance [Tier 2]",
+   "type": "Stun",
+   "family": "Formless",
+   "tier": 2,
+   "level": 135,
+   "rarity": "Legendary",
+   "ids": [
+    3071464297,
+    1261913945
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Formless Immunity Rune: Adamant Defiance [Tier 3]",
+   "type": "Stun",
+   "family": "Formless",
+   "tier": 3,
+   "level": 135,
+   "rarity": "Legendary",
+   "ids": [
+    270595660
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Splendid Rune: Unbearable Field Medic",
+   "type": "Medic",
+   "family": "Splendid",
+   "tier": null,
+   "level": 135,
+   "rarity": "Mastercrafted Legendary",
+   "ids": [
+    4012918427
+   ],
+   "icon": 3884,
+   "src": "census"
+  },
+  {
+   "name": "Formless Immunity Rune: Blinding Gleam [Tier 1]",
+   "type": "Fear",
+   "family": "Formless",
+   "tier": 1,
+   "level": 132,
+   "rarity": "Treasured",
+   "ids": [
+    3180642435
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Formless Rune: Unknowable Field Medic",
+   "type": "Medic",
+   "family": "Formless",
+   "tier": null,
+   "level": 132,
+   "rarity": "Treasured",
+   "ids": [
+    1570596158
+   ],
+   "icon": 3884,
+   "src": "census"
+  },
+  {
+   "name": "Formless Immunity Rune: Astral Dominion [Tier 1]",
+   "type": "Mez",
+   "family": "Formless",
+   "tier": 1,
+   "level": 132,
+   "rarity": "Treasured",
+   "ids": [
+    2483299271
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Formless Immunity Rune: Adamant Resolve [Tier 1]",
+   "type": "Stifle",
+   "family": "Formless",
+   "tier": 1,
+   "level": 132,
+   "rarity": "Treasured",
+   "ids": [
+    2941913993
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Formless Immunity Rune: Adamant Defiance [Tier 1]",
+   "type": "Stun",
+   "family": "Formless",
+   "tier": 1,
+   "level": 132,
+   "rarity": "Treasured",
+   "ids": [
+    4246218099
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Coldforged Immunity Rune: Blinding Gleam [Tier 1]",
+   "type": "Fear",
+   "family": "Coldforged",
+   "tier": 1,
+   "level": 130,
+   "rarity": "Treasured",
+   "ids": [
+    2730175778
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Coldforged Immunity Rune: Blinding Gleam [Tier 2]",
+   "type": "Fear",
+   "family": "Coldforged",
+   "tier": 2,
+   "level": 130,
+   "rarity": "Legendary",
+   "ids": [
+    345263880
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Coldforged Rune: Col Field Medic",
+   "type": "Medic",
+   "family": "Coldforged",
+   "tier": null,
+   "level": 130,
+   "rarity": "Legendary",
+   "ids": [
+    3094917114
+   ],
+   "icon": 4216,
+   "src": "census"
+  },
+  {
+   "name": "Coldforged Rune: Coldwork Field Medic",
+   "type": "Medic",
+   "family": "Coldforged",
+   "tier": null,
+   "level": 130,
+   "rarity": "Treasured",
+   "ids": [
+    825943498
+   ],
+   "icon": 4216,
+   "src": "census"
+  },
+  {
+   "name": "Coldforged Rune: Crevasse Field Medic",
+   "type": "Medic",
+   "family": "Coldforged",
+   "tier": null,
+   "level": 130,
+   "rarity": "Treasured",
+   "ids": [
+    2216185074
+   ],
+   "icon": 4216,
+   "src": "census"
+  },
+  {
+   "name": "Coldforged Immunity Rune: Astral Dominion [Tier 1]",
+   "type": "Mez",
+   "family": "Coldforged",
+   "tier": 1,
+   "level": 130,
+   "rarity": "Treasured",
+   "ids": [
+    52233031
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Coldforged Immunity Rune: Astral Dominion [Tier 2]",
+   "type": "Mez",
+   "family": "Coldforged",
+   "tier": 2,
+   "level": 130,
+   "rarity": "Legendary",
+   "ids": [
+    2563572617
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Coldforged Immunity Rune: Adamant Resolve [Tier 1]",
+   "type": "Stifle",
+   "family": "Coldforged",
+   "tier": 1,
+   "level": 130,
+   "rarity": "Treasured",
+   "ids": [
+    3338471371
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Coldforged Immunity Rune: Adamant Resolve [Tier 2]",
+   "type": "Stifle",
+   "family": "Coldforged",
+   "tier": 2,
+   "level": 130,
+   "rarity": "Legendary",
+   "ids": [
+    170556856
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Coldforged Immunity Rune: Adamant Defiance [Tier 1]",
+   "type": "Stun",
+   "family": "Coldforged",
+   "tier": 1,
+   "level": 130,
+   "rarity": "Treasured",
+   "ids": [
+    3795306706
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Coldforged Immunity Rune: Adamant Defiance [Tier 2]",
+   "type": "Stun",
+   "family": "Coldforged",
+   "tier": 2,
+   "level": 130,
+   "rarity": "Legendary",
+   "ids": [
+    1410902776
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Tishan's Coldforged Rune: Blinding Gleam [Tier 0]",
+   "type": "Fear",
+   "family": "Tishan's Coldforged",
+   "tier": 0,
+   "level": 130,
+   "rarity": null,
+   "ids": [
+    3971528943
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Tishan's Coldforged Rune: Astral Dominion [Tier 0]",
+   "type": "Mez",
+   "family": "Tishan's Coldforged",
+   "tier": 0,
+   "level": 130,
+   "rarity": null,
+   "ids": [
+    4105888361
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Tishan's Coldforged Rune: Adamant Resolve [Tier 0]",
+   "type": "Stifle",
+   "family": "Tishan's Coldforged",
+   "tier": 0,
+   "level": 130,
+   "rarity": null,
+   "ids": [
+    952928000
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Tishan's Coldforged Rune: Adamant Defiance [Tier 0]",
+   "type": "Stun",
+   "family": "Tishan's Coldforged",
+   "tier": 0,
+   "level": 130,
+   "rarity": null,
+   "ids": [
+    2889112863
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Tishan's Formless Rune: Blinding Gleam [Tier 0]",
+   "type": "Fear",
+   "family": "Tishan's Formless",
+   "tier": 0,
+   "level": 130,
+   "rarity": null,
+   "ids": [
+    2820251127
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Tishan's Formless Rune: Astral Dominion [Tier 0]",
+   "type": "Mez",
+   "family": "Tishan's Formless",
+   "tier": 0,
+   "level": 130,
+   "rarity": null,
+   "ids": [
+    2137644144
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Tishan's Formless Rune: Adamant Resolve [Tier 0]",
+   "type": "Stifle",
+   "family": "Tishan's Formless",
+   "tier": 0,
+   "level": 130,
+   "rarity": null,
+   "ids": [
+    4057173951
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Tishan's Formless Rune: Adamant Defiance [Tier 0]",
+   "type": "Stun",
+   "family": "Tishan's Formless",
+   "tier": 0,
+   "level": 130,
+   "rarity": null,
+   "ids": [
+    3902109703
+   ],
+   "icon": 4540,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Immunity Rune: Blinding Gleam [Tier 3]",
+   "type": "Fear",
+   "family": "Zimaran",
+   "tier": 3,
+   "level": 130,
+   "rarity": "Legendary",
+   "ids": [
+    3480480002
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Rune: Alcazar's Field Medic",
+   "type": "Medic",
+   "family": "Zimaran",
+   "tier": null,
+   "level": 130,
+   "rarity": "Fabled",
+   "ids": [
+    3829086428
+   ],
+   "icon": 4216,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Rune: Allyrian Field Medic",
+   "type": "Medic",
+   "family": "Zimaran",
+   "tier": null,
+   "level": 130,
+   "rarity": "Legendary",
+   "ids": [
+    3629898708
+   ],
+   "icon": 4216,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Rune: Sovereign's Field Medic",
+   "type": "Medic",
+   "family": "Zimaran",
+   "tier": null,
+   "level": 130,
+   "rarity": "Fabled",
+   "ids": [
+    1768919013
+   ],
+   "icon": 4216,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Rune: Vaashkaani Field Medic",
+   "type": "Medic",
+   "family": "Zimaran",
+   "tier": null,
+   "level": 130,
+   "rarity": "Legendary",
+   "ids": [
+    2633694924
+   ],
+   "icon": 4216,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Rune: Virtuous Field Medic",
+   "type": "Medic",
+   "family": "Zimaran",
+   "tier": null,
+   "level": 130,
+   "rarity": "Mythical",
+   "ids": [
+    1427074285
+   ],
+   "icon": 4216,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Rune: Zakir's Field Medic",
+   "type": "Medic",
+   "family": "Zimaran",
+   "tier": null,
+   "level": 130,
+   "rarity": "Celestial",
+   "ids": [
+    1610512693
+   ],
+   "icon": 4216,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Immunity Rune: Astral Dominion [Tier 3]",
+   "type": "Mez",
+   "family": "Zimaran",
+   "tier": 3,
+   "level": 130,
+   "rarity": "Legendary",
+   "ids": [
+    1948026624
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Immunity Rune: Adamant Resolve [Tier 3]",
+   "type": "Stifle",
+   "family": "Zimaran",
+   "tier": 3,
+   "level": 130,
+   "rarity": "Legendary",
+   "ids": [
+    3480242184
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Immunity Rune: Adamant Defiance [Tier 3]",
+   "type": "Stun",
+   "family": "Zimaran",
+   "tier": 3,
+   "level": 130,
+   "rarity": "Legendary",
+   "ids": [
+    2415856882
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Immunity Rune: Blinding Gleam [Tier 2]",
+   "type": "Fear",
+   "family": "Zimaran",
+   "tier": 2,
+   "level": 128,
+   "rarity": "Legendary",
+   "ids": [
+    2489604119
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Rune: Nilborien's Field Medic",
+   "type": "Medic",
+   "family": "Zimaran",
+   "tier": null,
+   "level": 128,
+   "rarity": "Treasured",
+   "ids": [
+    2694454724
+   ],
+   "icon": 4216,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Immunity Rune: Astral Dominion [Tier 2]",
+   "type": "Mez",
+   "family": "Zimaran",
+   "tier": 2,
+   "level": 128,
+   "rarity": "Legendary",
+   "ids": [
+    972326759
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Immunity Rune: Adamant Resolve [Tier 2]",
+   "type": "Stifle",
+   "family": "Zimaran",
+   "tier": 2,
+   "level": 128,
+   "rarity": "Legendary",
+   "ids": [
+    1151563281
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Immunity Rune: Adamant Defiance [Tier 2]",
+   "type": "Stun",
+   "family": "Zimaran",
+   "tier": 2,
+   "level": 128,
+   "rarity": "Legendary",
+   "ids": [
+    3572022759
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Immunity Rune: Blinding Gleam [Tier 1]",
+   "type": "Fear",
+   "family": "Zimaran",
+   "tier": 1,
+   "level": 126,
+   "rarity": "Treasured",
+   "ids": [
+    575355453
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Rune: Felfeather's Field Medic",
+   "type": "Medic",
+   "family": "Zimaran",
+   "tier": null,
+   "level": 126,
+   "rarity": "Treasured",
+   "ids": [
+    364426492
+   ],
+   "icon": 4216,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Immunity Rune: Astral Dominion [Tier 1]",
+   "type": "Mez",
+   "family": "Zimaran",
+   "tier": 1,
+   "level": 126,
+   "rarity": "Treasured",
+   "ids": [
+    2720303017
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Immunity Rune: Adamant Resolve [Tier 1]",
+   "type": "Stifle",
+   "family": "Zimaran",
+   "tier": 1,
+   "level": 126,
+   "rarity": "Treasured",
+   "ids": [
+    2289306722
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Zimaran Immunity Rune: Adamant Defiance [Tier 1]",
+   "type": "Stun",
+   "family": "Zimaran",
+   "tier": 1,
+   "level": 126,
+   "rarity": "Treasured",
+   "ids": [
+    1657266125
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Bloodbound Rune: Blinding Gleam [Tier I]",
+   "type": "Fear",
+   "family": "Bloodbound",
+   "tier": 1,
+   "level": 125,
+   "rarity": null,
+   "ids": [
+    3540416367
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Bloodbound Rune: Astral Dominion [Tier I]",
+   "type": "Mez",
+   "family": "Bloodbound",
+   "tier": 1,
+   "level": 125,
+   "rarity": null,
+   "ids": [
+    4234958221
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Bloodbound Rune: Adamant Resolve [Tier I]",
+   "type": "Stifle",
+   "family": "Bloodbound",
+   "tier": 1,
+   "level": 125,
+   "rarity": null,
+   "ids": [
+    143982548
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Bloodbound Rune: Adamant Defiance [Tier I]",
+   "type": "Stun",
+   "family": "Bloodbound",
+   "tier": 1,
+   "level": 125,
+   "rarity": null,
+   "ids": [
+    2475332255
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Budding Botanist's Immunity Rune: Blinding Gleam [Tier III]",
+   "type": "Fear",
+   "family": "Budding Botanist's",
+   "tier": 3,
+   "level": 125,
+   "rarity": "Legendary",
+   "ids": [
+    823830727
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Budding Botanist's Rune: Field Medic",
+   "type": "Medic",
+   "family": "Budding Botanist's",
+   "tier": null,
+   "level": 125,
+   "rarity": "Mythical",
+   "ids": [
+    407604003,
+    1885963989
+   ],
+   "icon": 3880,
+   "src": "census"
+  },
+  {
+   "name": "Budding Botanist's Immunity Rune: Astral Dominion [Tier III]",
+   "type": "Mez",
+   "family": "Budding Botanist's",
+   "tier": 3,
+   "level": 125,
+   "rarity": "Legendary",
+   "ids": [
+    3145261935
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Budding Botanist's Immunity Rune: Adamant Resolve [Tier III]",
+   "type": "Stifle",
+   "family": "Budding Botanist's",
+   "tier": 3,
+   "level": 125,
+   "rarity": "Legendary",
+   "ids": [
+    2015814764
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Budding Botanist's Immunity Rune: Adamant Defiance [Tier III]",
+   "type": "Stun",
+   "family": "Budding Botanist's",
+   "tier": 3,
+   "level": 125,
+   "rarity": "Legendary",
+   "ids": [
+    1905675575
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Immunity Rune: Blinding Gleam [Tier II]",
+   "type": "Fear",
+   "family": "Renewal",
+   "tier": 2,
+   "level": 125,
+   "rarity": "Treasured",
+   "ids": [
+    1519370389
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Immunity Rune: Blinding Gleam [Tier III]",
+   "type": "Fear",
+   "family": "Renewal",
+   "tier": 3,
+   "level": 125,
+   "rarity": "Legendary",
+   "ids": [
+    2540482493
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Immunity Rune: Blinding Gleam [Tier IV]",
+   "type": "Fear",
+   "family": "Renewal",
+   "tier": 4,
+   "level": 125,
+   "rarity": "Fabled",
+   "ids": [
+    281611612
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Rune: Field Medic",
+   "type": "Medic",
+   "family": "Renewal",
+   "tier": null,
+   "level": 125,
+   "rarity": "Mythical",
+   "ids": [
+    635595079,
+    707729731,
+    731571294,
+    2524333188
+   ],
+   "icon": 3880,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Immunity Rune: Astral Dominion [Tier II]",
+   "type": "Mez",
+   "family": "Renewal",
+   "tier": 2,
+   "level": 125,
+   "rarity": "Treasured",
+   "ids": [
+    2062051423
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Immunity Rune: Astral Dominion [Tier III]",
+   "type": "Mez",
+   "family": "Renewal",
+   "tier": 3,
+   "level": 125,
+   "rarity": "Legendary",
+   "ids": [
+    1038887989
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Immunity Rune: Astral Dominion [Tier IV]",
+   "type": "Mez",
+   "family": "Renewal",
+   "tier": 4,
+   "level": 125,
+   "rarity": "Fabled",
+   "ids": [
+    1682670291
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Immunity Rune: Adamant Resolve [Tier II]",
+   "type": "Stifle",
+   "family": "Renewal",
+   "tier": 2,
+   "level": 125,
+   "rarity": "Treasured",
+   "ids": [
+    3015858501
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Immunity Rune: Adamant Resolve [Tier III]",
+   "type": "Stifle",
+   "family": "Renewal",
+   "tier": 3,
+   "level": 125,
+   "rarity": "Legendary",
+   "ids": [
+    865224389
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Immunity Rune: Adamant Resolve [Tier IV]",
+   "type": "Stifle",
+   "family": "Renewal",
+   "tier": 4,
+   "level": 125,
+   "rarity": "Fabled",
+   "ids": [
+    1278198025
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Immunity Rune: Adamant Defiance [Tier II]",
+   "type": "Stun",
+   "family": "Renewal",
+   "tier": 2,
+   "level": 125,
+   "rarity": "Treasured",
+   "ids": [
+    436413797
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Immunity Rune: Adamant Defiance [Tier III]",
+   "type": "Stun",
+   "family": "Renewal",
+   "tier": 3,
+   "level": 125,
+   "rarity": "Legendary",
+   "ids": [
+    3621800525
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Renewal Immunity Rune: Adamant Defiance [Tier IV]",
+   "type": "Stun",
+   "family": "Renewal",
+   "tier": 4,
+   "level": 125,
+   "rarity": "Fabled",
+   "ids": [
+    1346758828
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Tishan's Zimaran Rune: Blinding Gleam [Tier 0]",
+   "type": "Fear",
+   "family": "Tishan's Zimaran",
+   "tier": 0,
+   "level": 125,
+   "rarity": null,
+   "ids": [
+    2934479813
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Tishan's Zimaran Rune: Astral Dominion [Tier 0]",
+   "type": "Mez",
+   "family": "Tishan's Zimaran",
+   "tier": 0,
+   "level": 125,
+   "rarity": null,
+   "ids": [
+    1673516587
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Tishan's Zimaran Rune: Adamant Resolve [Tier 0]",
+   "type": "Stifle",
+   "family": "Tishan's Zimaran",
+   "tier": 0,
+   "level": 125,
+   "rarity": null,
+   "ids": [
+    4123031562
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Tishan's Zimaran Rune: Adamant Defiance [Tier 0]",
+   "type": "Stun",
+   "family": "Tishan's Zimaran",
+   "tier": 0,
+   "level": 125,
+   "rarity": null,
+   "ids": [
+    3999563317
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Hua Jubilee Rune: Blinding Gleam",
+   "type": "Fear",
+   "family": "Hua Jubilee",
+   "tier": null,
+   "level": 120,
+   "rarity": "Legendary",
+   "ids": [
+    3132672303
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Hua Jubilee Rune: Astral Dominion",
+   "type": "Mez",
+   "family": "Hua Jubilee",
+   "tier": null,
+   "level": 120,
+   "rarity": "Legendary",
+   "ids": [
+    583874457
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Hua Jubilee Rune: Adamant Resolve",
+   "type": "Stifle",
+   "family": "Hua Jubilee",
+   "tier": null,
+   "level": 120,
+   "rarity": "Legendary",
+   "ids": [
+    205805096
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Hua Jubilee Rune: Adamant Defiance",
+   "type": "Stun",
+   "family": "Hua Jubilee",
+   "tier": null,
+   "level": 120,
+   "rarity": "Legendary",
+   "ids": [
+    4197723359
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Void Etched Rune: Blinding Gleam",
+   "type": "Fear",
+   "family": "Void Etched",
+   "tier": null,
+   "level": 120,
+   "rarity": "Fabled",
+   "ids": [
+    1322834096
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Void Etched Rune: Astral Dominion",
+   "type": "Mez",
+   "family": "Void Etched",
+   "tier": null,
+   "level": 120,
+   "rarity": "Fabled",
+   "ids": [
+    2965416506
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Void Etched Rune: Adamant Resolve",
+   "type": "Stifle",
+   "family": "Void Etched",
+   "tier": null,
+   "level": 120,
+   "rarity": "Fabled",
+   "ids": [
+    3393388004
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Void Etched Rune: Adamant Defiance",
+   "type": "Stun",
+   "family": "Void Etched",
+   "tier": null,
+   "level": 120,
+   "rarity": "Fabled",
+   "ids": [
+    1258234620
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Empyral Rune: Blinding Gleam",
+   "type": "Fear",
+   "family": "Empyral",
+   "tier": null,
+   "level": 115,
+   "rarity": "Fabled",
+   "ids": [
+    2016036931,
+    4219447876
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Empyral Rune: Astral Dominion",
+   "type": "Mez",
+   "family": "Empyral",
+   "tier": null,
+   "level": 115,
+   "rarity": "Fabled",
+   "ids": [
+    178600781,
+    2487417612
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Empyral Rune: Adamant Resolve",
+   "type": "Stifle",
+   "family": "Empyral",
+   "tier": null,
+   "level": 115,
+   "rarity": "Fabled",
+   "ids": [
+    1881631891,
+    4005604562
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Empyral Rune: Adamant Defiance",
+   "type": "Stun",
+   "family": "Empyral",
+   "tier": null,
+   "level": 115,
+   "rarity": "Fabled",
+   "ids": [
+    2216993778,
+    2237740340
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Celestial Rune: Blinding Gleam",
+   "type": "Fear",
+   "family": "Celestial",
+   "tier": null,
+   "level": 110,
+   "rarity": "Fabled",
+   "ids": [
+    655896311,
+    2396251109
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Celestial Rune: Astral Dominion",
+   "type": "Mez",
+   "family": "Celestial",
+   "tier": null,
+   "level": 110,
+   "rarity": "Fabled",
+   "ids": [
+    2868970618,
+    1477558015
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Celestial Rune: Adamant Resolve",
+   "type": "Stifle",
+   "family": "Celestial",
+   "tier": null,
+   "level": 110,
+   "rarity": "Fabled",
+   "ids": [
+    580118817,
+    3515044772
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Celestial Rune: Adamant Defiance",
+   "type": "Stun",
+   "family": "Celestial",
+   "tier": null,
+   "level": 110,
+   "rarity": "Fabled",
+   "ids": [
+    1010344642,
+    2702820823
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Carnage Rune: Blinding Gleam",
+   "type": "Fear",
+   "family": "Carnage",
+   "tier": null,
+   "level": 96,
+   "rarity": "Fabled",
+   "ids": [
+    209454207
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Carnage Rune: Astral Dominion",
+   "type": "Mez",
+   "family": "Carnage",
+   "tier": null,
+   "level": 96,
+   "rarity": "Fabled",
+   "ids": [
+    3143225799
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Carnage Rune: Adamant Resolve",
+   "type": "Stifle",
+   "family": "Carnage",
+   "tier": null,
+   "level": 96,
+   "rarity": "Fabled",
+   "ids": [
+    3252389401
+   ],
+   "icon": 4546,
+   "src": "census"
+  },
+  {
+   "name": "Carnage Rune: Adamant Defiance",
+   "type": "Stun",
+   "family": "Carnage",
+   "tier": null,
+   "level": 96,
+   "rarity": "Fabled",
+   "ids": [
+    2314745126
+   ],
+   "icon": 4546,
+   "src": "census"
+  }
+ ]
+}

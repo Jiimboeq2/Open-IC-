@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.2 - 2026-11-17
+
+- **Swap the belt rune (immunity)** (Ogre's `beltAdorn`): the kind is five chips, stun, stifle, mez, fear and medic, each
+  saying which rune it means (the end of the rune's name: Adamant Defiance, Adamant Resolve, Astral Dominion, Blinding
+  Gleam, Field Medic, the same in every family), and "take the belt off" in words. The step reads "Everyone swap the
+  belt rune to stifle (Adamant Resolve)". A kind Ogre does not have is caught.
+- `data/belt-runes.json`: every belt immunity rune and its kind, family, tier and level, from the isxjhub census and
+  the Descent to Val'Zyroth beta list (the Corathus runes); built by ISXJQB's `gen_belt_runes.py`, run again for new
+  runes.
+
 ## 0.5.1 - 2026-11-17
 
 - No drop-down list is a `<select>` any more: in Ogre's window (Ultralight) one opened as a bare list over the whole

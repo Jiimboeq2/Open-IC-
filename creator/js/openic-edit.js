@@ -52,7 +52,7 @@
     joust: 'Joust out and back', broadcast: 'Send a message', fireEvent: 'Set off a message', choiceWindow: 'Answer a choice window', report: 'Report',
     resolve: 'Find an actor', rosterOrder: 'Order the roster', stop: 'Stop here', stopEvaluating: 'Stop checking', timer: 'Timer', template: 'Template',
     threatIgnoreList: 'Threat ignore list', assist: 'Assist', pet: 'Pet', waypoint: 'Waypoint', move: 'Move to a spot', gameCommand: 'Game command',
-    raw: 'Console line', botPause: 'Pause the bot', beltAdorn: 'Belt adornment', inventory: 'Inventory', examine: 'Examine', abilityTracker: 'Ability tracker',
+    raw: 'Console line', botPause: 'Pause the bot', beltAdorn: 'Swap the belt rune (immunity)', inventory: 'Inventory', examine: 'Examine', abilityTracker: 'Ability tracker',
     repositionOnCondition: 'Move when something happens', abilities: 'Abilities on or off', castInterrupt: 'Interrupt a cast', camera: 'Camera',
     progress: 'Mark a step done', recover: 'Wipe recovery'
   };

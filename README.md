@@ -109,6 +109,8 @@ Details: [docs/extensions.md](docs/extensions.md).
 - [docs/extensions.md](docs/extensions.md): OgreBot, ISXJQB and ISXADD in the Creator.
 - [docs/developer.md](docs/developer.md): the modules, the flowchart graph, the game bridge, building and tests.
 - [data/vocabulary.json](data/vocabulary.json): every action, op, key, condition and value the checks know.
+- [data/belt-runes.json](data/belt-runes.json): every belt immunity rune and its kind (stun, stifle, mez, fear, medic),
+  for the Swap the belt rune step.
 - [examples/](examples/): a made-up zone file (`_01_Crypt_of_Valdoon_Heroic.json`) and the fight file of its boss
   (`The_Hollow_Regent.json`). The zone file goes in `IC\custom\`; the fight file in
   `Encounters\custom\Example\Crypt of Valdoon [Heroic]\`.

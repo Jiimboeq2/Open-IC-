@@ -42,6 +42,20 @@ test('the op picker says what each op does', () => {
   ok(h.indexOf('setLoc: ' + sp.valuesAbout.setLoc.slice(0, 20)) >= 0, 'the picked op is in words under the picker');
 });
 
+test('the belt rune swap: five kinds as chips, in words, and the rune list that names them', () => {
+  const fs = require('fs'), path = require('path');
+  const sp = IC.vocab.fightFile.actions.beltAdorn.keys.type;
+  const h = A.fieldHtml('type', sp, { 'do': 'beltAdorn', type: 'stifle' });
+  ok((h.match(/data-oic="ed:sf\|type\|/g) || []).length === 5 && /oic-on" data-oic="ed:sf\|type\|stifle"/.test(h), 'five chips, stifle picked');
+  ok(/swap the belt rune to stifle \(Adamant Resolve\)/.test(IC.ogf.stepWords({ 'do': 'beltAdorn', type: 'stifle', forwho: 'all' }).title), 'in words');
+  ok(Z.check({ named: [{ name: 'N' }], setup: [{ 'do': 'beltAdorn', type: 'sleep' }] }, 'fight').some((p) => /stun, stifle, mez, fear or medic/.test(p.msg)), 'a kind Ogre does not have is caught');
+  const R = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'belt-runes.json'), 'utf8'));
+  const key = {}; R.types.forEach((t) => { key[t.type.toLowerCase()] = t.rune; });
+  ok(Object.keys(key).join() === sp.values.join(), 'the list and the step have the same five kinds');
+  ok(R.runes.length > 50 && R.runes.every((r) => r.name.toLowerCase().indexOf(key[r.type.toLowerCase()].toLowerCase()) >= 0), 'every rune is its kind by the end of its name');
+  ok(R.runes.some((r) => /^Corathus Immunity Rune/.test(r.name)), 'the Descent to Val\'Zyroth runes are in it');
+});
+
 test('ISXJQB\'s saved map: its file names, its floors, the floor a spot is on', () => {
   ok(A.mapToken('Exp04_Dun_Chelsith') === 'exp04_dun_chelsith' && A.mapToken('a b:c') === 'abc' && A.mapToken('x'.repeat(81)) === '', 'the zone token');
   const one = A.mapFloors({ zone: 'z', ok: true, key: 'z', min_x: -10, max_x: 10, min_z: -5, max_z: 5, floors: [] });

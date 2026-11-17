@@ -1407,15 +1407,30 @@
         }
       },
       "beltAdorn": {
-        "about": "Puts in the belt adornment rune of a type: stun, stifle, mez, fear or medic (Ogre's migration notes).",
+        "about": "Swaps the belt's immunity rune (adornment) to a kind: stun, stifle, mez, fear or medic. OgreBot takes a rune of that kind from the bags and puts the old one back in them; a box swaps only out of combat and standing still. A rune's kind is the end of its name, in every family (Corathus, Coldforged, Formless, Zimaran, Renewal ...): data/belt-runes.json lists them.",
         "keys": {
           "type": {
-            "type": "string",
-            "about": "stun, stifle, mez, fear or medic."
+            "type": "enum",
+            "values": [
+              "stun",
+              "stifle",
+              "mez",
+              "fear",
+              "medic"
+            ],
+            "required": true,
+            "about": "The kind of immunity: the rune whose name ends in Adamant Defiance (stun), Adamant Resolve (stifle), Astral Dominion (mez), Blinding Gleam (fear) or Field Medic (medic).",
+            "valuesAbout": {
+              "stun": "a rune whose name ends in Adamant Defiance",
+              "stifle": "a rune whose name ends in Adamant Resolve",
+              "mez": "a rune whose name ends in Astral Dominion",
+              "fear": "a rune whose name ends in Blinding Gleam",
+              "medic": "a rune whose name ends in Field Medic"
+            }
           },
           "unequip": {
             "type": "bool",
-            "about": "Read by the engine; no shipped file uses it."
+            "about": "true (Ogre's default) takes the belt off, puts the rune in and puts the belt back on; false puts the rune in the worn belt (OgreBotAPI.Inventory:ChangeBeltAdorn)."
           }
         }
       },

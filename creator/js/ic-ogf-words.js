@@ -553,7 +553,11 @@
         if (op === 'enterText') return W('action', '&#128172;', withWho(a, 'type ' + QV(a.text, 30) + ' in the pop-up'));
         return W('action', '&#128172;', withWho(a, 'press OK on the pop-up'));
       case 'botPause': return W('state', '&#9208;', a.value === false ? 'Resume the bot' : 'Pause the bot');
-      case 'beltAdorn': return W('action', '&#128142;', withWho(a, 'use the belt ' + str(a.type).toLowerCase() + ' rune'));
+      case 'beltAdorn': {
+        var BR = { stun: 'Adamant Defiance', stifle: 'Adamant Resolve', mez: 'Astral Dominion', fear: 'Blinding Gleam', medic: 'Field Medic' }, bt = str(a.type).toLowerCase();
+        return W('action', '&#128142;', withWho(a, 'swap the belt rune to ' + (bt || '?') + (BR[bt] ? ' (' + BR[bt] + ')' : '')),
+          'out of combat and still; the old rune goes back to the bags' + (a.unequip === false ? '; on the worn belt' : ''));
+      }
       case 'inventory': return W('action', '&#128465;', withWho(a, 'destroy ' + (a.count ? a.count + ' x ' : '') + q(a.item, 30)));
       case 'examine': return W('state', '&#128269;', 'Read detriment ' + V(a.index, 16) + ' of ' + nm(a.dets) + ' into ' + nm(a['var']));
       case 'abilityTracker': return W('state', '&#9881;', 'Keep track of ' + q(a.ability, 30) + forTag(a), '', { abil: str(a.ability) });
