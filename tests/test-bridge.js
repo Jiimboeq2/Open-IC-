@@ -117,7 +117,15 @@ test('the in-game window loads nothing from outside and adds one name to the sha
   const globals = uniq((win.match(/window\.([A-Za-z_$][\w$]*)\s*=/g) || []).map((s) => s.replace(/\s*=$/, '')));
   ok(JSON.stringify(globals) === JSON.stringify(['window.OpenIC_LIB']), 'globals: ' + globals.join(', '));
   ok(/class="oic-ingame"/.test(win), 'the in-game layout');
-  ok(/classData = \{"Assassin":"data:image\/webp;base64,/.test(win), 'the class icons are inline');
+  ok(/classData: \{"Assassin":"data:image\/webp;base64,/.test(win), 'the class icons are inline');
+  /* Ogre's page outlives the window: opened again, the window's scripts run again in the same page */
+  const first = (/<script>\n([\s\S]*?)<\/script>/.exec(win.replace(/^[\s\S]*?<\/style>/, '')) || [])[1] || '';
+  ok(/old\.dispose\(\)/.test(first) && /window\.OpenIC_LIB = \{\}/.test(first), 'the window\'s first script puts the copy from before away and starts a fresh one');
+  ok(/removeEventListener/.test(first) && /clearInterval/.test(first), 'putting it away takes its page-wide listeners and timers off');
+  ok(/innerWidth/.test(first) && /innerHeight/.test(first) && /L\.addEventListener = /.test(first), 'the private window has innerWidth, innerHeight and addEventListener');
+  const wrapped = (win.match(/\(function \(window, document, setInterval, /g) || []).length;
+  const modules = (win.match(/\}\)\(OpenIC_LIB, OpenIC_LIB\.document, OpenIC_LIB\.setInterval, /g) || []).length;
+  ok(wrapped > 20 && wrapped === modules, wrapped + ' modules get this window\'s document and setInterval');
   ok(!/D\.spellText = "/.test(win) && !/data:image\/png;base64,/.test(win), 'the sheets and the ability list are in the asset pack, not the window');
   const names = fs.readdirSync(path.join(ROOT, 'host')).filter((f) => /^OpenIC-assets-\d+\.js$/.test(f)).sort((a, b) => parseInt(a.slice(14), 10) - parseInt(b.slice(14), 10));
   const parts = names.map((f) => read('host/' + f)), pack = parts.join('\n');

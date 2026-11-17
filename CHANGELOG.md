@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.2 - 2026-11-17
+
+- In game, the buttons work after the window is closed and opened again. Ogre's windows share one page that outlives
+  the window, and a window opened a second time kept the copy from before, bound to markup that was gone: none of
+  its buttons did anything. The window's first script now puts that copy away (its page-wide listeners and timers
+  taken off) and starts a fresh one.
+- In game, the modules get a window that has `innerWidth`, `innerHeight` and `addEventListener` (the More menu's
+  placing and closing).
+
 ## 0.2.1 - 2026-11-17
 
 Run in game; what that showed is fixed.

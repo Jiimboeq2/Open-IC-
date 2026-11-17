@@ -30,6 +30,37 @@ const assetName = (k) => 'OpenIC-assets-' + k + '.js';
 /* One EvalFile is one message to Ogre's UI process, and a message over its limit is dropped whole: a 4.8 MB pack never
    arrived ("to-exe ring full ... DROPPED"), 4 MB did. Each part stays under 900 KB. */
 const PART_MAX = 900 * 1024;
+/* The window's first script. Ogre's windows share one page that outlives the window: closed and opened again, the window
+   runs its scripts again in the same page. The copy from before is put away first (its page-wide listeners and timers
+   taken off) and a fresh one starts on the new markup -- a window opened a second time used to keep the old copy, bound
+   to markup that was gone, and none of its buttons did anything. The modules get this window's own document (its
+   page-wide listeners counted), setInterval (counted) and window (innerWidth, innerHeight, addEventListener: the
+   private window is a plain object). */
+const PRELUDE = [
+  '(function () {',
+  '  var old = window.OpenIC_LIB;',
+  '  if (old && typeof old.dispose === \'function\') { try { old.dispose(); } catch (e) {} }',
+  '  var regs = [], timers = [];',
+  '  function on(target) { return function (type, fn, opt) { target.addEventListener(type, fn, opt); regs.push([target, type, fn, opt]); }; }',
+  '  var L = window.OpenIC_LIB = {};',
+  '  L.document = new Proxy(document, {',
+  '    get: function (t, k) { if (k === \'addEventListener\') return on(t); var v = t[k]; return typeof v === \'function\' ? v.bind(t) : v; },',
+  '    set: function (t, k, v) { t[k] = v; return true; }',
+  '  });',
+  '  L.addEventListener = on(window);',
+  '  L.removeEventListener = function (type, fn, opt) { window.removeEventListener(type, fn, opt); };',
+  '  Object.defineProperty(L, \'innerWidth\', { get: function () { return window.innerWidth; } });',
+  '  Object.defineProperty(L, \'innerHeight\', { get: function () { return window.innerHeight; } });',
+  '  L.setInterval = function (fn, ms) { var id = setInterval(fn, ms); timers.push(id); return id; };',
+  '  L.dispose = function () {',
+  '    for (var i = 0; i < regs.length; i++) { try { regs[i][0].removeEventListener(regs[i][1], regs[i][2], regs[i][3]); } catch (e) {} }',
+  '    for (var j = 0; j < timers.length; j++) clearInterval(timers[j]);',
+  '    regs = []; timers = [];',
+  '  };',
+  '  L.IC = { iconData: { classData: CLASS_DATA } };',
+  '})();',
+  ''
+].join('\n');
 const WINDOW = { title: 'Open IC Creator', w: 1180, h: 720 };
 
 function safe(js, name) {
@@ -70,9 +101,7 @@ function build() {
   out += '<script type="ogre/window">' + JSON.stringify(WINDOW) + '</script>\n\n';
   out += '<style>\n' + css.trim() + '\n</style>\n\n';
   out += body + '\n\n';
-  out += '<script>\nwindow.OpenIC_LIB = window.OpenIC_LIB || {};\n' +
-    'OpenIC_LIB.IC = OpenIC_LIB.IC || {};\nOpenIC_LIB.IC.iconData = OpenIC_LIB.IC.iconData || {};\n' +
-    'OpenIC_LIB.IC.iconData.classData = ' + JSON.stringify(classData) + ';\n</script>\n';
+  out += '<script>\n' + PRELUDE.replace('CLASS_DATA', () => JSON.stringify(classData)) + '</script>\n';
   for (const src of scripts) {
     if (/^data\//.test(src)) continue;
     const name = path.basename(src);
@@ -80,7 +109,8 @@ function build() {
     if (name === 'openic-host.js') {
       out += '<script>\n(function (window) {\n' + js + '\n})(OpenIC_LIB);\n</script>\n';
     } else {
-      out += '<script>\n(function (window, ' + shimNames.join(', ') + ') {\n' + js + '\n})(OpenIC_LIB, ' +
+      out += '<script>\n(function (window, document, setInterval, ' + shimNames.join(', ') + ') {\n' + js +
+        '\n})(OpenIC_LIB, OpenIC_LIB.document, OpenIC_LIB.setInterval, ' +
         shimNames.map((n) => 'OpenIC_LIB.IC.host.shims.' + n).join(', ') + ');\n</script>\n';
     }
   }
