@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.4 - 2026-11-18
+
+- **Ask Ogre** reads Ogre's log where it is now. Ogre 2026.11.17.003 moved each session's log to
+  `Scripts\OgreLogs\<session>\ISXOgreEQ2.<session>.log` and removed the old copies, so the problems a reload found were
+  never read (the window said there was no log). The script reads the new place, and the old one for an older Ogre.
+- The `ms` condition: a wait step's plain pause, over after its `limitMs`. Ogre now ships `ic.schema.json` and
+  `fight.schema.json` with every step, condition and option; the Creator's zone-file steps and fight-file actions match
+  them, and `ms` was the one condition missing.
+- Ogre 2026.11.17.001 has `IC:Validate` and `Encounter:Validate`: with it, Ask Ogre uses Ogre's own file check (the
+  window finds it by itself). Not run in game for this release.
+
 ## 0.5.3 - 2026-11-17
 
 Run in game (is1); what that showed is fixed.

@@ -134,7 +134,8 @@ line of Ogre's log about this file, `nolog|`, `end|`), `test` (`out|` what Ogre 
 and a letter), which the page takes out.
 
 Ask Ogre with an Ogre that has no `Validate`: `IC:Reload` prints only its count line on the console (`redirect`
-catches it); the line for each problem goes to Ogre's log, `x64\Extensions\ISXDK35\ISXOgreEQ2.<session>.log`, as
+catches it); the line for each problem goes to Ogre's log, `Scripts\OgreLogs\<session>\ISXOgreEQ2.<session>.log` (an
+Ogre older than 2026.11.17.003 kept it in `x64\Extensions\ISXDK35`; the script reads the one that is there), as
 `<tier>/<path>: <message>` (steps counted from 1), so the script notes the log's size before the reload and reads from
 there (`file:Seek`). `IC:List[<zone>]` prints the loaded files that claim the zone. `IC:Check` is not used: it also
 starts Ogre's zone-reset flow, which opens the game's zone reset window to read the timers.

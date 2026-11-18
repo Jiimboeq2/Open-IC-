@@ -3552,6 +3552,10 @@
         "value"
       ]
     },
+    "ms": {
+      "about": "Never true: a wait step's plain pause, over after its limitMs (Ogre's ic.schema.json).",
+      "keys": []
+    },
     "moveFinished": {
       "about": "My last move is done (the wait word moveFinished).",
       "keys": [

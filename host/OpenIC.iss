@@ -598,6 +598,7 @@ atom(script) OpenIC_OnVerify()
 	; never a variable named after a top-level object (Zone, Me, Target ...): the script ends (it did, here, 2026-11-17)
 	variable string ZoneName="${OpenIC.Arg[zone]}"
 	variable file L
+	variable filepath LogDir="${OpenIC_Scripts}/OgreLogs/${Session}"
 	if !${ISXOgreEQ2(exists)}
 	{
 		OpenIC:Say[say,"err:ISXOgreEQ2 is not loaded."]
@@ -606,7 +607,13 @@ atom(script) OpenIC_OnVerify()
 	if !${Tier.Equal[custom]} && !${Tier.Equal[default]}
 		return
 	OpenIC_VerifyRel:Set["${Tier}/${Rel}"]
-	OpenIC_VerifyLog:Set["${LavishScript.HomeDirectory}/x64/Extensions/ISXDK35/ISXOgreEQ2.${Session}.log"]
+	; Ogre's What's New 2026.11.17.003: "Log files now live in Scripts\OgreLogs: each session's in a folder named after the
+	; session", the old copies in the extensions folder removed (Scripts/OgreLogs/is1/ISXOgreEQ2.is1.log on the author's
+	; PC, 2026-11-18): there, else where an older Ogre keeps it
+	if ${LogDir.FileExists[ISXOgreEQ2.${Session}.log]}
+		OpenIC_VerifyLog:Set["${OpenIC_Scripts}/OgreLogs/${Session}/ISXOgreEQ2.${Session}.log"]
+	else
+		OpenIC_VerifyLog:Set["${LavishScript.HomeDirectory}/x64/Extensions/ISXDK35/ISXOgreEQ2.${Session}.log"]
 	OpenIC_VerifyFrom:Set[0]
 	L:SetFilename["${OpenIC_VerifyLog}"]
 	L:Open[readonly]

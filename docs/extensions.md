@@ -34,8 +34,8 @@ In a browser the same buttons show the console line to type instead.
 **Check this file by Ogre's own rules** has Ogre check the file as saved: save it in the custom folder first (a file
 opened from Ogre's own default folder is checked there as it is). Nothing is reloaded. Ogre's answer (`ok`, `errors`,
 `warnings` and each issue with its step) is listed under the page's own checks; click an issue to pick its step.
-Not every Ogre has this check: the ISXOgreEQ2 of 2026-11-16 has neither `Validate` nor `Validation`, and calling a
-method Ogre does not have ends the script that calls it. The script asks first (`Validation(exists)`); without it the
+Not every Ogre has this check: the ISXOgreEQ2 of 2026-11-16 has neither `Validate` nor `Validation` (Ogre's
+2026.11.17.001 adds them, with `ogre ic validate`), and calling a method Ogre does not have ends the script that calls it. The script asks first (`Validation(exists)`); without it the
 menu item is off and says so, and **Reload** lists the problems instead. Its other form, the file's JSON as one
 base64 argument, is not used: for a zone file that is one command of 30 KB and more.
 
